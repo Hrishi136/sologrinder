@@ -315,6 +315,29 @@ export function useHunterProgression() {
     return Math.round((basePower + shadowBonus) * rankMultiplier);
   }
 
+  // --- Daily save all progression state with every relevant change (using useEffect) ---
+  // Save all progression data anytime it changes
+  React.useEffect(() => {
+    saveProgression({
+      stats,
+      currentRankIndex,
+      rankPoints,
+      badges,
+      showCeremony,
+      lastBadge,
+      totalQuests,
+      daysActive,
+      streak,
+      streakStart,
+      lastQuestDay,
+      questCount,
+      dailyQuests
+    });
+  }, [
+    stats, currentRankIndex, rankPoints, badges, showCeremony, lastBadge,
+    totalQuests, daysActive, streak, streakStart, lastQuestDay, questCount, dailyQuests
+  ]);
+
   // --- Quest Completion w/ Stat Distribution ---
   /**
    * @param quest { category: "combat"/"intelligence"/"agility"/"vitality"/"special", difficulty: "easy"/"medium"/"hard" }
@@ -428,7 +451,22 @@ export function useHunterProgression() {
     }));
 
     // Mark streak/localStorage, days, lastQuestDay, etc exactly as before
-    // ... keep existing code (update streak, daysActive, streakStart etc.) the same ...
+    const t2 = getToday();
+    // Update streaks if a new quest is done today and last activity wasn't today
+    if (lastQuestDay !== t2) {
+      // Started first quest of day
+      if (!lastQuestDay || new Date(t2) > new Date(lastQuestDay)) {
+        const newStreak = lastQuestDay &&
+          (new Date(t2).getTime() - new Date(lastQuestDay).getTime() === 86400000)
+          ? streak + 1 : 1;
+        setStreak(newStreak);
+        setLastQuestDay(t2);
+        localStorage.setItem("hunter_streaks", JSON.stringify({ streak: newStreak, lastDay: t2 }));
+        // Update active days total (not unique days, just add 1 more day)
+        setDaysActive(d => d + 1);
+        setStreakStart((start) => start ?? Date.now());
+      }
+    }
 
     // Save changes after a quest
     setTimeout(() => {

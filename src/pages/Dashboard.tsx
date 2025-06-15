@@ -45,6 +45,7 @@ export default function Dashboard() {
 
   // System notification message, show only ONCE per session
   const [systemNotice, setSystemNotice] = React.useState<string | null>(() => {
+    // Only show if NOT already set for this tab session
     if (window.sessionStorage.getItem("system_welcome_seen")) {
       return null;
     }
