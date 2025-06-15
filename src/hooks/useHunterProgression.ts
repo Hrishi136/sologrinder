@@ -1,4 +1,3 @@
-
 // Add missing import at the top:
 import React from "react";
 import { useState, useEffect } from "react";
@@ -220,6 +219,7 @@ function loadProgression() {
 export function useHunterProgression() {
   // Try to load previous progression from localStorage
   const stored = loadProgression();
+  console.log("Loaded progression from storage:", stored);
 
   // --- SYSTEMS ---
   const [stats, setStats] = useState(stored?.stats || [...START_STATS]);
@@ -336,6 +336,7 @@ export function useHunterProgression() {
       questCount,
       dailyQuests
     });
+    console.log("Progression saved to localStorage");
   }, [
     stats, currentRankIndex, rankPoints, badges, showCeremony, lastBadge,
     totalQuests, daysActive, streak, streakStart, lastQuestDay, questCount, dailyQuests
@@ -346,6 +347,7 @@ export function useHunterProgression() {
    * @param quest { category: "combat"/"intelligence"/"agility"/"vitality"/"special", difficulty: "easy"/"medium"/"hard" }
    */
   function completeQuest(category, difficulty) {
+    console.log("completeQuest called:", category, difficulty);
     const t = getToday();
     if (dailyQuests[difficulty] >= (difficulty === "easy" ? 5 : (difficulty === "medium" ? 3 : 2))) return false;
     // Update streaks if a new quest is done today and last activity wasn't today
@@ -526,6 +528,7 @@ export function useHunterProgression() {
           questCount,
           dailyQuests,
         });
+        console.log("Rank points updated. New value:", newVal);
       }, 100);
       return newVal;
     });
@@ -557,6 +560,7 @@ export function useHunterProgression() {
           questCount,
           dailyQuests,
         });
+        console.log("Stats updated. New stats:", newStats);
       }, 100);
       return newStats;
     });

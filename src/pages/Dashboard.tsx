@@ -16,6 +16,8 @@ function getCurrentUsername(): string | null {
   return localStorage.getItem("shadowSystem_session");
 }
 
+console.log("Dashboard component loading...");
+
 export default function Dashboard() {
   // --- PROGRESSION HOOK ---
   const {
@@ -42,6 +44,10 @@ export default function Dashboard() {
     addRankPoints,
     addStats,
   } = useHunterProgression();
+  console.log("HunterProgression loaded:", {
+    stats, currentRank, nextRank, powerLevel, rankPoints, streak, daysActive,
+    totalQuests, badges, showCeremony, lastBadge, currentRankIndex, dailyQuests, questCount
+  });
 
   // System notification message, show only ONCE per session
   const [systemNotice, setSystemNotice] = React.useState<string | null>(() => {
@@ -66,12 +72,17 @@ export default function Dashboard() {
       ...l,
       { message: msg, timestamp: new Date().toLocaleTimeString(), type }
     ]);
+    console.log("System log added:", msg, type);
   }
-  function clearSystemLogs() { setSystemLogs([]); }
+  function clearSystemLogs() {
+    setSystemLogs([]);
+    console.log("System log cleared");
+  }
 
   // Shadow Army preview handler
   const navigate = useNavigate();
   function handleViewFullArmy() {
+    console.log("Navigating to /army page.");
     navigate("/army");
   }
 
@@ -103,6 +114,7 @@ export default function Dashboard() {
   function triggerEmergencyQuest() {
     setPendingEmergencyQuest(true);
     setSystemNotice("🚨 Emergency Quest Incoming — Acknowledge to proceed.");
+    console.log("Emergency Quest triggered");
   }
 
   // Show modal only ONCE per trigger and per user session (using localStorage key)
@@ -148,7 +160,7 @@ export default function Dashboard() {
       );
       setSystemNotice("Emergency Quest complete! Rewards added.");
       localStorage.setItem(COMPLETED_KEY, "1");
-
+      console.log("Emergency Quest completed, reward added");
       handleCompleteEmergency();
     }
   }
