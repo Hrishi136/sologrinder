@@ -59,13 +59,21 @@ export default function EmergencyQuestModal({
     return () => clearInterval(interval);
   }, [quest]);
 
+  // Ensure modal closes properly
+  function handleClose() {
+    // Inform parent to close
+    console.log("EmergencyQuestModal: handleClose invoked");
+    onClose();
+  }
+
   if (!quest) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!newOpen) handleClose();
+    }}>
       <DialogContent
         className="system-panel system-panel-glow bg-[#0a0a0aee] border-red-600 border-2 p-6 rounded-2xl shadow-red-500/40 animate-fade-in font-orbitron max-w-xl"
-        // Add proper accessibility description for Radix warnings
         aria-describedby="emergency-quest-description"
       >
         <DialogHeader>
@@ -117,7 +125,6 @@ export default function EmergencyQuestModal({
               Mark Complete
             </Button>
           )}
-          {/* Use DialogClose asChild to wrap the button */}
           <DialogClose asChild>
             <Button variant="outline" autoFocus>
               Acknowledge
@@ -128,4 +135,3 @@ export default function EmergencyQuestModal({
     </Dialog>
   );
 }
-

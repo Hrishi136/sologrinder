@@ -42,9 +42,15 @@ export default function Login() {
   const [error, setError] = useState("")
   const navigate = useNavigate()
 
+  // Only redirect if on login page AND session is present. Prevent redirect race between login/dashboard.
   React.useEffect(() => {
-    if (getUserSession()) navigate("/dashboard")
-  }, [])
+    if (getUserSession()) {
+      // Prevent infinite redirects: navigate only if not at "/dashboard"
+      if (window.location.pathname !== "/dashboard") {
+        navigate("/dashboard")
+      }
+    }
+  }, [navigate])
 
   function handleAuth(e: React.FormEvent) {
     e.preventDefault()
@@ -98,7 +104,6 @@ export default function Login() {
           <input
             className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 placeholder:text-system-blue2/60 outline-none"
             placeholder="Hunter Username"
-            autoFocus
             value={username}
             onChange={e=>setUsername(e.target.value)}
             maxLength={24}
