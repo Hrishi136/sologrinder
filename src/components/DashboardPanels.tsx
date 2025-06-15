@@ -39,8 +39,8 @@ export default function DashboardPanels(props: Props) {
         />
       </SystemPanel>
       <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4 bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in">
-        <h3 className="font-orbitron text-xl text-system-blue mb-2">
-          <span className="font-bold">The System says...</span> Hunter Stats
+        <h3 className="font-orbitron text-xl text-system-blue mb-2 font-bold">
+          Hunter Stats
         </h3>
         <HunterStatsPanel stats={props.stats} />
         <div className="mt-2">

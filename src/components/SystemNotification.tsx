@@ -30,9 +30,7 @@ export default function SystemNotification({
           animation: "fade-in 0.18s cubic-bezier(.7,0,.35,1)"
         }}
       >
-        <span className="uppercase text-system-blue2 text-xs font-orbitron tracking-widest mb-1">
-          The System says...
-        </span>
+        {/* REMOVED "The system says..." prefix */}
         <div className="text-lg text-white font-orbitron text-center">
           {message}
         </div>

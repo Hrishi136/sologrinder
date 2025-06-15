@@ -1,16 +1,24 @@
 
-import React from "react"
-import SystemPanel from "../components/SystemPanel"
-import TopNav from "../components/TopNav"
-
-const stats = [
-  { label: "Strength", val: 0 },
-  { label: "Agility", val: 0 },
-  { label: "Intelligence", val: 0 },
-  { label: "Vitality", val: 0 },
-]
+import React from "react";
+import SystemPanel from "../components/SystemPanel";
+import TopNav from "../components/TopNav";
+import { useHunterProgression } from "../hooks/useHunterProgression";
 
 export default function Stats() {
+  const {
+    stats,
+    currentRank,
+    nextRank,
+    rankPoints,
+  } = useHunterProgression();
+
+  // Progress bar %
+  const nextPoints = nextRank?.points ?? 1;
+  const progressPercent = Math.min(
+    (rankPoints / nextPoints) * 100,
+    100
+  ).toFixed(1);
+
   return (
     <div className="min-h-screen w-full bg-system-bg relative">
       <TopNav />
@@ -25,7 +33,7 @@ export default function Stats() {
                 <span className="text-system-blue2 font-orbitron">{stat.label}</span>
                 <div className="relative w-8 h-24 flex items-end mb-2">
                   <div className="absolute bottom-0 left-3 w-2 h-full bg-[#191e26] rounded-full border border-system-blue2" />
-                  <div className="absolute bottom-0 left-3 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`4px`, transition:"height 0.5s"}} />
+                  <div className="absolute bottom-0 left-3 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`${(stat.val/30)*100}%`, transition:"height 0.5s"}} />
                 </div>
                 <span className="font-orbitron text-white">{stat.val}</span>
               </div>
@@ -35,15 +43,17 @@ export default function Stats() {
             <span className="font-orbitron text-lg text-system-blue2">Rank Progress</span>
             <div className="w-full bg-[#191e26] rounded-full h-5 relative border border-system-blue mt-2">
               <div className="absolute left-0 top-0 h-5 rounded-full bg-gradient-to-r from-system-blue2 to-system-blue animate-fade-in"
-                style={{ width:"0%" }} />
+                style={{ width: `${progressPercent}%` }} />
               <span className="font-orbitron text-system-blue absolute left-2 top-0 h-5 flex items-center" style={{fontSize:'1.1rem'}}>
-                Next Rank: D-Rank
+                Next Rank: {nextRank ? nextRank.name : "MAX"}
               </span>
             </div>
+            <span className="font-orbitron text-xs text-system-blue mt-1">
+              Points: {rankPoints}/{nextRank?.points ?? "MAX"}
+            </span>
           </div>
         </SystemPanel>
       </div>
     </div>
-  )
+  );
 }
-
