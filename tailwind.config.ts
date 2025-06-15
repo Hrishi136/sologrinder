@@ -27,9 +27,11 @@ export default {
 					bg: '#0a0a0a',
 					blue: '#00d4ff',
 					blue2: '#0080ff',
-					panelBg: 'rgba(10,10,22,0.92)',
+					panel: 'rgba(10,10,22,0.94)', // add: alias for panel
+					panelBg: 'rgba(10,10,22,0.92)', // keep original for backwards compatibility
 					glow: '#00e0ff',
 				},
+				'system-panel': 'rgba(10,10,22,0.94)', // <--- this key enables bg-system-panel
 				border: 'hsl(var(--border))',
 				foreground: 'hsl(var(--foreground))',
 			},
@@ -43,3 +45,4 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
