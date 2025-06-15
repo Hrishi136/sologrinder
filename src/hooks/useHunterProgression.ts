@@ -22,8 +22,50 @@ const RANKS = [
     name: "B-Rank", color: "#9cdc96", points: 1800, multiplier: 4, badgeIcon: "star",
     req: { totalQuests: 80, streak: 10, minHard: 15 }
   },
-  { name: "A-Rank", color: "#e0c453", points: 2400, multiplier: 6, badgeIcon: "trophy" },
-  { name: "S-Rank", color: "#ed3434", points: 3200, multiplier: 8, badgeIcon: "award" }
+  {
+    name: "A-Rank", color: "#e0c453", points: 4500, multiplier: 6, badgeIcon: "trophy",
+    req: {
+      totalQuests: 150,
+      streak: 21,
+      minHard: 30,
+      minMedium: 10,
+      shadowCount: 2
+    }
+  },
+  {
+    name: "S-Rank", color: "#ed3434", points: 10000, multiplier: 8, badgeIcon: "award",
+    req: {
+      totalQuests: 300,
+      streak: 30,
+      minHard: 75,
+      minMedium: 50,
+      shadowCount: 5,
+      statTotal: 2000
+    }
+  },
+  {
+    name: "National Level", color: "#ba00ff", points: 25000, multiplier: 12, badgeIcon: "crown",
+    req: {
+      totalQuests: 500,
+      streak: 60,
+      minHard: 150,
+      minMedium: 100,
+      shadowCount: 8,
+      monthsActive: 6
+    }
+  },
+  {
+    name: "Shadow Monarch", color: "#000", points: 50000, multiplier: 20, badgeIcon: "ghost",
+    req: {
+      totalQuests: 1000,
+      streak: 100,
+      maxBreaks: 3,
+      minHard: 300,
+      minMedium: 200,
+      shadowCount: 12,
+      monthsActive: 12
+    }
+  }
 ];
 
 // All stats start at 0
@@ -32,6 +74,107 @@ const START_STATS = [
   { label: "Agility", val: 0 },
   { label: "Intelligence", val: 0 },
   { label: "Vitality", val: 0 },
+];
+
+// Shadow Soldiers unlock requirements
+export const SHADOW_SOLDIERS = [
+  {
+    name: "Iron Soldier",
+    tier: 1,
+    reqs: ["Complete 20 Combat Training quests (any difficulty)"]
+  },
+  {
+    name: "Scout",
+    tier: 1,
+    reqs: ["Achieve first 7-day streak"]
+  },
+  {
+    name: "Mage",
+    tier: 1,
+    reqs: ["Complete 25 Intelligence quests", "Reach 100 Intelligence stat"]
+  },
+  // Tier 2
+  {
+    name: "Knight",
+    tier: 2,
+    reqs: [
+      "Reach C-Rank",
+      "150 Strength stat",
+      "15 hard Combat quests"
+    ]
+  },
+  {
+    name: "Assassin",
+    tier: 2,
+    reqs: [
+      "Reach B-Rank",
+      "200 Agility stat",
+      "30-day streak"
+    ]
+  },
+  {
+    name: "Healer",
+    tier: 2,
+    reqs: [
+      "Complete 50 Vitality quests",
+      "Maintain 21-day streak"
+    ]
+  },
+  // Tier 3
+  {
+    name: "Tank",
+    tier: 3,
+    reqs: [
+      "Reach A-Rank",
+      "300 Strength",
+      "500 total Vitality"
+    ]
+  },
+  {
+    name: "Archer",
+    tier: 3,
+    reqs: [
+      "250 Agility",
+      "200 Intelligence",
+      "Complete 100 total quests"
+    ]
+  },
+  {
+    name: "Berserker",
+    tier: 3,
+    reqs: [
+      "Complete 75 hard quests",
+      "Achieve 45-day streak"
+    ]
+  },
+  // Tier 4
+  {
+    name: "Igris",
+    tier: 4,
+    reqs: [
+      "S-Rank",
+      "400 Strength",
+      "150 hard Combat quests"
+    ]
+  },
+  {
+    name: "Beru",
+    tier: 4,
+    reqs: [
+      "National Level",
+      "350 Intelligence",
+      "200 total quests completed"
+    ]
+  },
+  {
+    name: "Bellion",
+    tier: 4,
+    reqs: [
+      "Shadow Monarch",
+      "All other shadows unlocked",
+      "80-day streak"
+    ]
+  }
 ];
 
 function getToday() {
@@ -175,22 +318,40 @@ export function useHunterProgression() {
     if (rankPoints < nextRank.points) return;
 
     // Check requirements
-    let req = nextRank.req || {};
-    let unmet = [];
-    if (req.totalQuests && totalQuests < req.totalQuests) {
+    let req = nextRank.req;
+    let unmet: string[] = [];
+
+    if (req?.totalQuests && totalQuests < req.totalQuests) {
       unmet.push(`Complete ${req.totalQuests - totalQuests} more quests`);
     }
-    if (req.days && daysActive < req.days) {
+    if (req?.days && daysActive < req.days) {
       unmet.push(`Be active for ${req.days - daysActive} more day(s)`);
     }
-    if (req.streak && streak < req.streak) {
+    if (req?.monthsActive && daysActive < (req.monthsActive * 30)) { // approx
+      unmet.push(`Be active for ${req.monthsActive} month(s) total`);
+    }
+    if (req?.streak && streak < req.streak) {
       unmet.push(`Build a streak of ${req.streak} days (current: ${streak})`);
     }
-    if (req.minMedOrHard && questCount.medOrHard < req.minMedOrHard) {
+    if (req?.maxBreaks !== undefined /* for Monarch only */) {
+      // You'd need to track total breaks in the streak here!
+      // (Not implemented yet)
+      // unmet.push(`You cannot have more than ${req.maxBreaks} major breaks in streak`);
+    }
+    if (req?.minMedOrHard && questCount.medOrHard < req.minMedOrHard) {
       unmet.push(`Complete at least ${req.minMedOrHard} medium or hard quests (current: ${questCount.medOrHard})`);
     }
-    if (req.minHard && questCount.hardTotal < req.minHard) {
+    if (req?.minHard && questCount.hardTotal < req.minHard) {
       unmet.push(`Complete at least ${req.minHard} hard quests (current: ${questCount.hardTotal})`);
+    }
+    if (req?.minMedium && questCount.medium < req.minMedium) {
+      unmet.push(`Complete at least ${req.minMedium} medium quests (current: ${questCount.medium})`);
+    }
+    if (req?.shadowCount && (badges.filter(b => b === "shadow").length < req.shadowCount)) {
+      unmet.push(`Unlock at least ${req.shadowCount} Shadow Soldiers`);
+    }
+    if (req?.statTotal && stats.reduce((s, v) => s + v.val, 0) < req.statTotal) {
+      unmet.push(`Reach a total of ${req.statTotal} stat points`);
     }
 
     if (unmet.length === 0) {
@@ -214,7 +375,7 @@ export function useHunterProgression() {
       );
     }
     // eslint-disable-next-line
-  }, [rankPoints, totalQuests, streak, questCount, daysActive]);
+  }, [rankPoints, totalQuests, streak, questCount, daysActive, badges, stats]);
 
   // Ceremony completion
   function finishCeremony() {
@@ -229,8 +390,13 @@ export function useHunterProgression() {
     if (req.totalQuests) result.push(`Complete ${req.totalQuests} total quests`);
     if (req.days) result.push(`Be active at least ${req.days} days`);
     if (req.streak) result.push(`Build a ${req.streak}-day quest streak`);
+    if (req.monthsActive) result.push(`Be active for ${req.monthsActive} months`);
+    if (req.maxBreaks !== undefined) result.push(`Max ${req.maxBreaks} streak breaks allowed`);
     if (req.minMedOrHard) result.push(`At least ${req.minMedOrHard} medium/hard quests`);
     if (req.minHard) result.push(`At least ${req.minHard} hard quests`);
+    if (req.minMedium) result.push(`At least ${req.minMedium} medium quests`);
+    if (req.shadowCount) result.push(`Unlock ${req.shadowCount} Shadow Soldiers`);
+    if (req.statTotal) result.push(`Total stats: ${req.statTotal}+`);
     return result;
   }
 
@@ -257,3 +423,9 @@ export function useHunterProgression() {
     QUEST_TYPES,
   };
 }
+
+// --- Future System Stubs for Advanced Bonuses/Emergency/Combo ---
+// These are NOT implemented yet, only stubbed as reference for future logic:
+// - PERFECT PERFORMANCE BONUSES
+// - EMERGENCY QUEST SYSTEM
+// - COMBO MULTIPLIERS
