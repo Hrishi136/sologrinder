@@ -176,7 +176,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
-      <div className="particle-bg">
+      {/* Particle background – adapt slightly for all screens */}
+      <div className="particle-bg pointer-events-none">
         {[...Array(14)].map((_, i) => (
           <div
             key={i}
@@ -187,12 +188,12 @@ export default function Dashboard() {
               height: `${18 + Math.random() * 16}px`,
               animationDelay: `${-Math.random() * 14}s`,
               opacity: 0.17 + Math.random() * 0.12,
-              bottom: `${Math.random() * 30}vh`
+              bottom: `${Math.random() * 40}vh`, // More spread for mobile
             }}
           />
         ))}
       </div>
-      <div className="container mx-auto pt-4 pb-16 flex flex-col gap-8 items-center">
+      <div className="container mx-auto px-2 pt-2 pb-16 flex flex-col gap-6 sm:gap-8 items-center">
         {/* HEADER SECTION */}
         <DashboardHeader
           currentRank={currentRank}
@@ -202,34 +203,35 @@ export default function Dashboard() {
           daysActive={daysActive}
         />
 
-        {/* MAIN DASHBOARD CARDS */}
-        <DashboardPanels
-          streak={streak}
-          dailyQuests={dailyQuests}
-          canCompleteQuest={canCompleteQuest}
-          completeQuest={(cat, difficulty) => {
-            const ok = completeQuest(cat, difficulty);
-            if (ok) {
-              addSystemLog(`Quest completed. +${cat}, +${difficulty}. Rank points & stat gain awarded.`, "achievement");
-              setSystemNotice("Quest completed! Stat/points gained.");
-            }
-            return ok;
-          }}
-          setSystemNotice={setSystemNotice}
-          QUEST_CATEGORIES={QUEST_CATEGORIES}
-          stats={stats}
-          nextRank={nextRank}
-          powerLevel={powerLevel}
-          rankPoints={rankPoints}
-          daysActive={daysActive}
-          shadowArmy={shadowArmy}
-          badges={badges}
-          recentAchievements={recentAchievements}
-          nextMilestone={nextMilestone}
-          handleViewFullArmy={handleViewFullArmy}
-        />
-
-        {/* Emergency Quest Modal only/apparently once per quest, and disables after shown */}
+        {/* MAIN DASHBOARD CARDS – wrap for mobile friendliness */}
+        <div className="w-full">
+          <DashboardPanels
+            streak={streak}
+            dailyQuests={dailyQuests}
+            canCompleteQuest={canCompleteQuest}
+            completeQuest={(cat, difficulty) => {
+              const ok = completeQuest(cat, difficulty);
+              if (ok) {
+                addSystemLog(`Quest completed. +${cat}, +${difficulty}. Rank points & stat gain awarded.`, "achievement");
+                setSystemNotice("Quest completed! Stat/points gained.");
+              }
+              return ok;
+            }}
+            setSystemNotice={setSystemNotice}
+            QUEST_CATEGORIES={QUEST_CATEGORIES}
+            stats={stats}
+            nextRank={nextRank}
+            powerLevel={powerLevel}
+            rankPoints={rankPoints}
+            daysActive={daysActive}
+            shadowArmy={shadowArmy}
+            badges={badges}
+            recentAchievements={recentAchievements}
+            nextMilestone={nextMilestone}
+            handleViewFullArmy={handleViewFullArmy}
+          />
+        </div>
+        {/* Emergency Quest Modal, System Log, System Notifications */}
         {(emergencyQuest && showEmergency) && (
           <EmergencyQuestModal
             key={emergencyQuest.title + emergencyQuest.timerEnd + swapKey}
@@ -241,7 +243,6 @@ export default function Dashboard() {
             alreadyAccepted={hasAcceptedEmergency}
           />
         )}
-
         <SystemLog logs={systemLogs} onClear={clearSystemLogs} />
         {/* Modals and overlays */}
         {/* RANK UP CEREMONY OVERLAY */}
