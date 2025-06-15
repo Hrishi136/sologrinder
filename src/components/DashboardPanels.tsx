@@ -8,11 +8,11 @@ import RecentAchievements from "./RecentAchievements";
 
 interface Props {
   streak: number;
-  dailyQuests: any[];
-  canCompleteQuest: any;
-  completeQuest: (cat: string, difficulty: string) => boolean;
+  dailyQuests: Record<string, number>; // fixed type
+  canCompleteQuest: (difficulty: "easy" | "medium" | "hard") => boolean;
+  completeQuest: (cat: string, difficulty: "easy" | "medium" | "hard") => boolean;
   setSystemNotice: (msg: string) => void;
-  QUEST_CATEGORIES: string[];
+  QUEST_CATEGORIES: { key: string, label: string }[]; // fixed type
   stats: any;
   nextRank: any;
   powerLevel: number;
