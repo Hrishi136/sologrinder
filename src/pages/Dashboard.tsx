@@ -32,7 +32,7 @@ export default function Dashboard() {
             </div>
             <div className="flex flex-col items-center gap-3">
               <span className="font-orbitron text-2xl text-system-blue">Power Level</span>
-              <span className="font-orbitron text-3xl text-system-blue2">100</span>
+              <span className="font-orbitron text-3xl text-system-blue2">0</span>
             </div>
           </div>
         </SystemPanel>
@@ -61,11 +61,11 @@ export default function Dashboard() {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Completed Quests</span>
-                <span className="font-bold text-white">12</span>
+                <span className="font-bold text-white">0</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Streak</span>
-                <span className="font-bold text-white">4 days</span>
+                <span className="font-bold text-white">0 days</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Next Rank</span>
@@ -78,16 +78,16 @@ export default function Dashboard() {
             <h3 className="font-orbitron text-xl text-system-blue mb-4">Hunter Stats</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
               {[
-                {label:"Strength", val:11},
-                {label:"Agility", val:10},
-                {label:"Intelligence", val:12},
-                {label:"Vitality", val:10},
+                {label:"Strength", val:0},
+                {label:"Agility", val:0},
+                {label:"Intelligence", val:0},
+                {label:"Vitality", val:0},
               ].map(stat=>(
                 <div key={stat.label} className="flex flex-col items-center">
                   <span className="font-orbitron text-system-blue2 text-sm">{stat.label}</span>
                   <div className="relative w-12 h-24 flex items-end mb-2">
                     <div className="absolute bottom-0 left-2 w-2 h-full bg-[#191e26] rounded-full border border-system-blue2"></div>
-                    <div className="absolute bottom-0 left-2 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`${4+stat.val*1.5}px`, transition:"height 0.5s"}} />
+                    <div className="absolute bottom-0 left-2 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`4px`, transition:"height 0.5s"}} />
                   </div>
                   <span className="font-orbitron text-white">{stat.val}</span>
                 </div>
@@ -104,3 +104,4 @@ export default function Dashboard() {
     </div>
   )
 }
+

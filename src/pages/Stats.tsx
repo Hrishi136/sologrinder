@@ -4,10 +4,10 @@ import SystemPanel from "../components/SystemPanel"
 import TopNav from "../components/TopNav"
 
 const stats = [
-  { label: "Strength", val: 11 },
-  { label: "Agility", val: 10 },
-  { label: "Intelligence", val: 12 },
-  { label: "Vitality", val: 10 },
+  { label: "Strength", val: 0 },
+  { label: "Agility", val: 0 },
+  { label: "Intelligence", val: 0 },
+  { label: "Vitality", val: 0 },
 ]
 
 export default function Stats() {
@@ -25,7 +25,7 @@ export default function Stats() {
                 <span className="text-system-blue2 font-orbitron">{stat.label}</span>
                 <div className="relative w-8 h-24 flex items-end mb-2">
                   <div className="absolute bottom-0 left-3 w-2 h-full bg-[#191e26] rounded-full border border-system-blue2" />
-                  <div className="absolute bottom-0 left-3 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`${4+stat.val*1.55}px`, transition:"height 0.5s"}} />
+                  <div className="absolute bottom-0 left-3 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`4px`, transition:"height 0.5s"}} />
                 </div>
                 <span className="font-orbitron text-white">{stat.val}</span>
               </div>
@@ -35,7 +35,7 @@ export default function Stats() {
             <span className="font-orbitron text-lg text-system-blue2">Rank Progress</span>
             <div className="w-full bg-[#191e26] rounded-full h-5 relative border border-system-blue mt-2">
               <div className="absolute left-0 top-0 h-5 rounded-full bg-gradient-to-r from-system-blue2 to-system-blue animate-fade-in"
-                style={{ width:"57%" }} />
+                style={{ width:"0%" }} />
               <span className="font-orbitron text-system-blue absolute left-2 top-0 h-5 flex items-center" style={{fontSize:'1.1rem'}}>
                 Next Rank: D-Rank
               </span>
@@ -46,3 +46,4 @@ export default function Stats() {
     </div>
   )
 }
+
