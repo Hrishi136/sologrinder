@@ -1,3 +1,6 @@
+
+// Add missing import at the top:
+import React from "react";
 import { useState, useEffect } from "react";
 import { useShadowArmy } from "./useShadowArmy";
 
