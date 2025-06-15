@@ -39,6 +39,8 @@ export default function Dashboard() {
     getNextRankRequirements,
     questCount,
     QUEST_CATEGORIES,
+    addRankPoints,
+    addStats,
   } = useHunterProgression();
 
   const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
@@ -79,23 +81,29 @@ export default function Dashboard() {
     acceptModal: handleAcceptEmergency,
     completeModal: handleCompleteEmergency,
     closeModal: handleCloseEmergency,
+    swapKey,
   } = useEmergencyQuestModal();
 
-  // --- Emergency Quest trigger state ---
-  // Added: Track if the current emergency quest has already been shown (& processed)
+  // Persistent seen-key for emergency quest (so one-time only, even if page reloads)
+  const EMERGENCY_QUEST_SEEN_KEY = "emergencyQuestSeen_v1";
   const [pendingEmergencyQuest, setPendingEmergencyQuest] = React.useState(false);
-  const [emergencyShown, setEmergencyShown] = React.useState(false);
+  const [emergencyShown, setEmergencyShown] = React.useState(() => {
+    return localStorage.getItem(EMERGENCY_QUEST_SEEN_KEY) === "1";
+  });
 
-  // Simulate event: Trigger button, sets pending & resets shown for testing
   function triggerEmergencyQuest() {
     setPendingEmergencyQuest(true);
-    setEmergencyShown(false);
     setSystemNotice("🚨 Emergency Quest Incoming — Acknowledge to proceed.");
   }
 
-  // Show modal only ONCE per trigger (when user clears notice)
+  // Show modal only ONCE per trigger and per user session (using localStorage key)
   React.useEffect(() => {
-    if (!systemNotice && pendingEmergencyQuest && !showEmergency && !emergencyShown) {
+    if (
+      !systemNotice &&
+      pendingEmergencyQuest &&
+      !showEmergency &&
+      !emergencyShown
+    ) {
       openEmergencyQuest({
         type: "combat",
         title: "Urgent Combat Training",
@@ -105,55 +113,41 @@ export default function Dashboard() {
         timerEnd: Date.now() + 1000 * 60 * 60 * 24, // 24hr
       });
       setPendingEmergencyQuest(false);
-      setEmergencyShown(true); // Mark as viewed to block future view
+      setEmergencyShown(true);
+      localStorage.setItem(EMERGENCY_QUEST_SEEN_KEY, "1");
     }
   }, [systemNotice, pendingEmergencyQuest, showEmergency, openEmergencyQuest, emergencyShown]);
 
-  // --- Apply rewards for emergency quest ---
-  // We'll grant rewards ONLY on completion
+  // --- Emergency Quest Completion Logic ---
   function handleEmergencyQuestComplete() {
     if (emergencyQuest) {
-      // Award points (rank) and Strength
-      // Use setRankPoints & setStats from useHunterProgression if available else update state
-      // (wrapper since useHunterProgression doesn't expose setters, so we'll have to 'hack' through quest completion logic)
-      // We'll directly use the completeQuest logic for custom reward assignment
-      // Add console logs for debug if needed
+      // Ensure rewards are only given if the quest hasn't already been completed for this emergency
+      const COMPLETED_KEY = "emergencyQuestCompleted_v1";
+      if (localStorage.getItem(COMPLETED_KEY) === "1") {
+        setSystemNotice("You have already completed this Emergency Quest.");
+        handleCompleteEmergency();
+        return;
+      }
+      // Give rewards:
+      addRankPoints(150); // 150 rank points
+      addStats({ Strength: 12 }); // 12 to Strength
+      // "Shadow progress" would require further implementation
 
-      // Award 150 Rank Points
-      // Award 12 Strength
-      // Award "Shadow progress" (not implemented here, just log)
-
-      // Hack: Directly update hunter progression state via a new reward function in the hook (should expose this in real code)
-      // For now mimick reward using setStats/setRankPoints, but we can only do so in this file if not encapsulated.
-
-      // We'll simulate this: (not ideal, but since hooks don't expose setters)
-      // Option 1: Re-trigger a "quest" with custom logic via completeQuest (but that's not for custom rewards).
-      // Option 2: Use window events, or have a setEmergencyReward function in hook -- here, since instruction is to keep it simple, we will call setStats/setRankPoints
-
-      // Ideally, this should be done through the progression hook,
-      // but since stats/rankPoints setters are not exposed, we'll do a hack with useState.
-      // So to follow instructions & keep it simple, we'll use a global side effect.
-
-      // Custom function to grant points/stats
       addSystemLog(
         "Emergency Quest completed! +150 Rank Points, +12 Strength, Shadow progress increased.",
         "achievement"
       );
-
       setSystemNotice("Emergency Quest complete! Rewards added.");
+      localStorage.setItem(COMPLETED_KEY, "1");
 
-      // We can only update rewards if stats/rankPoints setters are available
-      // If they are not, inform the user to update the hook to expose those functions.
-      // But per the current codebase, setters are not exposed.
-      // So, WARN: rewards may not be applied unless useHunterProgression exposes setStats/setRankPoints
-      // For now, add a message in the console and log, but if this doesn't actually update user's stats, let user know to refactor.
-
-      // Remove the emergency quest from the modal (so it cannot be done again)
       handleCompleteEmergency();
     }
   }
 
-  // Rank up block modal state
+  // Reset the completion key if a NEW emergency is triggered in the future (could be by changing the version)
+  // (No automatic resets here.)
+
+  // --- Rank up block modal state ---
   const [showBlock, setShowBlock] = React.useState(false);
   React.useEffect(() => {
     if (blockRankUp) setShowBlock(true);
@@ -214,10 +208,10 @@ export default function Dashboard() {
           handleViewFullArmy={handleViewFullArmy}
         />
 
-        {/* Emergency Quest Modal — only show after notification acknowledge */}
-        {emergencyQuest && (
+        {/* Emergency Quest Modal only/apparently once per quest, and disables after shown */}
+        {(emergencyQuest && showEmergency) && (
           <EmergencyQuestModal
-            key={emergencyQuest.title + emergencyQuest.timerEnd}
+            key={emergencyQuest.title + emergencyQuest.timerEnd + swapKey}
             open={showEmergency}
             quest={showEmergency ? emergencyQuest : null}
             onClose={handleCloseEmergency}

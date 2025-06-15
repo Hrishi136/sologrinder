@@ -424,6 +424,26 @@ export function useHunterProgression() {
     return true;
   }
 
+  /**
+   * New method: Add points to rankPoints (external rewards)
+   */
+  function addRankPoints(amount: number) {
+    setRankPoints(v => v + amount);
+  }
+
+  /**
+   * New method: Add stats (external rewards).
+   * Pass: { Strength?: number, Agility?: number, Intelligence?: number, Vitality?: number }
+   */
+  function addStats(obj: { [k: string]: number }) {
+    setStats(s =>
+      s.map(stat => ({
+        ...stat,
+        val: stat.val + (obj[stat.label] || 0)
+      }))
+    );
+  }
+
   // --- Rank-up logic: Supports new requirements ---
   useEffect(() => {
     if (!RANKS[currentRankIndex + 1]) return;
@@ -524,6 +544,10 @@ export function useHunterProgression() {
     questCount,
     QUEST_TYPES: [], // not used; replaced w/ categories list above for panel
     QUEST_CATEGORIES, // export for panels
+
+    // Newly exposed reward updaters:
+    addRankPoints,
+    addStats,
   };
 }
 // --- Future System Stubs for Advanced Bonuses/Emergency/Combo ---
