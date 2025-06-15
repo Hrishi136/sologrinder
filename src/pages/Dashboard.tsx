@@ -1,10 +1,13 @@
-
 import React from "react";
 import SystemPanel from "../components/SystemPanel";
 import TopNav from "../components/TopNav";
 import SystemNotification from "../components/SystemNotification";
 import { useHunterProgression } from "../hooks/useHunterProgression";
 import RankUpCeremony from "../components/RankUpCeremony";
+import HunterStatsPanel from "../components/HunterStatsPanel";
+import QuestCompletionPanel from "../components/QuestCompletionPanel";
+import RankRequirementsPanel from "../components/RankRequirementsPanel";
+import { useShadowArmy } from "../hooks/useShadowArmy";
 
 // Function to get the current logged-in user's name from localStorage
 function getCurrentUsername(): string | null {
@@ -38,6 +41,9 @@ export default function Dashboard() {
 
   const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
   const username = getCurrentUsername() || "Hunter";
+
+  // Shadow Army: reserved for future
+  const shadowArmy = useShadowArmy();
 
   // Track rank up block reason
   const [showBlock, setShowBlock] = React.useState(false);
@@ -154,14 +160,7 @@ export default function Dashboard() {
             </span>
           </div>
           {/* Next rank requirements */}
-          {nextRank && (
-            <div className="mt-1 text-xs text-system-blue2">
-              <span className="font-bold">To rank up:</span>
-              <ul className="list-disc pl-5">
-                {getNextRankRequirements().map((r, i) => <li key={i}>{r}</li>)}
-              </ul>
-            </div>
-          )}
+          <RankRequirementsPanel nextRank={nextRank} getNextRankRequirements={getNextRankRequirements} />
         </SystemPanel>
 
         {/* System Notices: Subtle motivational message */}
@@ -175,30 +174,14 @@ export default function Dashboard() {
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Today's Quests */}
           <SystemPanel className="p-5 min-h-[240px]">
-            <h3 className="font-orbitron text-xl text-system-blue mb-4">
-              <span className="font-bold">The System says...</span> Complete Today's Quests
-            </h3>
-            <div className="flex flex-col gap-2 mb-3">
-              {QUEST_TYPES.map(q => (
-                <div key={q.type} className="flex items-center gap-4">
-                  <button
-                    className={`glow-button text-base py-1 px-3 flex-1 ${canCompleteQuest(q.type as any) ? '' : 'opacity-30 pointer-events-none'}`}
-                    style={{ background: q.color }}
-                    onClick={() => {
-                      if (completeQuest(q.type as any))
-                        setSystemNotice(`Quest completed! +${q.points} points, +${q.statPoints} to stats`);
-                    }}
-                  >
-                    Mark {q.label} Quest Complete
-                  </button>
-                  <span className="text-xs text-system-blue2 min-w-[60px]">{dailyQuests[q.type as keyof typeof dailyQuests]}/{q.dailyLimit} today</span>
-                </div>
-              ))}
-            </div>
-            <ul className="list-disc pl-5 text-xs text-white/80">
-              <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
-              <li>Daily quest cap: 5 easy, 3 medium, 2 hard (resets midnight)</li>
-            </ul>
+            <QuestCompletionPanel
+              QUEST_TYPES={QUEST_TYPES}
+              streak={streak}
+              dailyQuests={dailyQuests}
+              canCompleteQuest={canCompleteQuest}
+              completeQuest={completeQuest}
+              setSystemNotice={setSystemNotice}
+            />
           </SystemPanel>
           {/* Quick Stats */}
           <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4">
@@ -227,19 +210,7 @@ export default function Dashboard() {
             <h3 className="font-orbitron text-xl text-system-blue mb-4">
               <span className="font-bold">The System says...</span> Hunter Stats
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
-              {stats.map(stat => (
-                <div key={stat.label} className="flex flex-col items-center">
-                  <span className="font-orbitron text-system-blue2 text-sm">{stat.label}</span>
-                  <div className="relative w-12 h-24 flex items-end mb-2">
-                    <div className="absolute bottom-0 left-2 w-2 h-full bg-[#191e26] rounded-full border border-system-blue2"></div>
-                    <div className="absolute bottom-0 left-2 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue"
-                      style={{ height: `${(stat.val / 30) * 100}%`, transition: "height 0.5s" }} />
-                  </div>
-                  <span className="font-orbitron text-white">{stat.val}</span>
-                </div>
-              ))}
-            </div>
+            <HunterStatsPanel stats={stats} />
           </SystemPanel>
         </div>
         <div className="w-full flex justify-end mt-6">
@@ -248,11 +219,10 @@ export default function Dashboard() {
             + Accept New Quest
           </button>
         </div>
+        {/* Placeholder: Shadow Army panel UI could go here in future */}
       </div>
     </div>
   );
 }
 
-// NOTE: This file has grown rather large (235+ lines).
-// CONSIDER asking me to refactor the Dashboard into smaller, focused components for maintainability and readability.
-
+// NOTE: This file has been split into smaller component files for maintainability.
