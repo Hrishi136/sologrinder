@@ -1,5 +1,6 @@
+
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "./ui/dialog";
 import { Button } from "./ui/button";
 
 type EmergencyQuest = {
@@ -62,7 +63,11 @@ export default function EmergencyQuestModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="system-panel system-panel-glow bg-[#0a0a0aee] border-red-600 border-2 p-6 rounded-2xl shadow-red-500/40 animate-fade-in font-orbitron max-w-xl">
+      <DialogContent
+        className="system-panel system-panel-glow bg-[#0a0a0aee] border-red-600 border-2 p-6 rounded-2xl shadow-red-500/40 animate-fade-in font-orbitron max-w-xl"
+        // Add proper accessibility description for Radix warnings
+        aria-describedby="emergency-quest-description"
+      >
         <DialogHeader>
           <DialogTitle className="text-red-500 tracking-widest text-xl mb-2 flex items-center gap-2">
             🚨 Emergency Quest!
@@ -80,7 +85,9 @@ export default function EmergencyQuestModal({
             </span>
             <span>{quest.title}</span>
           </div>
-          <div className="text-sm text-white/95 mb-2">{quest.description}</div>
+          <div className="text-sm text-white/95 mb-2" id="emergency-quest-description">
+            {quest.description}
+          </div>
           <div className="w-full flex gap-4 items-center">
             <div className={`flex flex-col items-center justify-center px-3 py-2 rounded-xl bg-gradient-to-br ${urgencyColor(msLeft)}`}>
               <span className="font-orbitron text-xs text-white/70">Time left</span>
@@ -110,11 +117,15 @@ export default function EmergencyQuestModal({
               Mark Complete
             </Button>
           )}
-          <Button variant="outline" onClick={onClose} autoFocus>
-            Acknowledge
-          </Button>
+          {/* Use DialogClose asChild to wrap the button */}
+          <DialogClose asChild>
+            <Button variant="outline" autoFocus>
+              Acknowledge
+            </Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
