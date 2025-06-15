@@ -20,18 +20,19 @@ const RANKS: Rank[] = [
 
 const RANK_THRESHOLDS = [0, 100, 250, 500, 900, 1600, 2600]; // Points required for each rank. [0] is ignored.
 
+// Start all stats at zero as requested
 const START_STATS = [
-  { label: "Strength", val: 23 },
-  { label: "Agility", val: 17 },
-  { label: "Intelligence", val: 21 },
-  { label: "Vitality", val: 18 },
+  { label: "Strength", val: 0 },
+  { label: "Agility", val: 0 },
+  { label: "Intelligence", val: 0 },
+  { label: "Vitality", val: 0 },
 ];
 
 export function useHunterProgression() {
   const [stats, setStats] = useState([...START_STATS]);
   const [currentRankIndex, setCurrentRankIndex] = useState(0);
-  const [rankPoints, setRankPoints] = useState(46); // Demo starting value
-  const [daysAtRank, setDaysAtRank] = useState(12);
+  const [rankPoints, setRankPoints] = useState(0); // Start with 0 points
+  const [daysAtRank, setDaysAtRank] = useState(0);
   const [badges, setBadges] = useState<string[]>([]);
   const [showCeremony, setShowCeremony] = useState(false);
   const [lastBadge, setLastBadge] = useState<string | null>(null);

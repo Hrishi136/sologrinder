@@ -1,3 +1,4 @@
+
 import React from "react";
 import SystemPanel from "../components/SystemPanel";
 import TopNav from "../components/TopNav";
@@ -5,28 +6,10 @@ import SystemNotification from "../components/SystemNotification";
 import { useHunterProgression } from "../hooks/useHunterProgression";
 import RankUpCeremony from "../components/RankUpCeremony";
 
-// ----- MOCK STAT STATE for demo -----
-const STATS = [
-  { label: "Strength", val: 23 },
-  { label: "Agility", val: 17 },
-  { label: "Intelligence", val: 21 },
-  { label: "Vitality", val: 18 },
-];
-const RANKS = [
-  { name: "E-Rank", multiplier: 1 },
-  { name: "D-Rank", multiplier: 2 },
-  { name: "C-Rank", multiplier: 3 },
-];
-const CURRENT_RANK_INDEX = 0; // E-Rank (demo)
-const CURRENT_RANK = RANKS[CURRENT_RANK_INDEX];
-const RANK_POINTS = 46; // Demo value
-const NEXT_RANK_POINTS = 100; // Demo next rank threshold
-const DAYS_AS_CURRENT_RANK = 12; // Demo
-
-const calcPowerLevel = () =>
-  STATS.reduce((acc, stat) => acc + stat.val, 0) * CURRENT_RANK.multiplier;
-
-// ------------------------------------
+// Function to get the current logged-in user's name from localStorage
+function getCurrentUsername(): string | null {
+  return localStorage.getItem("shadowSystem_session");
+}
 
 export default function Dashboard() {
   // --- PROGRESSION HOOK ---
@@ -47,13 +30,10 @@ export default function Dashboard() {
   } = useHunterProgression();
 
   const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
+  const username = getCurrentUsername() || "Hunter";
 
   // For demo: simulate completing quest to trigger rank up
-  const handleDemoCompleteQuest = () => {
-    // Add enough points to reach next rank or just add 70 (for demoing)
-    completeQuest(Math.max(70, (nextThreshold ?? 100) - rankPoints));
-    setSystemNotice("Quest completed! Rank points awarded.");
-  };
+  // Removed the demo button as per user feedback
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative">
@@ -98,7 +78,9 @@ export default function Dashboard() {
               <h2 className="font-orbitron text-4xl text-system-blue mb-1 font-extrabold tracking-widest">
                 [{currentRank.name}]
               </h2>
-              <p className="uppercase text-system-blue2 mb-2 font-bold text-lg">Hunter: Sung Jinwoo</p>
+              <p className="uppercase text-system-blue2 mb-2 font-bold text-lg">
+                Hunter: {username}
+              </p>
               <div className="flex flex-col gap-2">
                 <span className="text-xs font-orbitron text-system-blue2">
                   <span className="font-bold">The System says...</span> Stay disciplined to increase your Hunter Rank!
@@ -176,10 +158,7 @@ export default function Dashboard() {
                 <span className="font-inter text-white">Eat Balanced Meal (Vitality Enhancement)</span>
               </li>
             </ul>
-            {/* Fake complete quest button for demo */}
-            <button className="mt-5 w-full glow-button text-base" onClick={handleDemoCompleteQuest}>
-              Complete Quest (Demo) - Gain Rank Points
-            </button>
+            {/* Demo "Complete Quest" button removed */}
           </SystemPanel>
           {/* Quick Stats */}
           <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4">
@@ -232,3 +211,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
+// NOTE: This file has grown rather large (235+ lines).
+// CONSIDER asking me to refactor the Dashboard into smaller, focused components for maintainability and readability.
+
