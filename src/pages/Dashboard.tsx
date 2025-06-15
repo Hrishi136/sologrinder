@@ -19,21 +19,31 @@ export default function Dashboard() {
     nextRank,
     powerLevel,
     rankPoints,
-    nextThreshold,
-    daysAtRank,
+    streak,
+    daysActive,
+    totalQuests,
     badges,
     showCeremony,
     completeQuest,
     finishCeremony,
     lastBadge,
-    currentRankIndex
+    currentRankIndex,
+    dailyQuests,
+    canCompleteQuest,
+    blockRankUp,
+    getNextRankRequirements,
+    questCount,
+    QUEST_TYPES,
   } = useHunterProgression();
 
   const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
   const username = getCurrentUsername() || "Hunter";
 
-  // For demo: simulate completing quest to trigger rank up
-  // Removed the demo button as per user feedback
+  // Track rank up block reason
+  const [showBlock, setShowBlock] = React.useState(false);
+  React.useEffect(() => {
+    if (blockRankUp) setShowBlock(true);
+  }, [blockRankUp]);
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative">
@@ -55,7 +65,6 @@ export default function Dashboard() {
         ))}
       </div>
       <div className="container mx-auto pt-4 pb-16 flex flex-col gap-8 items-center">
-
         {/* RANK UP CEREMONY OVERLAY */}
         {showCeremony && (
           <RankUpCeremony
@@ -64,12 +73,26 @@ export default function Dashboard() {
             onContinue={finishCeremony}
           />
         )}
-
         {/* SYSTEM NOTIFICATION MODAL */}
         <SystemNotification
           open={!!systemNotice}
           message={systemNotice}
           onClose={() => setSystemNotice(null)}
+        />
+
+        {/* Rank up block modal (when requirements not met) */}
+        <SystemNotification
+          open={showBlock && !!blockRankUp}
+          message={
+            <>
+              <b>Requirements for next rank not met:</b>
+              <ul className="text-xs mt-2 text-left px-2 text-system-blue2 list-disc">
+                {(blockRankUp?.reason ?? "").split(", ").map((r, i) => <li key={i}>{r}</li>)}
+              </ul>
+            </>
+          }
+          onClose={() => setShowBlock(false)}
+          tone="error"
         />
 
         <SystemPanel className="w-full max-w-4xl mb-6 animate-fade-in">
@@ -86,13 +109,12 @@ export default function Dashboard() {
                   <span className="font-bold">The System says...</span> Stay disciplined to increase your Hunter Rank!
                 </span>
                 <span className="text-xs font-orbitron text-white/70">
-                  Days as current rank: <b className="text-system-blue2">{daysAtRank}</b>
+                  Days as current rank: <b className="text-system-blue2">{daysActive}</b>
                 </span>
                 {/* BADGES EARNED */}
                 <div className="flex gap-2 mt-1">
                   {badges.map((badge, idx) => (
                     <span key={badge + idx} className="inline-block">
-                      {/* Render a tiny icon for each badge, with a tooltip maybe */}
                       {badge === "badge" && <span title="E-Rank"><span className="text-system-blue" style={{ fontSize: 20 }}>🏅</span></span>}
                       {badge === "badge-check" && <span title="D-Rank"><span className="text-blue-400" style={{ fontSize: 20 }}>✔️</span></span>}
                       {badge === "star-half" && <span title="C-Rank"><span className="text-cyan-300" style={{ fontSize: 20 }}>⭐</span></span>}
@@ -112,8 +134,11 @@ export default function Dashboard() {
                 {powerLevel}
               </span>
               <span className="text-xs text-system-blue2/90 font-orbitron">
-                <span className="font-bold">Rank Points:</span> {rankPoints} / {nextThreshold ?? "MAX"}
+                <span className="font-bold">Rank Points:</span> {rankPoints} / {nextRank?.points ?? "MAX"}
               </span>
+              <div className="mt-2">
+                <span className="text-xs text-system-blue2/80">Streak: <b>{streak} days</b></span>
+              </div>
             </div>
           </div>
           {/* Rank Progress Bar */}
@@ -121,13 +146,22 @@ export default function Dashboard() {
             <div
               className="absolute left-0 top-0 h-5 rounded-full bg-gradient-to-r from-system-blue2 to-system-blue transition-all"
               style={{
-                width: `${!nextThreshold ? 100 : Math.min((rankPoints / nextThreshold) * 100, 100)}%`,
+                width: `${!nextRank ? 100 : Math.min((rankPoints / (nextRank.points || 1)) * 100, 100)}%`,
               }}
             />
             <span className="font-orbitron text-system-blue absolute left-2 top-0 h-5 flex items-center" style={{ fontSize: '1.1rem' }}>
               Next Rank: {nextRank?.name || "MAX"}
             </span>
           </div>
+          {/* Next rank requirements */}
+          {nextRank && (
+            <div className="mt-1 text-xs text-system-blue2">
+              <span className="font-bold">To rank up:</span>
+              <ul className="list-disc pl-5">
+                {getNextRankRequirements().map((r, i) => <li key={i}>{r}</li>)}
+              </ul>
+            </div>
+          )}
         </SystemPanel>
 
         {/* System Notices: Subtle motivational message */}
@@ -140,25 +174,31 @@ export default function Dashboard() {
 
         <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Today's Quests */}
-          <SystemPanel className="p-5 min-h-[200px]">
+          <SystemPanel className="p-5 min-h-[240px]">
             <h3 className="font-orbitron text-xl text-system-blue mb-4">
               <span className="font-bold">The System says...</span> Complete Today's Quests
             </h3>
-            <ul className="flex flex-col gap-3">
-              <li className="flex items-center gap-3">
-                <input type="checkbox" className="accent-system-blue2 scale-125" />
-                <span className="font-inter text-white">100 Push-ups (Combat Training)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <input type="checkbox" className="accent-system-blue2 scale-125" />
-                <span className="font-inter text-white">Study Strategy for 20 mins (Intelligence Gathering)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <input type="checkbox" className="accent-system-blue2 scale-125" />
-                <span className="font-inter text-white">Eat Balanced Meal (Vitality Enhancement)</span>
-              </li>
+            <div className="flex flex-col gap-2 mb-3">
+              {QUEST_TYPES.map(q => (
+                <div key={q.type} className="flex items-center gap-4">
+                  <button
+                    className={`glow-button text-base py-1 px-3 flex-1 ${canCompleteQuest(q.type as any) ? '' : 'opacity-30 pointer-events-none'}`}
+                    style={{ background: q.color }}
+                    onClick={() => {
+                      if (completeQuest(q.type as any))
+                        setSystemNotice(`Quest completed! +${q.points} points, +${q.statPoints} to stats`);
+                    }}
+                  >
+                    Mark {q.label} Quest Complete
+                  </button>
+                  <span className="text-xs text-system-blue2 min-w-[60px]">{dailyQuests[q.type as keyof typeof dailyQuests]}/{q.dailyLimit} today</span>
+                </div>
+              ))}
+            </div>
+            <ul className="list-disc pl-5 text-xs text-white/80">
+              <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
+              <li>Daily quest cap: 5 easy, 3 medium, 2 hard (resets midnight)</li>
             </ul>
-            {/* Demo "Complete Quest" button removed */}
           </SystemPanel>
           {/* Quick Stats */}
           <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4">
@@ -168,11 +208,11 @@ export default function Dashboard() {
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Completed Quests</span>
-                <span className="font-bold text-white">0</span>
+                <span className="font-bold text-white">{totalQuests}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Streak</span>
-                <span className="font-bold text-white">0 days</span>
+                <span className="font-bold text-white">{streak} days</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Next Rank</span>
@@ -193,7 +233,8 @@ export default function Dashboard() {
                   <span className="font-orbitron text-system-blue2 text-sm">{stat.label}</span>
                   <div className="relative w-12 h-24 flex items-end mb-2">
                     <div className="absolute bottom-0 left-2 w-2 h-full bg-[#191e26] rounded-full border border-system-blue2"></div>
-                    <div className="absolute bottom-0 left-2 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{ height: `${(stat.val / 30) * 100}%`, transition: "height 0.5s" }} />
+                    <div className="absolute bottom-0 left-2 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue"
+                      style={{ height: `${(stat.val / 30) * 100}%`, transition: "height 0.5s" }} />
                   </div>
                   <span className="font-orbitron text-white">{stat.val}</span>
                 </div>
