@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -111,8 +110,8 @@ export default function EmergencyQuestModal({
               Mark Complete
             </Button>
           )}
-          <Button variant="outline" onClick={onClose}>
-            Close
+          <Button variant="outline" onClick={onClose} autoFocus>
+            Acknowledge
           </Button>
         </DialogFooter>
       </DialogContent>

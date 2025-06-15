@@ -225,7 +225,7 @@ export default function Dashboard() {
             </div>
           </SystemPanel>
           {/* Card 3: Shadow Army Preview */}
-          <ShadowArmyPreview unlocked={shadowArmy.unlocked} allShadows={shadowArmy.SHADOWS} onViewAll={handleViewFullArmy} />
+          <ShadowArmyPreview unlocked={shadowArmy.unlocked} allShadows={shadowArmy.SHADOWS} onViewAll={() => { window.location.href = "/army-dashboard"; }} />
           {/* Card 4: Recent Achievements & Streak */}
           <RecentAchievements
             achievements={recentAchievements}
