@@ -86,106 +86,6 @@ const START_STATS = [
   { label: "Vitality", val: 0 },
 ];
 
-function getToday() {
-  return new Date().toDateString();
-}
-
-function getMultiplierForRank(rankIdx: number) {
-  return RANKS[rankIdx]?.multiplier || 1.0;
-}
-
-function statI(stats, key) {
-  return stats.findIndex(s => s.label.toLowerCase() === key.toLowerCase());
-}
-
-export function useHunterProgression() {
-  // --- SYSTEMS ---
-  const [stats, setStats] = useState([...START_STATS]);
-  const [currentRankIndex, setCurrentRankIndex] = useState(0);
-  const [rankPoints, setRankPoints] = useState(0);
-  const { unlocked, SHADOWS } = useShadowArmy();
-
-  // Quest counters: today/total/difficulty
-  const [questCount, setQuestCount] = useState({
-    easy: 0, medium: 0, hard: 0,
-    total: 0, medOrHard: 0, hardTotal: 0
-  });
-  const [totalQuests, setTotalQuests] = useState(0);
-
-  // Day logic
-  const [today, setToday] = useState(getToday());
-  const [dailyQuests, setDailyQuests] = useState({ easy: 0, medium: 0, hard: 0 }); // completed today per difficulty
-  const [daysActive, setDaysActive] = useState(0);
-
-  // Streak logic
-  const [streak, setStreak] = useState(() => {
-    const stored = localStorage.getItem("hunter_streaks");
-    if (stored) {
-      try {
-        return JSON.parse(stored).streak;
-      } catch {
-        return 0;
-      }
-    }
-    return 0;
-  });
-  const [streakStart, setStreakStart] = useState<number | null>(null);
-  const [lastQuestDay, setLastQuestDay] = useState<string | null>(() => {
-    const stored = localStorage.getItem("hunter_streaks");
-    if (stored) {
-      try {
-        return JSON.parse(stored).lastDay;
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  });
-
-  // Badges, ceremonies
-  const [badges, setBadges] = useState<string[]>([]);
-  const [showCeremony, setShowCeremony] = useState(false);
-  const [lastBadge, setLastBadge] = useState<string | null>(null);
-
-  // Rank requirements modal
-  const [blockRankUp, setBlockRankUp] = useState<{ reason: string } | null>(null);
-
-  // --- STAT ALLOCATION MAP ---
-  // [category][difficulty] = {stat1:+n, stat2:+m, ...}
-  const statGainTable = {
-    combat: {
-      easy: { Strength: 2, Vitality: 1 },
-      medium: { Strength: 4, Vitality: 2, Agility: 1 },
-      hard: { Strength: 6, Vitality: 3, Agility: 2 }
-    },
-    intelligence: {
-      easy: { Intelligence: 2, Vitality: 1 },
-      medium: { Intelligence: 4, Vitality: 2, Agility: 1 },
-      hard: { Intelligence: 6, Vitality: 3, Agility: 2 }
-    },
-    agility: {
-      easy: { Agility: 2, Vitality: 1 },
-      medium: { Agility: 4, Vitality: 2, Strength: 1 },
-      hard: { Agility: 6, Vitality: 3, Strength: 2 }
-    },
-    vitality: {
-      easy: { Vitality: 3 },     // +1 to random stat handled later
-      medium: { Vitality: 5 },   // +2 each to two random stats
-      hard: { Vitality: 8 }      // +3 all other stats
-    },
-    special: {
-      hard: { Strength: 5, Agility: 5, Intelligence: 5, Vitality: 5 }
-    }
-  };
-
-  // Used for milestone/titles
-  const statMilestones = {
-    Strength: [100, 250, 500, 1000],
-    Agility: [100, 250, 500, 1000],
-    Intelligence: [100, 250, 500, 1000],
-    Vitality: [100, 250, 500, 1000]
-  };
-  // Shadow Soldiers unlock requirements
 export const SHADOW_SOLDIERS = [
   {
     name: "Iron Soldier",
@@ -286,6 +186,106 @@ export const SHADOW_SOLDIERS = [
   }
 ];
 
+function getToday() {
+  return new Date().toDateString();
+}
+
+function getMultiplierForRank(rankIdx: number) {
+  return RANKS[rankIdx]?.multiplier || 1.0;
+}
+
+function statI(stats, key) {
+  return stats.findIndex(s => s.label.toLowerCase() === key.toLowerCase());
+}
+
+export function useHunterProgression() {
+  // --- SYSTEMS ---
+  const [stats, setStats] = useState([...START_STATS]);
+  const [currentRankIndex, setCurrentRankIndex] = useState(0);
+  const [rankPoints, setRankPoints] = useState(0);
+  const { unlocked, SHADOWS } = useShadowArmy();
+
+  // Quest counters: today/total/difficulty
+  const [questCount, setQuestCount] = useState({
+    easy: 0, medium: 0, hard: 0,
+    total: 0, medOrHard: 0, hardTotal: 0
+  });
+  const [totalQuests, setTotalQuests] = useState(0);
+
+  // Day logic
+  const [today, setToday] = useState(getToday());
+  const [dailyQuests, setDailyQuests] = useState({ easy: 0, medium: 0, hard: 0 }); // completed today per difficulty
+  const [daysActive, setDaysActive] = useState(0);
+
+  // Streak logic
+  const [streak, setStreak] = useState(() => {
+    const stored = localStorage.getItem("hunter_streaks");
+    if (stored) {
+      try {
+        return JSON.parse(stored).streak;
+      } catch {
+        return 0;
+      }
+    }
+    return 0;
+  });
+  const [streakStart, setStreakStart] = useState<number | null>(null);
+  const [lastQuestDay, setLastQuestDay] = useState<string | null>(() => {
+    const stored = localStorage.getItem("hunter_streaks");
+    if (stored) {
+      try {
+        return JSON.parse(stored).lastDay;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  // Badges, ceremonies
+  const [badges, setBadges] = useState<string[]>([]);
+  const [showCeremony, setShowCeremony] = useState(false);
+  const [lastBadge, setLastBadge] = useState<string | null>(null);
+
+  // Rank requirements modal
+  const [blockRankUp, setBlockRankUp] = useState<{ reason: string } | null>(null);
+
+  // --- STAT ALLOCATION MAP ---
+  // [category][difficulty] = {stat1:+n, stat2:+m, ...}
+  const statGainTable = {
+    combat: {
+      easy: { Strength: 2, Vitality: 1 },
+      medium: { Strength: 4, Vitality: 2, Agility: 1 },
+      hard: { Strength: 6, Vitality: 3, Agility: 2 }
+    },
+    intelligence: {
+      easy: { Intelligence: 2, Vitality: 1 },
+      medium: { Intelligence: 4, Vitality: 2, Agility: 1 },
+      hard: { Intelligence: 6, Vitality: 3, Agility: 2 }
+    },
+    agility: {
+      easy: { Agility: 2, Vitality: 1 },
+      medium: { Agility: 4, Vitality: 2, Strength: 1 },
+      hard: { Agility: 6, Vitality: 3, Strength: 2 }
+    },
+    vitality: {
+      easy: { Vitality: 3 },     // +1 to random stat handled later
+      medium: { Vitality: 5 },   // +2 each to two random stats
+      hard: { Vitality: 8 }      // +3 all other stats
+    },
+    special: {
+      hard: { Strength: 5, Agility: 5, Intelligence: 5, Vitality: 5 }
+    }
+  };
+
+  // Used for milestone/titles
+  const statMilestones = {
+    Strength: [100, 250, 500, 1000],
+    Agility: [100, 250, 500, 1000],
+    Intelligence: [100, 250, 500, 1000],
+    Vitality: [100, 250, 500, 1000]
+  };
+
   // Helper to get stat level for a label
   function getStatValue(label) {
     return stats.find((s) => s.label === label)?.val || 0;
@@ -353,7 +353,7 @@ export const SHADOW_SOLDIERS = [
     let statUpdates = [0, 0, 0, 0]; // [str, agi, int, vit]
     Object.entries(baseStatGains).forEach(([k, v]) => {
       const idx = statI(stats, k);
-      if (idx !== -1) statUpdates[idx] += v;
+      if (idx !== -1) statUpdates[idx] += v as number; // **** FIX #2: 'as number'
     });
 
     // VITALITY bonus logic
