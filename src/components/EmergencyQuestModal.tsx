@@ -54,11 +54,12 @@ export default function EmergencyQuestModal({
   // Only allow one modal. Clean up and block stacking.
   React.useEffect(() => {
     if (!quest) return;
+    setMsLeft(quest.timerEnd - Date.now());
     const interval = setInterval(() => {
       setMsLeft(quest.timerEnd - Date.now());
     }, 1000);
     return () => clearInterval(interval);
-  }, [quest]);
+  }, [quest?.title, quest?.timerEnd]); // listen to quest change
 
   // When modal closes, reset internal state (so only one panel)
   React.useEffect(() => {
@@ -66,7 +67,6 @@ export default function EmergencyQuestModal({
   }, [open]);
 
   function handleClose() {
-    console.log("EmergencyQuestModal: handleClose invoked");
     onClose();
   }
 
@@ -140,3 +140,4 @@ export default function EmergencyQuestModal({
     </Dialog>
   );
 }
+

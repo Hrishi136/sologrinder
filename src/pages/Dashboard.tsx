@@ -1,4 +1,3 @@
-
 import React from "react";
 import DashboardHeader from "../components/DashboardHeader";
 import DashboardPanels from "../components/DashboardPanels";
@@ -173,14 +172,19 @@ export default function Dashboard() {
         />
 
         {/* Emergency Quest Modal - only ever renders ONE at a time because of hook */}
-        <EmergencyQuestModal
-          open={showEmergency}
-          quest={showEmergency ? emergencyQuest : null}
-          onClose={handleCloseEmergency}
-          onAccept={handleAcceptEmergency}
-          onComplete={handleCompleteEmergency}
-          alreadyAccepted={hasAcceptedEmergency}
-        />
+        {/* Use a unique key for the modal based on the quest's title+timerEnd -
+            this ensures a clean remount + no stacking */}
+        {emergencyQuest && (
+          <EmergencyQuestModal
+            key={emergencyQuest.title + emergencyQuest.timerEnd}
+            open={showEmergency}
+            quest={showEmergency ? emergencyQuest : null}
+            onClose={handleCloseEmergency}
+            onAccept={handleAcceptEmergency}
+            onComplete={handleCompleteEmergency}
+            alreadyAccepted={hasAcceptedEmergency}
+          />
+        )}
 
         <SystemLog logs={systemLogs} onClear={clearSystemLogs} />
         {/* Modals and overlays */}
