@@ -43,7 +43,15 @@ export default function Dashboard() {
     addStats,
   } = useHunterProgression();
 
-  const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
+  // System notification message, show only ONCE per session
+  const [systemNotice, setSystemNotice] = React.useState<string | null>(() => {
+    if (window.sessionStorage.getItem("system_welcome_seen")) {
+      return null;
+    }
+    window.sessionStorage.setItem("system_welcome_seen", "1");
+    return "Welcome, Hunter. Your journey begins now.";
+  });
+
   const username = getCurrentUsername() || "Hunter";
 
   const shadowArmy = useShadowArmy();

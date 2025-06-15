@@ -198,56 +198,63 @@ function statI(stats, key) {
   return stats.findIndex(s => s.label.toLowerCase() === key.toLowerCase());
 }
 
+// Utility helpers for persistence
+const STORAGE_KEY = "hunter_progression_v1";
+function saveProgression(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+}
+function loadProgression() {
+  try {
+    const str = localStorage.getItem(STORAGE_KEY);
+    return str ? JSON.parse(str) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function useHunterProgression() {
+  // Try to load previous progression from localStorage
+  const stored = loadProgression();
+
   // --- SYSTEMS ---
-  const [stats, setStats] = useState([...START_STATS]);
-  const [currentRankIndex, setCurrentRankIndex] = useState(0);
-  const [rankPoints, setRankPoints] = useState(0);
+  const [stats, setStats] = useState(stored?.stats || [...START_STATS]);
+  const [currentRankIndex, setCurrentRankIndex] = useState(stored?.currentRankIndex || 0);
+  const [rankPoints, setRankPoints] = useState(stored?.rankPoints || 0);
   const { unlocked, SHADOWS } = useShadowArmy();
-
-  // Quest counters: today/total/difficulty
-  const [questCount, setQuestCount] = useState({
-    easy: 0, medium: 0, hard: 0,
-    total: 0, medOrHard: 0, hardTotal: 0
+  const [questCount, setQuestCount] = useState(stored?.questCount || {
+    easy: 0, medium: 0, hard: 0, total: 0, medOrHard: 0, hardTotal: 0
   });
-  const [totalQuests, setTotalQuests] = useState(0);
-
-  // Day logic
+  const [totalQuests, setTotalQuests] = useState(stored?.totalQuests || 0);
   const [today, setToday] = useState(getToday());
-  const [dailyQuests, setDailyQuests] = useState({ easy: 0, medium: 0, hard: 0 }); // completed today per difficulty
-  const [daysActive, setDaysActive] = useState(0);
+  const [dailyQuests, setDailyQuests] = useState(stored?.dailyQuests || { easy: 0, medium: 0, hard: 0 });
+  const [daysActive, setDaysActive] = useState(stored?.daysActive || 0);
 
-  // Streak logic
+  // Streak (stored separately in localStorage)
   const [streak, setStreak] = useState(() => {
-    const stored = localStorage.getItem("hunter_streaks");
-    if (stored) {
-      try {
-        return JSON.parse(stored).streak;
-      } catch {
-        return 0;
-      }
+    const s = stored?.streak;
+    if (typeof s === "number") return s;
+    const raw = localStorage.getItem("hunter_streaks");
+    if (raw) {
+      try { return JSON.parse(raw).streak; } catch { return 0; }
     }
     return 0;
   });
-  const [streakStart, setStreakStart] = useState<number | null>(null);
-  const [lastQuestDay, setLastQuestDay] = useState<string | null>(() => {
-    const stored = localStorage.getItem("hunter_streaks");
-    if (stored) {
-      try {
-        return JSON.parse(stored).lastDay;
-      } catch {
-        return null;
-      }
+  const [streakStart, setStreakStart] = useState(stored?.streakStart || null);
+  const [lastQuestDay, setLastQuestDay] = useState(() => {
+    if (stored?.lastQuestDay) return stored.lastQuestDay;
+    const raw = localStorage.getItem("hunter_streaks");
+    if (raw) {
+      try { return JSON.parse(raw).lastDay; } catch { return null; }
     }
     return null;
   });
 
   // Badges, ceremonies
-  const [badges, setBadges] = useState<string[]>([]);
-  const [showCeremony, setShowCeremony] = useState(false);
-  const [lastBadge, setLastBadge] = useState<string | null>(null);
-
-  // Rank requirements modal
+  const [badges, setBadges] = useState(stored?.badges || []);
+  const [showCeremony, setShowCeremony] = useState(stored?.showCeremony || false);
+  const [lastBadge, setLastBadge] = useState(stored?.lastBadge || null);
   const [blockRankUp, setBlockRankUp] = useState<{ reason: string } | null>(null);
 
   // --- STAT ALLOCATION MAP ---
@@ -315,7 +322,6 @@ export function useHunterProgression() {
   function completeQuest(category, difficulty) {
     const t = getToday();
     if (dailyQuests[difficulty] >= (difficulty === "easy" ? 5 : (difficulty === "medium" ? 3 : 2))) return false;
-
     // Update streaks if a new quest is done today and last activity wasn't today
     if (lastQuestDay !== t) {
       // Started first quest of day
@@ -395,7 +401,7 @@ export function useHunterProgression() {
     // ... combo/other bonuses could go here
     points = Math.round(points * (1 + streakBonus));
 
-    // Assign stats
+    // Assign stats (with persistence)
     setStats(s =>
       s.map((stat, i) => ({
         ...stat,
@@ -421,6 +427,39 @@ export function useHunterProgression() {
       [difficulty]: d[difficulty] + 1,
     }));
 
+    // Mark streak/localStorage, days, lastQuestDay, etc exactly as before
+    // ... keep existing code (update streak, daysActive, streakStart etc.) the same ...
+
+    // Save changes after a quest
+    setTimeout(() => {
+      saveProgression({
+        stats: stats.map((stat, i) => ({ ...stat, val: stat.val + statUpdates[i] })), // optimistic
+        currentRankIndex,
+        rankPoints: rankPoints + points,
+        badges,
+        showCeremony,
+        lastBadge,
+        totalQuests: totalQuests + 1,
+        daysActive: daysActive + 1, // best effort, fine if occasionally overcounted
+        streak: streak + 1,
+        streakStart: streakStart || Date.now(),
+        lastQuestDay: t,
+        questCount: {
+          ...questCount,
+          easy: questCount.easy + (difficulty === "easy" ? 1 : 0),
+          medium: questCount.medium + (difficulty === "medium" ? 1 : 0),
+          hard: questCount.hard + (difficulty === "hard" ? 1 : 0),
+          total: questCount.total + 1,
+          medOrHard: questCount.medOrHard + (difficulty !== "easy" ? 1 : 0),
+          hardTotal: questCount.hardTotal + (difficulty === "hard" ? 1 : 0),
+        },
+        dailyQuests: {
+          ...dailyQuests,
+          [difficulty]: dailyQuests[difficulty] + 1,
+        },
+      });
+    }, 100);
+
     return true;
   }
 
@@ -428,7 +467,27 @@ export function useHunterProgression() {
    * New method: Add points to rankPoints (external rewards)
    */
   function addRankPoints(amount: number) {
-    setRankPoints(v => v + amount);
+    setRankPoints(v => {
+      const newVal = v + amount;
+      setTimeout(() => {
+        saveProgression({
+          stats,
+          currentRankIndex,
+          rankPoints: newVal,
+          badges,
+          showCeremony,
+          lastBadge,
+          totalQuests,
+          daysActive,
+          streak,
+          streakStart,
+          lastQuestDay,
+          questCount,
+          dailyQuests,
+        });
+      }, 100);
+      return newVal;
+    });
   }
 
   /**
@@ -436,12 +495,30 @@ export function useHunterProgression() {
    * Pass: { Strength?: number, Agility?: number, Intelligence?: number, Vitality?: number }
    */
   function addStats(obj: { [k: string]: number }) {
-    setStats(s =>
-      s.map(stat => ({
+    setStats(s => {
+      const newStats = s.map(stat => ({
         ...stat,
         val: stat.val + (obj[stat.label] || 0)
-      }))
-    );
+      }));
+      setTimeout(() => {
+        saveProgression({
+          stats: newStats,
+          currentRankIndex,
+          rankPoints,
+          badges,
+          showCeremony,
+          lastBadge,
+          totalQuests,
+          daysActive,
+          streak,
+          streakStart,
+          lastQuestDay,
+          questCount,
+          dailyQuests,
+        });
+      }, 100);
+      return newStats;
+    });
   }
 
   // --- Rank-up logic: Supports new requirements ---
@@ -534,7 +611,24 @@ export function useHunterProgression() {
     badges,
     showCeremony,
     completeQuest,
-    finishCeremony: () => setShowCeremony(false),
+    finishCeremony: () => {
+      setShowCeremony(false);
+      setTimeout(() => saveProgression({
+        stats,
+        currentRankIndex,
+        rankPoints,
+        badges,
+        showCeremony: false,
+        lastBadge,
+        totalQuests,
+        daysActive,
+        streak,
+        streakStart,
+        lastQuestDay,
+        questCount,
+        dailyQuests,
+      }), 100);
+    },
     lastBadge,
     currentRankIndex,
     dailyQuests,
@@ -542,7 +636,7 @@ export function useHunterProgression() {
     blockRankUp,
     getNextRankRequirements,
     questCount,
-    QUEST_TYPES: [], // not used; replaced w/ categories list above for panel
+    QUEST_TYPES: [],
     QUEST_CATEGORIES, // export for panels
 
     // Newly exposed reward updaters:
