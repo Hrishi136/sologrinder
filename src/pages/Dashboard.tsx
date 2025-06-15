@@ -1,7 +1,8 @@
+
 import React from "react";
 import DashboardHeader from "../components/DashboardHeader";
 import DashboardPanels from "../components/DashboardPanels";
-import DashboardFabButtons from "../components/DashboardFabButtons";
+// Removed DashboardFabButtons
 import SystemNotification from "../components/SystemNotification";
 import { useHunterProgression } from "../hooks/useHunterProgression";
 import RankUpCeremony from "../components/RankUpCeremony";
@@ -81,10 +82,21 @@ export default function Dashboard() {
     closeModal: handleCloseEmergency
   } = useEmergencyQuestModal();
 
-  // Spawn Emergency Quest only if not already present
+  // Remove FAB and auto-spawn. Instead, only allow opening after notification acknowledge.
+  // We track when an "emergency" is pending via a flag
+  const [pendingEmergencyQuest, setPendingEmergencyQuest] = React.useState(false);
+
+  // Simulate receiving an emergency quest from some event.
+  // For demonstration, we'll set up a button (you can remove in production).
+  function triggerEmergencyQuest() {
+    // Instead of opening the modal right away, set the pending flag and show a notice.
+    setPendingEmergencyQuest(true);
+    setSystemNotice("🚨 Emergency Quest Incoming — Acknowledge to proceed.");
+  }
+
+  // After system notice is closed, if there is a pending emergency, open the quest modal.
   React.useEffect(() => {
-    // Spawn a new Emergency Quest on first mount if there's not already one open
-    if (!emergencyQuest && !showEmergency) {
+    if (!systemNotice && pendingEmergencyQuest && !showEmergency) {
       openEmergencyQuest({
         type: "combat",
         title: "Urgent Combat Training",
@@ -93,15 +105,9 @@ export default function Dashboard() {
         rewardPoints: 150,
         timerEnd: Date.now() + 1000 * 60 * 60 * 24, // 24hr from now
       });
+      setPendingEmergencyQuest(false);
     }
-    // eslint-disable-next-line
-  }, []);
-
-  React.useEffect(() => {
-    if (showEmergency && emergencyQuest) {
-      setSystemNotice("🚨 Emergency Quest Available! Complete for rare rewards.");
-    }
-  }, [showEmergency, emergencyQuest]);
+  }, [systemNotice, pendingEmergencyQuest, showEmergency, openEmergencyQuest]);
 
   // Rank up block modal state
   const [showBlock, setShowBlock] = React.useState(false);
@@ -164,16 +170,7 @@ export default function Dashboard() {
           handleViewFullArmy={handleViewFullArmy}
         />
 
-        <DashboardFabButtons
-          emergencyQuestExists={!!emergencyQuest}
-          showEmergency={showEmergency}
-          onShowEmergency={() => openEmergencyQuest(emergencyQuest!)}
-          onNewQuest={() => setSystemNotice("A new quest awaits! Open the Quest List to accept your next challenge.")}
-        />
-
-        {/* Emergency Quest Modal - only ever renders ONE at a time because of hook */}
-        {/* Use a unique key for the modal based on the quest's title+timerEnd -
-            this ensures a clean remount + no stacking */}
+        {/* Emergency Quest Modal — only show after notification acknowledge */}
         {emergencyQuest && (
           <EmergencyQuestModal
             key={emergencyQuest.title + emergencyQuest.timerEnd}
@@ -199,7 +196,20 @@ export default function Dashboard() {
         {/* SYSTEM NOTIFICATION MODAL */}
         <SystemNotification
           open={!!systemNotice}
-          message={systemNotice}
+          message={
+            <>
+              {systemNotice}
+              {/* DEV: Trigger emergency quest (remove below in prod) */}
+              {!pendingEmergencyQuest && (
+                <button
+                  className="ml-4 px-2 py-1 bg-system-blue2 text-white rounded"
+                  onClick={triggerEmergencyQuest}
+                >
+                  Trigger Emergency Quest
+                </button>
+              )}
+            </>
+          }
           onClose={() => setSystemNotice(null)}
         />
         {/* Rank up block modal */}
