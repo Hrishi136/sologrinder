@@ -1,17 +1,24 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 type Shadow = { name: string, tier: number };
 type Props = {
   unlocked: string[],
   allShadows: Shadow[],
-  onViewAll: () => void,
+  onViewAll?: () => void, // made optional
 };
 
 export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll }: Props) {
+  const navigate = useNavigate();
   // Show 4 most recently unlocked, or show up to 4 lock silhouettes
   const previews = unlocked.slice(-4);
   const locked = allShadows.filter(s => !unlocked.includes(s.name)).slice(0, 4 - previews.length);
+
+  function handleViewArmy() {
+    // Route to "/army" directly
+    navigate("/army");
+  }
 
   return (
     <div className="system-panel bg-black/75 border-system-blue2 border-2 rounded-lg shadow-lg p-4 animate-fade-in">
@@ -40,7 +47,7 @@ export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll }: P
       </div>
       <button
         className="mt-3 glow-button bg-system-blue2/80 hover:bg-system-blue2 text-white px-3 py-1 rounded-lg font-orbitron text-sm transition active:scale-95"
-        onClick={onViewAll}
+        onClick={onViewAll ? onViewAll : handleViewArmy}
       >
         View Full Army
       </button>

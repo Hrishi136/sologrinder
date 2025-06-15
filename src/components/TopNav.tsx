@@ -9,7 +9,17 @@ const navItems = [
   { title: "Stats", path: "/stats" },
 ]
 
+const SYSTEM_SESSION_KEY = "shadowSystem_session";
+
 export default function TopNav() {
+  const navigate = useNavigate();
+
+  function handleLogout(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
+    e.preventDefault();
+    localStorage.removeItem(SYSTEM_SESSION_KEY);
+    navigate("/login");
+  }
+
   return (
     <nav className="w-full flex items-center justify-between px-6 py-3 mb-6 z-10">
       <div className="flex items-center gap-3">
@@ -32,9 +42,13 @@ export default function TopNav() {
         ))}
       </div>
       <div>
-        <NavLink to="/login" className="text-system-blue font-orbitron font-bold underline decoration-system-blue hover:decoration-4">
+        <a
+          href="/login"
+          className="text-system-blue font-orbitron font-bold underline decoration-system-blue hover:decoration-4"
+          onClick={handleLogout}
+        >
           Log Out
-        </NavLink>
+        </a>
       </div>
     </nav>
   )

@@ -51,6 +51,7 @@ export default function EmergencyQuestModal({
     quest ? quest.timerEnd - Date.now() : 0
   );
 
+  // Only allow one modal. Clean up and block stacking.
   React.useEffect(() => {
     if (!quest) return;
     const interval = setInterval(() => {
@@ -59,9 +60,12 @@ export default function EmergencyQuestModal({
     return () => clearInterval(interval);
   }, [quest]);
 
-  // Ensure modal closes properly
+  // When modal closes, reset internal state (so only one panel)
+  React.useEffect(() => {
+    if (!open) setMsLeft(0);
+  }, [open]);
+
   function handleClose() {
-    // Inform parent to close
     console.log("EmergencyQuestModal: handleClose invoked");
     onClose();
   }
@@ -125,8 +129,9 @@ export default function EmergencyQuestModal({
               Mark Complete
             </Button>
           )}
+          {/* The Acknowledge button will close the modal & prevent doubles */}
           <DialogClose asChild>
-            <Button variant="outline" autoFocus>
+            <Button variant="outline">
               Acknowledge
             </Button>
           </DialogClose>
