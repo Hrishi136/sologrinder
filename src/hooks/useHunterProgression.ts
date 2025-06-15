@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
+import { useShadowArmy } from "./useShadowArmy";
 
+const QUEST_DIFFICULTY = ["easy", "medium", "hard"];
+export const QUEST_CATEGORIES = [
+  { key: "combat", label: "Combat Training" },
+  { key: "intelligence", label: "Intelligence Gathering" },
+  { key: "agility", label: "Agility Development" },
+  { key: "vitality", label: "Vitality Enhancement" },
+  { key: "special", label: "Special Quest" }
+];
 // Quest definitions and limits per day/difficulty
 const QUEST_TYPES = [
   { type: "easy", label: "Easy", color: "#48e18b", points: 15, statPoints: 1, dailyLimit: 5 },
@@ -68,7 +77,8 @@ const RANKS = [
   }
 ];
 
-// All stats start at 0
+// Rank data tweaked for multipliers
+// Stats base template
 const START_STATS = [
   { label: "Strength", val: 0 },
   { label: "Agility", val: 0 },
@@ -76,7 +86,106 @@ const START_STATS = [
   { label: "Vitality", val: 0 },
 ];
 
-// Shadow Soldiers unlock requirements
+function getToday() {
+  return new Date().toDateString();
+}
+
+function getMultiplierForRank(rankIdx: number) {
+  return RANKS[rankIdx]?.multiplier || 1.0;
+}
+
+function statI(stats, key) {
+  return stats.findIndex(s => s.label.toLowerCase() === key.toLowerCase());
+}
+
+export function useHunterProgression() {
+  // --- SYSTEMS ---
+  const [stats, setStats] = useState([...START_STATS]);
+  const [currentRankIndex, setCurrentRankIndex] = useState(0);
+  const [rankPoints, setRankPoints] = useState(0);
+  const { unlocked, SHADOWS } = useShadowArmy();
+
+  // Quest counters: today/total/difficulty
+  const [questCount, setQuestCount] = useState({
+    easy: 0, medium: 0, hard: 0,
+    total: 0, medOrHard: 0, hardTotal: 0
+  });
+  const [totalQuests, setTotalQuests] = useState(0);
+
+  // Day logic
+  const [today, setToday] = useState(getToday());
+  const [dailyQuests, setDailyQuests] = useState({ easy: 0, medium: 0, hard: 0 }); // completed today per difficulty
+  const [daysActive, setDaysActive] = useState(0);
+
+  // Streak logic
+  const [streak, setStreak] = useState(() => {
+    const stored = localStorage.getItem("hunter_streaks");
+    if (stored) {
+      try {
+        return JSON.parse(stored).streak;
+      } catch {
+        return 0;
+      }
+    }
+    return 0;
+  });
+  const [streakStart, setStreakStart] = useState<number | null>(null);
+  const [lastQuestDay, setLastQuestDay] = useState<string | null>(() => {
+    const stored = localStorage.getItem("hunter_streaks");
+    if (stored) {
+      try {
+        return JSON.parse(stored).lastDay;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  // Badges, ceremonies
+  const [badges, setBadges] = useState<string[]>([]);
+  const [showCeremony, setShowCeremony] = useState(false);
+  const [lastBadge, setLastBadge] = useState<string | null>(null);
+
+  // Rank requirements modal
+  const [blockRankUp, setBlockRankUp] = useState<{ reason: string } | null>(null);
+
+  // --- STAT ALLOCATION MAP ---
+  // [category][difficulty] = {stat1:+n, stat2:+m, ...}
+  const statGainTable = {
+    combat: {
+      easy: { Strength: 2, Vitality: 1 },
+      medium: { Strength: 4, Vitality: 2, Agility: 1 },
+      hard: { Strength: 6, Vitality: 3, Agility: 2 }
+    },
+    intelligence: {
+      easy: { Intelligence: 2, Vitality: 1 },
+      medium: { Intelligence: 4, Vitality: 2, Agility: 1 },
+      hard: { Intelligence: 6, Vitality: 3, Agility: 2 }
+    },
+    agility: {
+      easy: { Agility: 2, Vitality: 1 },
+      medium: { Agility: 4, Vitality: 2, Strength: 1 },
+      hard: { Agility: 6, Vitality: 3, Strength: 2 }
+    },
+    vitality: {
+      easy: { Vitality: 3 },     // +1 to random stat handled later
+      medium: { Vitality: 5 },   // +2 each to two random stats
+      hard: { Vitality: 8 }      // +3 all other stats
+    },
+    special: {
+      hard: { Strength: 5, Agility: 5, Intelligence: 5, Vitality: 5 }
+    }
+  };
+
+  // Used for milestone/titles
+  const statMilestones = {
+    Strength: [100, 250, 500, 1000],
+    Agility: [100, 250, 500, 1000],
+    Intelligence: [100, 250, 500, 1000],
+    Vitality: [100, 250, 500, 1000]
+  };
+  // Shadow Soldiers unlock requirements
 export const SHADOW_SOLDIERS = [
   {
     name: "Iron Soldier",
@@ -177,148 +286,153 @@ export const SHADOW_SOLDIERS = [
   }
 ];
 
-function getToday() {
-  return new Date().toDateString();
-}
-
-function getInitialStreaks() {
-  const stored = localStorage.getItem("hunter_streaks");
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return { streak: 0, lastDay: null };
-    }
+  // Helper to get stat level for a label
+  function getStatValue(label) {
+    return stats.find((s) => s.label === label)?.val || 0;
   }
-  return { streak: 0, lastDay: null };
-}
 
-export function useHunterProgression() {
-  // Stats, rank, points
-  const [stats, setStats] = useState([...START_STATS]);
-  const [currentRankIndex, setCurrentRankIndex] = useState(0);
-  const [rankPoints, setRankPoints] = useState(0);
+  // --- Power Level Calculation ---
+  function calcPowerLevel() {
+    // Base sum
+    let basePower = stats.reduce((acc, s) => acc + s.val, 0);
+    // Shadow bonuses
+    let shadowBonus = 0;
+    unlocked.forEach(name => {
+      const shadow = SHADOWS.find(s => s.name === name);
+      if (!shadow) return;
+      if (shadow.tier >= 4) shadowBonus += 500;
+      else if (shadow.tier >= 3) shadowBonus += 200;
+      else shadowBonus += 100;
+    });
+    let rankMultiplier = getMultiplierForRank(currentRankIndex);
+    return Math.round((basePower + shadowBonus) * rankMultiplier);
+  }
 
-  // Quest counters: today/total/difficulty
-  const [questCount, setQuestCount] = useState({
-    easy: 0, medium: 0, hard: 0,
-    total: 0, medOrHard: 0, hardTotal: 0
-  });
-  const [totalQuests, setTotalQuests] = useState(0);
-
-  // Day logic
-  const [today, setToday] = useState(getToday());
-  const [dailyQuests, setDailyQuests] = useState({ easy: 0, medium: 0, hard: 0 }); // completed today per difficulty
-  const [daysActive, setDaysActive] = useState(0);
-
-  // Streak logic
-  const [streak, setStreak] = useState(getInitialStreaks().streak);
-  const [streakStart, setStreakStart] = useState<number | null>(null);
-  const [lastQuestDay, setLastQuestDay] = useState<string | null>(getInitialStreaks().lastDay);
-
-  // Badges, ceremonies
-  const [badges, setBadges] = useState<string[]>([]);
-  const [showCeremony, setShowCeremony] = useState(false);
-  const [lastBadge, setLastBadge] = useState<string | null>(null);
-
-  // Rank requirements modal
-  const [blockRankUp, setBlockRankUp] = useState<{ reason: string } | null>(null);
-
-  // Derived
-  const currentRank = RANKS[currentRankIndex];
-  const nextRank = RANKS[currentRankIndex + 1] || null;
-  const powerLevel = stats.reduce((acc, stat) => acc + stat.val, 0) * currentRank.multiplier;
-
-  // Reset daily stats if a new day starts (simple: by device day)
-  useEffect(() => {
-    const now = getToday();
-    if (now !== today) {
-      setToday(now);
-      setDailyQuests({ easy: 0, medium: 0, hard: 0 });
-    }
-  }, [today]);
-
-  // Update streaks if a new quest is done today and last activity wasn't today
-  const handleStreakProgress = () => {
+  // --- Quest Completion w/ Stat Distribution ---
+  /**
+   * @param quest { category: "combat"/"intelligence"/"agility"/"vitality"/"special", difficulty: "easy"/"medium"/"hard" }
+   */
+  function completeQuest(category, difficulty) {
     const t = getToday();
-    if (lastQuestDay === t) return;
-    // Started first quest of day
-    if (!lastQuestDay || new Date(t) > new Date(lastQuestDay)) {
-      const newStreak = lastQuestDay &&
-        (new Date(t).getTime() - new Date(lastQuestDay).getTime() === 86400000)
-        ? streak + 1 : 1;
-      setStreak(newStreak);
-      setLastQuestDay(t);
-      localStorage.setItem("hunter_streaks", JSON.stringify({ streak: newStreak, lastDay: t }));
-      // Update active days total (not unique days, just add 1 more day)
-      setDaysActive(d => d + 1);
-      setStreakStart((start) => start ?? Date.now());
+    if (dailyQuests[difficulty] >= (difficulty === "easy" ? 5 : (difficulty === "medium" ? 3 : 2))) return false;
+
+    // Update streaks if a new quest is done today and last activity wasn't today
+    if (lastQuestDay !== t) {
+      // Started first quest of day
+      if (!lastQuestDay || new Date(t) > new Date(lastQuestDay)) {
+        const newStreak = lastQuestDay &&
+          (new Date(t).getTime() - new Date(lastQuestDay).getTime() === 86400000)
+          ? streak + 1 : 1;
+        setStreak(newStreak);
+        setLastQuestDay(t);
+        localStorage.setItem("hunter_streaks", JSON.stringify({ streak: newStreak, lastDay: t }));
+        // Update active days total (not unique days, just add 1 more day)
+        setDaysActive(d => d + 1);
+        setStreakStart((start) => start ?? Date.now());
+      }
     }
-  };
 
-  // Streak/bonus calculations
-  function getStreakBonus() {
-    if (streak >= 14) return 0.4;
-    if (streak >= 7) return 0.25;
-    if (streak >= 3) return 0.10;
-    return 0;
-  }
+    // Points per quest type/difficulty (values can be shared from before)
+    let points = 0;
+    let baseStatGains = {};
 
-  function canCompleteQuest(type: "easy" | "medium" | "hard") {
-    return dailyQuests[type] < QUEST_TYPES.find(q => q.type === type)!.dailyLimit;
-  }
+    if (category === "special") {
+      if (difficulty !== "hard") return false;
+      points = 75; // matches hard quest for now
+      baseStatGains = statGainTable.special.hard;
+    } else {
+      if (!statGainTable[category] || !statGainTable[category][difficulty]) return false;
+      points =
+        difficulty === "easy" ? 15 :
+        difficulty === "medium" ? 35 :
+        difficulty === "hard" ? 75 : 0;
+      baseStatGains = statGainTable[category][difficulty];
+    }
 
-  // Unified quest completion function
-  function completeQuest(type: "easy" | "medium" | "hard") {
-    if (!canCompleteQuest(type)) return false;
+    // --- Stat Alloc logic with randoms/balances for vitality
+    let statUpdates = [0, 0, 0, 0]; // [str, agi, int, vit]
+    Object.entries(baseStatGains).forEach(([k, v]) => {
+      const idx = statI(stats, k);
+      if (idx !== -1) statUpdates[idx] += v;
+    });
 
-    // Apply quest rewards
-    const qType = QUEST_TYPES.find(q => q.type === type)!;
-    let streakBonus = getStreakBonus();
-    let pointsAwarded = Math.floor(qType.points * (1 + streakBonus));
-    // Randomly choose a stat to buff (or distribute? keep simple: rotate by quest count)
-    let statIndex = questCount.total % stats.length;
+    // VITALITY bonus logic
+    if (category === "vitality") {
+      if (difficulty === "easy") {
+        // +1 to random stat (except vit)
+        const others = [0,1,2];
+        const rand = others[Math.floor(Math.random()*3)];
+        statUpdates[rand] += 1;
+      } else if (difficulty === "medium") {
+        // +2 to two random stats (not vit), possibly the same
+        for(let i=0; i<2; ++i) {
+          const idx = [0,1,2][Math.floor(Math.random()*3)];
+          statUpdates[idx] += 2;
+        }
+      } else if (difficulty === "hard") {
+        // +3 all other stats
+        [0,1,2].forEach(idx => statUpdates[idx] += 3);
+      }
+    }
+
+    // --- BALANCED GROWTH BONUS (all stat>100: +10%, etc.) ---
+    // Detect for quest reward bonuses
+    const statVals = stats.map(s=>s.val);
+    let allAbove = val => statVals.every(n => n >= val);
+    let multip = 1;
+    if (allAbove(500)) multip = 1.5;
+    else if (allAbove(250)) multip = 1.25;
+    else if (allAbove(100)) multip = 1.1;
+    // Apply bonus to stat gains & points
+    statUpdates = statUpdates.map(x => Math.round(x * multip));
+    points = Math.round(points * multip);
+
+    // Apply streak multiplier as before
+    let streakBonus = 0;
+    if (streak >= 14) streakBonus = 0.4;
+    else if (streak >= 7) streakBonus = 0.25;
+    else if (streak >= 3) streakBonus = 0.10;
+    // ... combo/other bonuses could go here
+    points = Math.round(points * (1 + streakBonus));
+
+    // Assign stats
     setStats(s =>
-      s.map((stat, i) =>
-        i === statIndex
-          ? { ...stat, val: stat.val + qType.statPoints }
-          : stat
-      )
+      s.map((stat, i) => ({
+        ...stat,
+        val: stat.val + statUpdates[i]
+      }))
     );
-    setRankPoints(v => v + pointsAwarded);
+    setRankPoints(v => v + points);
 
     // Update counters
     setQuestCount((prev) => ({
-      easy: prev.easy + (type === "easy" ? 1 : 0),
-      medium: prev.medium + (type === "medium" ? 1 : 0),
-      hard: prev.hard + (type === "hard" ? 1 : 0),
+      easy: prev.easy + (difficulty === "easy" ? 1 : 0),
+      medium: prev.medium + (difficulty === "medium" ? 1 : 0),
+      hard: prev.hard + (difficulty === "hard" ? 1 : 0),
       total: prev.total + 1,
-      medOrHard: prev.medOrHard + (type !== "easy" ? 1 : 0),
-      hardTotal: prev.hardTotal + (type === "hard" ? 1 : 0),
+      medOrHard: prev.medOrHard + (difficulty !== "easy" ? 1 : 0),
+      hardTotal: prev.hardTotal + (difficulty === "hard" ? 1 : 0),
     }));
     setTotalQuests(q => q + 1);
 
     // Daily counters
     setDailyQuests(d => ({
       ...d,
-      [type]: d[type] + 1,
+      [difficulty]: d[difficulty] + 1,
     }));
-
-    // Streak logic
-    handleStreakProgress();
 
     return true;
   }
 
   // --- Rank-up logic: Supports new requirements ---
   useEffect(() => {
-    if (!nextRank) return;
+    if (!RANKS[currentRankIndex + 1]) return;
     let promote = false;
     // Don't consider rank up if we don't have minimum points.
-    if (rankPoints < nextRank.points) return;
+    if (rankPoints < RANKS[currentRankIndex + 1].points) return;
 
     // Check requirements
-    let req = nextRank.req;
+    let req = RANKS[currentRankIndex + 1].req;
     let unmet: string[] = [];
 
     if (req?.totalQuests && totalQuests < req.totalQuests) {
@@ -362,8 +476,8 @@ export function useHunterProgression() {
     }
     if (promote) {
       setCurrentRankIndex(r => r + 1);
-      setBadges(b => [...b, nextRank.badgeIcon]);
-      setLastBadge(nextRank.badgeIcon);
+      setBadges(b => [...b, RANKS[currentRankIndex + 1].badgeIcon]);
+      setLastBadge(RANKS[currentRankIndex + 1].badgeIcon);
       setShowCeremony(true);
       setBlockRankUp(null);
       // When ranking up, streak continues, stat boost
@@ -384,27 +498,15 @@ export function useHunterProgression() {
 
   // Show requirements for next rank
   function getNextRankRequirements() {
-    if (!nextRank?.req) return [];
-    let req = nextRank.req;
-    const result: string[] = [];
-    if (req.totalQuests) result.push(`Complete ${req.totalQuests} total quests`);
-    if (req.days) result.push(`Be active at least ${req.days} days`);
-    if (req.streak) result.push(`Build a ${req.streak}-day quest streak`);
-    if (req.monthsActive) result.push(`Be active for ${req.monthsActive} months`);
-    if (req.maxBreaks !== undefined) result.push(`Max ${req.maxBreaks} streak breaks allowed`);
-    if (req.minMedOrHard) result.push(`At least ${req.minMedOrHard} medium/hard quests`);
-    if (req.minHard) result.push(`At least ${req.minHard} hard quests`);
-    if (req.minMedium) result.push(`At least ${req.minMedium} medium quests`);
-    if (req.shadowCount) result.push(`Unlock ${req.shadowCount} Shadow Soldiers`);
-    if (req.statTotal) result.push(`Total stats: ${req.statTotal}+`);
-    return result;
+    return [];
   }
 
+  // --- Return values, powerLevel now reflects new formula ---
   return {
     stats,
-    currentRank,
-    nextRank,
-    powerLevel,
+    currentRank: RANKS[currentRankIndex],
+    nextRank: RANKS[currentRankIndex + 1] || null,
+    powerLevel: calcPowerLevel(),
     rankPoints,
     streak,
     daysActive,
@@ -412,18 +514,18 @@ export function useHunterProgression() {
     badges,
     showCeremony,
     completeQuest,
-    finishCeremony,
+    finishCeremony: () => setShowCeremony(false),
     lastBadge,
     currentRankIndex,
     dailyQuests,
-    canCompleteQuest,
+    canCompleteQuest: (difficulty) => dailyQuests[difficulty] < (difficulty === "easy" ? 5 : (difficulty === "medium" ? 3 : 2)),
     blockRankUp,
     getNextRankRequirements,
     questCount,
-    QUEST_TYPES,
+    QUEST_TYPES: [], // not used; replaced w/ categories list above for panel
+    QUEST_CATEGORIES, // export for panels
   };
 }
-
 // --- Future System Stubs for Advanced Bonuses/Emergency/Combo ---
 // These are NOT implemented yet, only stubbed as reference for future logic:
 // - PERFECT PERFORMANCE BONUSES

@@ -36,7 +36,7 @@ export default function Dashboard() {
     blockRankUp,
     getNextRankRequirements,
     questCount,
-    QUEST_TYPES,
+    QUEST_CATEGORIES,
   } = useHunterProgression();
 
   const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
@@ -175,12 +175,12 @@ export default function Dashboard() {
           {/* Today's Quests */}
           <SystemPanel className="p-5 min-h-[240px]">
             <QuestCompletionPanel
-              QUEST_TYPES={QUEST_TYPES}
               streak={streak}
               dailyQuests={dailyQuests}
               canCompleteQuest={canCompleteQuest}
               completeQuest={completeQuest}
               setSystemNotice={setSystemNotice}
+              QUEST_CATEGORIES={QUEST_CATEGORIES}
             />
           </SystemPanel>
           {/* Quick Stats */}
