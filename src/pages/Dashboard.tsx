@@ -11,6 +11,7 @@ import { useShadowArmy } from "../hooks/useShadowArmy";
 import SystemLog from "../components/SystemLog";
 import ShadowArmyPreview from "../components/ShadowArmyPreview";
 import RecentAchievements from "../components/RecentAchievements";
+import EmergencyQuestModal from "../components/EmergencyQuestModal";
 
 // Function to get the current logged-in user's name from localStorage
 function getCurrentUsername(): string | null {
@@ -78,6 +79,60 @@ export default function Dashboard() {
     ...(shadowArmy.unlocked.slice(-1).map(s => ({ name: s, timestamp: "Today", type: "shadow" as const }))),
   ];
   const nextMilestone = "Complete 5 more quests for next Rank";
+
+  // --- Emergency Quest UI State ---
+  const [emergencyQuest, setEmergencyQuest] = React.useState<null | {
+    type: "combat" | "intelligence" | "agility" | "special";
+    title: string;
+    description: string;
+    rewardText: string;
+    rewardPoints: number;
+    timerEnd: number;
+  }>(null);
+
+  const [showEmergency, setShowEmergency] = React.useState(false);
+  const [hasAcceptedEmergency, setHasAcceptedEmergency] = React.useState(false);
+
+  // Simulate emergency quest spawning on mount (demo)
+  React.useEffect(() => {
+    // Demo only: Spawn an emergency quest once per mount
+    if (!emergencyQuest) {
+      // Example quest: can randomize/type switch later if you like
+      setEmergencyQuest({
+        type: "combat",
+        title: "Urgent Combat Training",
+        description: "Complete 100 push-ups within 24 hours.",
+        rewardText: "150 Rank Points + 12 Strength + Shadow progress",
+        rewardPoints: 150,
+        timerEnd: Date.now() + 1000 * 60 * 60 * 24, // 24hr from now
+      });
+      setShowEmergency(true);
+    }
+  }, []);
+
+  // Show system notification on spawn
+  React.useEffect(() => {
+    if (showEmergency && emergencyQuest) {
+      setSystemNotice("🚨 Emergency Quest Available! Complete for rare rewards.");
+    }
+    // eslint-disable-next-line
+  }, [showEmergency, emergencyQuest]);
+
+  // Emergency Quest handlers
+  function handleAcceptEmergency() {
+    setHasAcceptedEmergency(true);
+    setSystemNotice("Emergency Quest accepted. Good luck, Hunter!");
+  }
+  function handleCompleteEmergency() {
+    setSystemNotice("Emergency Quest completed! Reward granted.");
+    setShowEmergency(false);
+    setHasAcceptedEmergency(false);
+    setEmergencyQuest(null);
+    // In a real app: apply points/stats & check shadow progress here
+  }
+  function handleCloseEmergency() {
+    setShowEmergency(false);
+  }
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
@@ -178,6 +233,21 @@ export default function Dashboard() {
             nextMilestone={nextMilestone}
           />
         </div>
+        {/* Floating Emergency Quest Button/Badge */}
+        {/* Only show if emergencyQuest is active and not completed */}
+        {emergencyQuest && (
+          <button
+            className="fixed bottom-28 right-8 z-[110] bg-gradient-to-tr from-red-700 via-red-500 to-pink-500 shadow-2xl pulse rounded-full px-6 py-3 text-white font-orbitron text-lg font-bold flex items-center gap-3 hover:scale-105 animate-pulse border-2 border-red-500"
+            style={{ boxShadow: "0 0 24px 8px #ff002280" }}
+            onClick={() => setShowEmergency(true)}
+          >
+            <span className="relative flex h-5 w-5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75" />
+              <span className="relative inline-flex rounded-full h-5 w-5 bg-red-700" />
+            </span>
+            Emergency Quest!
+          </button>
+        )}
         {/* Floating Action Button */}
         <div className="fixed bottom-8 right-8 z-[108]">
           <button className="glow-button animate-pulse hover:scale-105 focus:scale-105 bg-gradient-to-r from-system-blue to-system-blue2 px-7 py-3 rounded-full shadow-lg font-orbitron text-lg"
@@ -186,6 +256,15 @@ export default function Dashboard() {
             + Accept New Quest
           </button>
         </div>
+        {/* Emergency Quest Modal */}
+        <EmergencyQuestModal
+          open={showEmergency}
+          quest={emergencyQuest}
+          onClose={handleCloseEmergency}
+          onAccept={handleAcceptEmergency}
+          onComplete={handleCompleteEmergency}
+          alreadyAccepted={hasAcceptedEmergency}
+        />
         {/* SYSTEM LOG FEED */}
         <SystemLog logs={systemLogs} onClear={clearSystemLogs} />
         {/* Modals and overlays */}
