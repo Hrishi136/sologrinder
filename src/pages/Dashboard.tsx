@@ -1,8 +1,9 @@
-
-import React, { useState } from "react";
+import React from "react";
 import SystemPanel from "../components/SystemPanel";
 import TopNav from "../components/TopNav";
 import SystemNotification from "../components/SystemNotification";
+import { useHunterProgression } from "../hooks/useHunterProgression";
+import RankUpCeremony from "../components/RankUpCeremony";
 
 // ----- MOCK STAT STATE for demo -----
 const STATS = [
@@ -28,8 +29,31 @@ const calcPowerLevel = () =>
 // ------------------------------------
 
 export default function Dashboard() {
-  // Demo: how you might trigger a notification
-  const [systemNotice, setSystemNotice] = useState<string | null>("Welcome, Hunter. Your journey begins now.");
+  // --- PROGRESSION HOOK ---
+  const {
+    stats,
+    currentRank,
+    nextRank,
+    powerLevel,
+    rankPoints,
+    nextThreshold,
+    daysAtRank,
+    badges,
+    showCeremony,
+    completeQuest,
+    finishCeremony,
+    lastBadge,
+    currentRankIndex
+  } = useHunterProgression();
+
+  const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
+
+  // For demo: simulate completing quest to trigger rank up
+  const handleDemoCompleteQuest = () => {
+    // Add enough points to reach next rank or just add 70 (for demoing)
+    completeQuest(Math.max(70, (nextThreshold ?? 100) - rankPoints));
+    setSystemNotice("Quest completed! Rank points awarded.");
+  };
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative">
@@ -51,6 +75,16 @@ export default function Dashboard() {
         ))}
       </div>
       <div className="container mx-auto pt-4 pb-16 flex flex-col gap-8 items-center">
+
+        {/* RANK UP CEREMONY OVERLAY */}
+        {showCeremony && (
+          <RankUpCeremony
+            rankName={currentRank.name}
+            badgeIcon={lastBadge || "badge"}
+            onContinue={finishCeremony}
+          />
+        )}
+
         {/* SYSTEM NOTIFICATION MODAL */}
         <SystemNotification
           open={!!systemNotice}
@@ -62,7 +96,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-8 p-6">
             <div>
               <h2 className="font-orbitron text-4xl text-system-blue mb-1 font-extrabold tracking-widest">
-                [{CURRENT_RANK.name}]
+                [{currentRank.name}]
               </h2>
               <p className="uppercase text-system-blue2 mb-2 font-bold text-lg">Hunter: Sung Jinwoo</p>
               <div className="flex flex-col gap-2">
@@ -70,8 +104,22 @@ export default function Dashboard() {
                   <span className="font-bold">The System says...</span> Stay disciplined to increase your Hunter Rank!
                 </span>
                 <span className="text-xs font-orbitron text-white/70">
-                  Days as current rank: <b className="text-system-blue2">{DAYS_AS_CURRENT_RANK}</b>
+                  Days as current rank: <b className="text-system-blue2">{daysAtRank}</b>
                 </span>
+                {/* BADGES EARNED */}
+                <div className="flex gap-2 mt-1">
+                  {badges.map((badge, idx) => (
+                    <span key={badge + idx} className="inline-block">
+                      {/* Render a tiny icon for each badge, with a tooltip maybe */}
+                      {badge === "badge" && <span title="E-Rank"><span className="text-system-blue" style={{ fontSize: 20 }}>🏅</span></span>}
+                      {badge === "badge-check" && <span title="D-Rank"><span className="text-blue-400" style={{ fontSize: 20 }}>✔️</span></span>}
+                      {badge === "star-half" && <span title="C-Rank"><span className="text-cyan-300" style={{ fontSize: 20 }}>⭐</span></span>}
+                      {badge === "star" && <span title="B-Rank"><span className="text-yellow-300" style={{ fontSize: 20 }}>🌟</span></span>}
+                      {badge === "trophy" && <span title="A-Rank"><span className="text-yellow-500" style={{ fontSize: 20 }}>🏆</span></span>}
+                      {badge === "award" && <span title="S-Rank"><span className="text-rose-400" style={{ fontSize: 20 }}>🎖️</span></span>}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="flex flex-col items-center gap-3">
@@ -79,10 +127,10 @@ export default function Dashboard() {
                 Power Level
               </span>
               <span className="font-orbitron text-3xl text-system-blue2 animate-pulse">
-                {calcPowerLevel()}
+                {powerLevel}
               </span>
               <span className="text-xs text-system-blue2/90 font-orbitron">
-                <span className="font-bold">Rank Points:</span> {RANK_POINTS} / {NEXT_RANK_POINTS}
+                <span className="font-bold">Rank Points:</span> {rankPoints} / {nextThreshold ?? "MAX"}
               </span>
             </div>
           </div>
@@ -91,11 +139,11 @@ export default function Dashboard() {
             <div
               className="absolute left-0 top-0 h-5 rounded-full bg-gradient-to-r from-system-blue2 to-system-blue transition-all"
               style={{
-                width: `${Math.min((RANK_POINTS / NEXT_RANK_POINTS) * 100, 100)}%`,
+                width: `${!nextThreshold ? 100 : Math.min((rankPoints / nextThreshold) * 100, 100)}%`,
               }}
             />
             <span className="font-orbitron text-system-blue absolute left-2 top-0 h-5 flex items-center" style={{ fontSize: '1.1rem' }}>
-              Next Rank: {RANKS[CURRENT_RANK_INDEX + 1]?.name || "MAX"}
+              Next Rank: {nextRank?.name || "MAX"}
             </span>
           </div>
         </SystemPanel>
@@ -128,6 +176,10 @@ export default function Dashboard() {
                 <span className="font-inter text-white">Eat Balanced Meal (Vitality Enhancement)</span>
               </li>
             </ul>
+            {/* Fake complete quest button for demo */}
+            <button className="mt-5 w-full glow-button text-base" onClick={handleDemoCompleteQuest}>
+              Complete Quest (Demo) - Gain Rank Points
+            </button>
           </SystemPanel>
           {/* Quick Stats */}
           <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4">
@@ -146,7 +198,7 @@ export default function Dashboard() {
               <div className="flex justify-between items-center">
                 <span className="text-system-blue">Next Rank</span>
                 <span className="font-bold text-white">
-                  {RANKS[CURRENT_RANK_INDEX + 1]?.name || "MAX"}
+                  {nextRank?.name || "MAX"}
                 </span>
               </div>
             </div>
@@ -157,7 +209,7 @@ export default function Dashboard() {
               <span className="font-bold">The System says...</span> Hunter Stats
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
-              {STATS.map(stat => (
+              {stats.map(stat => (
                 <div key={stat.label} className="flex flex-col items-center">
                   <span className="font-orbitron text-system-blue2 text-sm">{stat.label}</span>
                   <div className="relative w-12 h-24 flex items-end mb-2">
@@ -178,5 +230,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
