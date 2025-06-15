@@ -12,6 +12,7 @@ import SystemLog from "../components/SystemLog";
 import ShadowArmyPreview from "../components/ShadowArmyPreview";
 import RecentAchievements from "../components/RecentAchievements";
 import EmergencyQuestModal from "../components/EmergencyQuestModal";
+import { useNavigate } from "react-router-dom";
 
 // Function to get the current logged-in user's name from localStorage
 function getCurrentUsername(): string | null {
@@ -46,7 +47,6 @@ export default function Dashboard() {
   const [systemNotice, setSystemNotice] = React.useState<string | null>("Welcome, Hunter. Your journey begins now.");
   const username = getCurrentUsername() || "Hunter";
 
-  // Shadow Army: reserved for future
   const shadowArmy = useShadowArmy();
 
   // Track rank up block reason
@@ -67,13 +67,12 @@ export default function Dashboard() {
   }
   function clearSystemLogs() { setSystemLogs([]); }
 
-  // Shadow Army preview handler
+  // Shadow Army preview handler -- use navigate to go to /army, not bad href
+  const navigate = useNavigate();
   function handleViewFullArmy() {
-    addSystemLog("Opening full Shadow Army page...", "info");
-    // For now redirect not implemented, just message.
+    navigate("/army");
   }
 
-  // Recent achievements (stubbed, could be extended from actual badges/shadow unlocks)
   const recentAchievements = [
     ...(badges.slice(-2).map(b => ({ name: b, timestamp: "Today", type: "title" as const }))),
     ...(shadowArmy.unlocked.slice(-1).map(s => ({ name: s, timestamp: "Today", type: "shadow" as const }))),
@@ -90,14 +89,13 @@ export default function Dashboard() {
     timerEnd: number;
   }>(null);
 
+  // Single flag controls the modal -- never allow opening two at once!
   const [showEmergency, setShowEmergency] = React.useState(false);
   const [hasAcceptedEmergency, setHasAcceptedEmergency] = React.useState(false);
 
-  // Simulate emergency quest spawning on mount (demo)
   React.useEffect(() => {
-    // Demo only: Spawn an emergency quest once per mount
-    if (!emergencyQuest) {
-      // Example quest: can randomize/type switch later if you like
+    // Only spawn if there is NOT one shown or queued
+    if (!emergencyQuest && !showEmergency) {
       setEmergencyQuest({
         type: "combat",
         title: "Urgent Combat Training",
@@ -108,14 +106,13 @@ export default function Dashboard() {
       });
       setShowEmergency(true);
     }
+    // eslint-disable-next-line
   }, []);
 
-  // Show system notification on spawn
   React.useEffect(() => {
     if (showEmergency && emergencyQuest) {
       setSystemNotice("🚨 Emergency Quest Available! Complete for rare rewards.");
     }
-    // eslint-disable-next-line
   }, [showEmergency, emergencyQuest]);
 
   // Emergency Quest handlers
@@ -128,10 +125,13 @@ export default function Dashboard() {
     setShowEmergency(false);
     setHasAcceptedEmergency(false);
     setEmergencyQuest(null);
-    // In a real app: apply points/stats & check shadow progress here
   }
   function handleCloseEmergency() {
     setShowEmergency(false);
+    setTimeout(() => {
+      setEmergencyQuest(null);
+      setHasAcceptedEmergency(false);
+    }, 310); // allow modal animation to finish, avoid stacking two modals
   }
 
   return (
@@ -225,7 +225,7 @@ export default function Dashboard() {
             </div>
           </SystemPanel>
           {/* Card 3: Shadow Army Preview */}
-          <ShadowArmyPreview unlocked={shadowArmy.unlocked} allShadows={shadowArmy.SHADOWS} onViewAll={() => { window.location.href = "/army-dashboard"; }} />
+          <ShadowArmyPreview unlocked={shadowArmy.unlocked} allShadows={shadowArmy.SHADOWS} onViewAll={handleViewFullArmy} />
           {/* Card 4: Recent Achievements & Streak */}
           <RecentAchievements
             achievements={recentAchievements}
@@ -234,8 +234,7 @@ export default function Dashboard() {
           />
         </div>
         {/* Floating Emergency Quest Button/Badge */}
-        {/* Only show if emergencyQuest is active and not completed */}
-        {emergencyQuest && (
+        {emergencyQuest && !showEmergency && (
           <button
             className="fixed bottom-28 right-8 z-[110] bg-gradient-to-tr from-red-700 via-red-500 to-pink-500 shadow-2xl pulse rounded-full px-6 py-3 text-white font-orbitron text-lg font-bold flex items-center gap-3 hover:scale-105 animate-pulse border-2 border-red-500"
             style={{ boxShadow: "0 0 24px 8px #ff002280" }}
@@ -256,16 +255,15 @@ export default function Dashboard() {
             + Accept New Quest
           </button>
         </div>
-        {/* Emergency Quest Modal */}
+        {/* Emergency Quest Modal - only ever renders ONE at a time because of state changes */}
         <EmergencyQuestModal
           open={showEmergency}
-          quest={emergencyQuest}
+          quest={showEmergency ? emergencyQuest : null}
           onClose={handleCloseEmergency}
           onAccept={handleAcceptEmergency}
           onComplete={handleCompleteEmergency}
           alreadyAccepted={hasAcceptedEmergency}
         />
-        {/* SYSTEM LOG FEED */}
         <SystemLog logs={systemLogs} onClear={clearSystemLogs} />
         {/* Modals and overlays */}
         {/* RANK UP CEREMONY OVERLAY */}
