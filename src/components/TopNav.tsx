@@ -7,6 +7,7 @@ const navItems = [
   { title: "Quests", path: "/quests" },
   { title: "Army", path: "/army" },
   { title: "Stats", path: "/stats" },
+  { title: "Performance", path: "/performance" },
 ]
 
 const SYSTEM_SESSION_KEY = "shadowSystem_session";

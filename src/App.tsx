@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import Quests from "./pages/Quests";
 import QuestDetail from "./pages/QuestDetail";
 import Army from "./pages/Army";
 import Stats from "./pages/Stats";
+import Performance from "./pages/Performance";
 import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
 import React from "react";
@@ -55,6 +57,7 @@ const App = () => {
                 <Route path="/quest/:id" element={isAuthenticated() ? <QuestDetail /> : <Navigate to="/login" />} />
                 <Route path="/army" element={isAuthenticated() ? <Army /> : <Navigate to="/login" />} />
                 <Route path="/stats" element={isAuthenticated() ? <Stats /> : <Navigate to="/login" />} />
+                <Route path="/performance" element={isAuthenticated() ? <Performance /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
