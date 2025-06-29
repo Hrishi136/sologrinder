@@ -13,6 +13,8 @@ import Stats from "./pages/Stats";
 import Performance from "./pages/Performance";
 import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
+import MobileBottomNav from "@/components/MobileBottomNav";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import React from "react";
 
 // Simple pseudo-session check for routing guard
@@ -60,6 +62,12 @@ const App = () => {
                 <Route path="/performance" element={isAuthenticated() ? <Performance /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              
+              {/* Mobile bottom navigation */}
+              <MobileBottomNav />
+              
+              {/* PWA install prompt */}
+              <PWAInstallPrompt />
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -80,4 +79,74 @@
 ::-webkit-scrollbar {
   background: #0a0a0a;
   width: 8px;
+}
+
+/* Mobile responsive breakpoints and touch targets */
+@media (max-width: 320px) {
+  .container {
+    @apply px-2;
+  }
+  
+  .system-panel {
+    @apply p-3;
+  }
+}
+
+@media (max-width: 768px) {
+  .particle-bg {
+    display: none; /* Reduce animation on mobile for performance */
+  }
+  
+  body {
+    padding-bottom: 80px; /* Space for bottom nav */
+  }
+  
+  /* Touch-friendly button sizing */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1440px) {
+  .container {
+    @apply px-6;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    @apply px-8;
+  }
+}
+
+/* PWA display mode styles */
+@media (display-mode: standalone) {
+  body {
+    user-select: none; /* Prevent text selection in app mode */
+  }
+}
+
+/* Swipe gesture visual feedback */
+.swipe-indicator {
+  transition: opacity 0.2s ease;
+}
+
+.swiping-left .swipe-indicator.left {
+  opacity: 1;
+}
+
+.swiping-right .swipe-indicator.right {
+  opacity: 1;
 }
