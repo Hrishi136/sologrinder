@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useHunterProgression } from '@/hooks/useHunterProgression';
 import DashboardHeader from '@/components/DashboardHeader';
@@ -24,6 +23,11 @@ const Performance = () => {
   } = useHunterProgression();
 
   const [timePeriod, setTimePeriod] = useState('30');
+
+  // Helper function to safely convert rankPoints to number
+  const getRankPointsAsNumber = (): number => {
+    return typeof rankPoints === 'number' ? rankPoints : 0;
+  };
 
   // Mock data for demonstrations - in real app this would come from historical data
   const mockPowerProgressionData = [
@@ -360,12 +364,12 @@ const Performance = () => {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-white">Weekly Points Goal</span>
-                      <span className="text-white">{rankPoints}/200</span>
+                      <span className="text-white">{getRankPointsAsNumber()}/200</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-yellow-500 h-2 rounded-full" 
-                        style={{ width: `${Math.min((rankPoints / 200) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((getRankPointsAsNumber() / 200) * 100, 100)}%` }}
                       ></div>
                     </div>
                   </div>
