@@ -32,11 +32,11 @@ export default function Performance() {
 
   // Helper function to safely sum daily quest values
   const getTotalDailyQuests = (): number => {
-    const values = Object.values(dailyQuests || {});
-    return values.reduce((sum: number, value) => {
-      const numValue = typeof value === 'number' ? value : 0;
-      return sum + numValue;
-    }, 0);
+    if (!dailyQuests) return 0;
+    const easy = typeof dailyQuests.easy === 'number' ? dailyQuests.easy : 0;
+    const medium = typeof dailyQuests.medium === 'number' ? dailyQuests.medium : 0;
+    const hard = typeof dailyQuests.hard === 'number' ? dailyQuests.hard : 0;
+    return easy + medium + hard;
   };
 
   // Mock data for demonstrations - in real app this would come from historical data
