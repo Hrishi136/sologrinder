@@ -66,6 +66,13 @@ const Performance = () => {
     return attempted > 0 ? Math.round((completed / attempted) * 100) : 0;
   };
 
+  // Helper function to safely sum daily quest values
+  const getTotalDailyQuests = () => {
+    return Object.values(dailyQuests).reduce((sum: number, value: unknown) => {
+      return sum + (typeof value === 'number' ? value : 0);
+    }, 0);
+  };
+
   const chartConfig = {
     power: { label: "Power Level", color: "#00d4ff" },
     Strength: { label: "Strength", color: "#ff6b6b" },
@@ -341,12 +348,12 @@ const Performance = () => {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-white">Daily Quest Goal</span>
-                      <span className="text-white">{Object.values(dailyQuests).reduce((a, b) => a + b, 0)}/3</span>
+                      <span className="text-white">{getTotalDailyQuests()}/3</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-system-blue h-2 rounded-full" 
-                        style={{ width: `${Math.min((Object.values(dailyQuests).reduce((a, b) => a + b, 0) / 3) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((getTotalDailyQuests() / 3) * 100, 100)}%` }}
                       ></div>
                     </div>
                   </div>
