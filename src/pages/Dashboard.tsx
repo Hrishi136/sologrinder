@@ -1,9 +1,12 @@
+
 import React from "react";
 import DashboardHeader from "../components/DashboardHeader";
 import DashboardPanels from "../components/DashboardPanels";
-// Removed DashboardFabButtons
 import SystemNotification from "../components/SystemNotification";
+import SmartNotificationModal from "../components/SmartNotificationModal";
+import NotificationHistory from "../components/NotificationHistory";
 import { useHunterProgression } from "../hooks/useHunterProgression";
+import { useSmartNotifications } from "../hooks/useSmartNotifications";
 import RankUpCeremony from "../components/RankUpCeremony";
 import { useShadowArmy } from "../hooks/useShadowArmy";
 import SystemLog from "../components/SystemLog";
@@ -44,6 +47,16 @@ export default function Dashboard() {
     addRankPoints,
     addStats,
   } = useHunterProgression();
+
+  // --- SMART NOTIFICATIONS HOOK ---
+  const {
+    activeNotification,
+    notifications,
+    dismissNotification,
+    addNotification,
+    generateCelebration
+  } = useSmartNotifications();
+
   console.log("HunterProgression loaded:", {
     stats, currentRank, nextRank, powerLevel, rankPoints, streak, daysActive,
     totalQuests, badges, showCeremony, lastBadge, currentRankIndex, dailyQuests, questCount
@@ -165,14 +178,24 @@ export default function Dashboard() {
     }
   }
 
-  // Reset the completion key if a NEW emergency is triggered in the future (could be by changing the version)
-  // (No automatic resets here.)
-
   // --- Rank up block modal state ---
   const [showBlock, setShowBlock] = React.useState(false);
   React.useEffect(() => {
     if (blockRankUp) setShowBlock(true);
   }, [blockRankUp]);
+
+  // Smart notification action handlers
+  const handleSmartNotificationAction = () => {
+    if (activeNotification?.type === 'streak-warning') {
+      // Navigate to quest completion or show quest modal
+      setSystemNotice("Select a quest to maintain your streak!");
+    } else if (activeNotification?.type === 'comeback') {
+      // Trigger celebration and motivation
+      const celebration = generateCelebration('comeback');
+      addNotification(celebration);
+      setSystemNotice("Welcome back, Hunter! The System has missed you.");
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
@@ -214,6 +237,12 @@ export default function Dashboard() {
               if (ok) {
                 addSystemLog(`Quest completed. +${cat}, +${difficulty}. Rank points & stat gain awarded.`, "achievement");
                 setSystemNotice("Quest completed! Stat/points gained.");
+                
+                // Trigger celebration for quest completion
+                if (Math.random() < 0.3) { // 30% chance
+                  const celebration = generateCelebration('weekly');
+                  addNotification(celebration);
+                }
               }
               return ok;
             }}
@@ -231,6 +260,18 @@ export default function Dashboard() {
             handleViewFullArmy={handleViewFullArmy}
           />
         </div>
+
+        {/* NOTIFICATION HISTORY PANEL */}
+        <div className="w-full max-w-md">
+          <NotificationHistory
+            notifications={notifications}
+            onClear={() => {
+              // Clear notification history logic would go here
+              console.log("Clear notifications");
+            }}
+          />
+        </div>
+
         {/* Emergency Quest Modal, System Log, System Notifications */}
         {(emergencyQuest && showEmergency) && (
           <EmergencyQuestModal
@@ -243,7 +284,9 @@ export default function Dashboard() {
             alreadyAccepted={hasAcceptedEmergency}
           />
         )}
+
         <SystemLog logs={systemLogs} onClear={clearSystemLogs} />
+
         {/* Modals and overlays */}
         {/* RANK UP CEREMONY OVERLAY */}
         {showCeremony && (
@@ -253,6 +296,14 @@ export default function Dashboard() {
             onContinue={finishCeremony}
           />
         )}
+
+        {/* SMART NOTIFICATION MODAL */}
+        <SmartNotificationModal
+          notification={activeNotification}
+          onDismiss={dismissNotification}
+          onAction={handleSmartNotificationAction}
+        />
+
         {/* SYSTEM NOTIFICATION MODAL */}
         <SystemNotification
           open={!!systemNotice}
@@ -272,6 +323,7 @@ export default function Dashboard() {
           }
           onClose={() => setSystemNotice(null)}
         />
+
         {/* Rank up block modal */}
         <SystemNotification
           open={showBlock && !!blockRankUp}
