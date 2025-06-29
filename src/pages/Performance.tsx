@@ -29,6 +29,13 @@ const Performance = () => {
     return typeof rankPoints === 'number' ? rankPoints : 0;
   };
 
+  // Helper function to safely sum daily quest values
+  const getTotalDailyQuests = (): number => {
+    return Object.values(dailyQuests).reduce((sum: number, value: unknown) => {
+      return sum + (typeof value === 'number' ? value : 0);
+    }, 0);
+  };
+
   // Mock data for demonstrations - in real app this would come from historical data
   const mockPowerProgressionData = [
     { day: 'Day 1', power: 10, rank: 'E-Rank' },
@@ -68,13 +75,6 @@ const Performance = () => {
     const completed = questCount[difficulty] || 0;
     const attempted = completed + Math.floor(Math.random() * 5); // Mock failed attempts
     return attempted > 0 ? Math.round((completed / attempted) * 100) : 0;
-  };
-
-  // Helper function to safely sum daily quest values
-  const getTotalDailyQuests = () => {
-    return Object.values(dailyQuests).reduce((sum: number, value: unknown) => {
-      return sum + (typeof value === 'number' ? value : 0);
-    }, 0);
   };
 
   const chartConfig = {
@@ -251,11 +251,11 @@ const Performance = () => {
                   <div className="text-white/60">Current Rank</div>
                 </div>
                 <div className="text-center mb-4 sm:mb-0">
-                  <div className="text-xl font-bold text-yellow-400">{rankPoints} pts</div>
+                  <div className="text-xl font-bold text-yellow-400">{getRankPointsAsNumber()} pts</div>
                   <div className="text-white/60">Current Points</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-green-400">~{Math.ceil((300 - rankPoints) / 15)} days</div>
+                  <div className="text-lg font-bold text-green-400">~{Math.ceil((300 - getRankPointsAsNumber()) / 15)} days</div>
                   <div className="text-white/60">To Next Rank</div>
                 </div>
               </div>
