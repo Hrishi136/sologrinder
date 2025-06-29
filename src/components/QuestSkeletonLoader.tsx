@@ -8,7 +8,7 @@ export default function QuestSkeletonLoader() {
       {[...Array(3)].map((_, i) => (
         <div
           key={i}
-          className="system-panel p-4 border-2 border-system-blue2/30 animate-pulse"
+          className="system-panel p-4 border-2 border-system-blue2/30 animate-pulse relative overflow-hidden"
           style={{ animationDelay: `${i * 0.1}s` }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -25,16 +25,9 @@ export default function QuestSkeletonLoader() {
           </div>
           
           {/* Blue shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-system-blue/10 to-transparent animate-[shimmer_2s_infinite] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-system-blue/10 to-transparent animate-shimmer pointer-events-none" />
         </div>
       ))}
-      
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }
