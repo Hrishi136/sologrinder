@@ -2,6 +2,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, Target, Users, BarChart3, TrendingUp } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Home' },
@@ -12,7 +13,7 @@ const navItems = [
 ];
 
 export default function MobileBottomNav() {
-  const { isMobile } = useIsMobile();
+  const isMobile = useIsMobile();
 
   if (!isMobile) return null;
 
@@ -40,5 +41,3 @@ export default function MobileBottomNav() {
   );
 }
 
-// Add missing import
-import { useIsMobile } from '@/hooks/use-mobile';

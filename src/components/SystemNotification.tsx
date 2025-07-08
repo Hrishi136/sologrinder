@@ -7,13 +7,15 @@ type SystemNotificationProps = {
   onClose?: () => void;
   // Optionally allow "success", "warning", "error" etc. for future
   tone?: "default" | "error" | "success";
+  actions?: React.ReactNode;
 };
 
 export default function SystemNotification({
   open,
   message,
   onClose,
-  tone = "default"
+  tone = "default",
+  actions
 }: SystemNotificationProps) {
   if (!open) return null;
 
@@ -34,7 +36,7 @@ export default function SystemNotification({
         <div className="text-lg text-white font-orbitron text-center">
           {message}
         </div>
-        {onClose && (
+        {actions || (onClose && (
           <button
             className="mt-3 glow-button text-base"
             onClick={onClose}
@@ -42,7 +44,7 @@ export default function SystemNotification({
           >
             Acknowledge
           </button>
-        )}
+        ))}
       </div>
     </div>
   );
