@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Target, Users, BarChart3, Trophy } from 'lucide-react';
+import { Home, Target, Users, BarChart3, Trophy, User } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
@@ -9,7 +9,7 @@ const navItems = [
   { path: '/quests', icon: Target, label: 'Quests' },
   { path: '/leaderboard', icon: Trophy, label: 'Ranks' },
   { path: '/community', icon: Users, label: 'Community' },
-  { path: '/stats', icon: BarChart3, label: 'Stats' },
+  { path: '/profile', icon: User, label: 'Profile' },
 ];
 
 export default function MobileBottomNav() {

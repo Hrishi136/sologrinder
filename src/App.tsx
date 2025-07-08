@@ -14,6 +14,7 @@ import Performance from "./pages/Performance";
 import SystemAnalysis from "./pages/SystemAnalysis";
 import Leaderboard from "./pages/Leaderboard";
 import Community from "./pages/Community";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -66,6 +67,7 @@ const App = () => {
                 <Route path="/system-analysis" element={isAuthenticated() ? <SystemAnalysis /> : <Navigate to="/login" />} />
                 <Route path="/leaderboard" element={isAuthenticated() ? <Leaderboard /> : <Navigate to="/login" />} />
                 <Route path="/community" element={isAuthenticated() ? <Community /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={isAuthenticated() ? <Profile /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               
