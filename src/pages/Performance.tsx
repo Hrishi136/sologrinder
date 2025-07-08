@@ -168,7 +168,7 @@ export default function Performance() {
         </div>
 
         {/* Performance Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {/* Power Level Card */}
           <Card className="system-panel border-system-blue2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -183,16 +183,16 @@ export default function Performance() {
             </CardContent>
           </Card>
 
-          {/* Quest Completion Rate */}
+          {/* Quest Success Rate */}
           <Card className="system-panel border-system-blue2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Quest Success</CardTitle>
+              <CardTitle className="text-sm font-medium text-white/80">Success Rate</CardTitle>
               <Target className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-400">{getSuccessRate('easy')}%</div>
               <p className="text-xs text-white/60">
-                Overall completion rate
+                Overall completion
               </p>
             </CardContent>
           </Card>
@@ -221,6 +221,20 @@ export default function Performance() {
               <div className="text-2xl font-bold text-system-blue2">{avgQuestsPerDay}</div>
               <p className="text-xs text-white/60">
                 Quests per day
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Next Rank Prediction */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Next Rank</CardTitle>
+              <TrendingUp className="h-4 w-4 text-system-blue2" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-system-blue2">{Math.ceil((300 - getRankPointsAsNumber()) / 15)}</div>
+              <p className="text-xs text-white/60">
+                Days estimated
               </p>
             </CardContent>
           </Card>

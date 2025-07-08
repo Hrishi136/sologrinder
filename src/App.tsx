@@ -11,6 +11,7 @@ import QuestDetail from "./pages/QuestDetail";
 import Army from "./pages/Army";
 import Stats from "./pages/Stats";
 import Performance from "./pages/Performance";
+import SystemAnalysis from "./pages/SystemAnalysis";
 import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -60,6 +61,7 @@ const App = () => {
                 <Route path="/army" element={isAuthenticated() ? <Army /> : <Navigate to="/login" />} />
                 <Route path="/stats" element={isAuthenticated() ? <Stats /> : <Navigate to="/login" />} />
                 <Route path="/performance" element={isAuthenticated() ? <Performance /> : <Navigate to="/login" />} />
+                <Route path="/system-analysis" element={isAuthenticated() ? <SystemAnalysis /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               
