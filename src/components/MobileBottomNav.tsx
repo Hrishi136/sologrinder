@@ -1,15 +1,15 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Target, Users, BarChart3, TrendingUp } from 'lucide-react';
+import { Home, Target, Users, BarChart3, Trophy } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Home' },
   { path: '/quests', icon: Target, label: 'Quests' },
-  { path: '/army', icon: Users, label: 'Army' },
+  { path: '/leaderboard', icon: Trophy, label: 'Ranks' },
+  { path: '/community', icon: Users, label: 'Community' },
   { path: '/stats', icon: BarChart3, label: 'Stats' },
-  { path: '/performance', icon: TrendingUp, label: 'Performance' },
 ];
 
 export default function MobileBottomNav() {
