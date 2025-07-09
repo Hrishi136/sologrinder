@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useHunterProgression } from "../hooks/useHunterProgression";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, User, Palette, Bell, Settings, Crown, Quote, Camera, Clock, Zap } from "lucide-react";
+import { ArrowLeft, User, Palette, Bell, Settings, Crown, Quote, Camera, Clock, Zap, LogOut } from "lucide-react";
 
 interface UserProfile {
   hunterName: string;
@@ -139,6 +140,15 @@ export default function Profile() {
     }));
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-system-bg font-orbitron">
       {/* Particle background */}
@@ -161,7 +171,7 @@ export default function Profile() {
 
       <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Back Button */}
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
           <Button 
             onClick={() => navigate('/dashboard')}
             variant="outline"
@@ -170,12 +180,22 @@ export default function Profile() {
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Button>
-          <Button 
-            onClick={saveProfile}
-            className="bg-system-blue hover:bg-system-blue/80 text-black font-medium"
-          >
-            Save Profile
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleLogout}
+              variant="outline"
+              className="flex items-center gap-2 text-red-400 border-red-400 hover:bg-red-400/10"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+            <Button 
+              onClick={saveProfile}
+              className="bg-system-blue hover:bg-system-blue/80 text-black font-medium"
+            >
+              Save Profile
+            </Button>
+          </div>
         </div>
 
         {/* Header */}

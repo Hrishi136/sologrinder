@@ -19,11 +19,8 @@ import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { supabase } from "@/integrations/supabase/client";
 import React from "react";
-
-// Simple pseudo-session check for routing guard
-const SYSTEM_SESSION_KEY = "shadowSystem_session";
-const isAuthenticated = () => !!localStorage.getItem(SYSTEM_SESSION_KEY);
 
 const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
 const queryClient = new QueryClient();
@@ -33,12 +30,38 @@ const App = () => {
     // Optional: only show on "cold" navigation, not every route
     return !window.sessionStorage.getItem(SYSTEM_BOOT_COMPLETE_KEY);
   });
+  const [session, setSession] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (!booted) {
       window.sessionStorage.setItem(SYSTEM_BOOT_COMPLETE_KEY, "true");
     }
   }, [booted]);
+
+  React.useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const isAuthenticated = !!session;
+
+  if (loading) {
+    return null; // or a loading spinner
+  }
 
   return (
     <>
@@ -55,19 +78,19 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Navigate to={isAuthenticated() ? "/dashboard" : "/login"} />} />
+                <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
                 <Route path="/login" element={<Login />} />
                 {/* Protected section */}
-                <Route path="/dashboard" element={isAuthenticated() ? <Dashboard /> : <Navigate to="/login" />} />
-                <Route path="/quests" element={isAuthenticated() ? <Quests /> : <Navigate to="/login" />} />
-                <Route path="/quest/:id" element={isAuthenticated() ? <QuestDetail /> : <Navigate to="/login" />} />
-                <Route path="/army" element={isAuthenticated() ? <Army /> : <Navigate to="/login" />} />
-                <Route path="/stats" element={isAuthenticated() ? <Stats /> : <Navigate to="/login" />} />
-                <Route path="/performance" element={isAuthenticated() ? <Performance /> : <Navigate to="/login" />} />
-                <Route path="/system-analysis" element={isAuthenticated() ? <SystemAnalysis /> : <Navigate to="/login" />} />
-                <Route path="/leaderboard" element={isAuthenticated() ? <Leaderboard /> : <Navigate to="/login" />} />
-                <Route path="/community" element={isAuthenticated() ? <Community /> : <Navigate to="/login" />} />
-                <Route path="/profile" element={isAuthenticated() ? <Profile /> : <Navigate to="/login" />} />
+                <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+                <Route path="/quests" element={isAuthenticated ? <Quests /> : <Navigate to="/login" />} />
+                <Route path="/quest/:id" element={isAuthenticated ? <QuestDetail /> : <Navigate to="/login" />} />
+                <Route path="/army" element={isAuthenticated ? <Army /> : <Navigate to="/login" />} />
+                <Route path="/stats" element={isAuthenticated ? <Stats /> : <Navigate to="/login" />} />
+                <Route path="/performance" element={isAuthenticated ? <Performance /> : <Navigate to="/login" />} />
+                <Route path="/system-analysis" element={isAuthenticated ? <SystemAnalysis /> : <Navigate to="/login" />} />
+                <Route path="/leaderboard" element={isAuthenticated ? <Leaderboard /> : <Navigate to="/login" />} />
+                <Route path="/community" element={isAuthenticated ? <Community /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               

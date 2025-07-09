@@ -1,79 +1,106 @@
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import SystemPanel from "../components/SystemPanel"
+import { supabase } from "@/integrations/supabase/client"
 
-type AuthMode = "login" | "register"
-
-const SYSTEM_USERS_KEY = "shadowSystem_users"
-const SYSTEM_SESSION_KEY = "shadowSystem_session"
-
-// Basic username/password mock auth with localStorage
-function setUserSession(username: string) {
-  localStorage.setItem(SYSTEM_SESSION_KEY, username)
-}
-function getUserSession(): string | null {
-  return localStorage.getItem(SYSTEM_SESSION_KEY)
-}
-
-function getUsers(): Record<string, {password:string}> {
-  return JSON.parse(localStorage.getItem(SYSTEM_USERS_KEY) || '{}')
-}
-function saveUser(username: string, password: string) {
-  const users = getUsers()
-  users[username] = { password }
-  localStorage.setItem(SYSTEM_USERS_KEY, JSON.stringify(users))
-}
-function checkUser(username: string, password: string) {
-  const users = getUsers()
-  if (users[username]?.password === password) return true
-  return false
-}
+type AuthMode = "email" | "magic"
 
 const subtitles = {
-  login: "System Access: Hunter Login",
-  register: "System Protocol: Hunter Registration"
+  email: "System Access: Hunter Login",
+  magic: "System Protocol: Magic Link Access"
 }
 
 export default function Login() {
-  const [mode, setMode] = useState<AuthMode>("login")
-  const [username, setUsername] = useState("")
+  const [mode, setMode] = useState<AuthMode>("email")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // Only redirect if on login page AND session is present. Prevent redirect race between login/dashboard.
-  React.useEffect(() => {
-    if (getUserSession()) {
-      // Prevent infinite redirects: navigate only if not at "/dashboard"
-      if (window.location.pathname !== "/dashboard") {
+  // Check for existing session and handle auth state changes
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user && window.location.pathname !== "/dashboard") {
+          navigate("/dashboard")
+        }
+      }
+    )
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && window.location.pathname !== "/dashboard") {
         navigate("/dashboard")
       }
-    }
+    })
+
+    return () => subscription.unsubscribe()
   }, [navigate])
 
-  function handleAuth(e: React.FormEvent) {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!username || !password) {
-      setError("Enter both Username and Password.")
+    if (!email || (mode === "email" && !password)) {
+      setError("Please fill in all required fields.")
       return
     }
-    if (mode === "login") {
-      if (!checkUser(username, password)) {
-        setError("Incorrect username or password.")
-        return
+    
+    setLoading(true)
+    setError("")
+
+    try {
+      if (mode === "email") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        
+        if (error) {
+          setError(error.message)
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`
+          }
+        })
+        
+        if (error) {
+          setError(error.message)
+        } else {
+          setError("")
+          alert("Check your email for the magic link!")
+        }
       }
-      setUserSession(username)
-      navigate("/dashboard")
-    } else {
-      const users = getUsers()
-      if (users[username]) {
-        setError("Username already registered.")
-        return
+    } catch (err: any) {
+      setError(err.message || "An error occurred")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleAuth = async () => {
+    setLoading(true)
+    setError("")
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      
+      if (error) {
+        setError(error.message)
       }
-      saveUser(username, password)
-      setUserSession(username)
-      navigate("/dashboard")
+    } catch (err: any) {
+      setError(err.message || "An error occurred")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -95,41 +122,61 @@ export default function Login() {
         ))}
       </div>
       <SystemPanel className="max-w-lg w-full px-7 py-10 relative z-10" glow>
-        <h1 className="text-3xl font-orbitron text-system-blue text-center mb-2 drop-shadow-[0_2px_16px_#00d4ffcc] tracking-widest">{mode === "login" ? "SYSTEM ACCESS" : "HUNTER REGISTRATION"}</h1>
+        <h1 className="text-3xl font-orbitron text-system-blue text-center mb-2 drop-shadow-[0_2px_16px_#00d4ffcc] tracking-widest">
+          {mode === "email" ? "SYSTEM ACCESS" : "MAGIC LINK ACCESS"}
+        </h1>
         <p className="text-center mb-8 text-system-blue2 font-medium animate-fade-in">{subtitles[mode]}</p>
         {error && (
           <div className="bg-red-900 bg-opacity-60 text-red-300 text-sm font-semibold px-4 py-2 rounded mb-4 border border-red-700 animate-fade-in">{error}</div>
         )}
-        <form className="flex flex-col gap-4 mt-2 text-lg font-inter" onSubmit={handleAuth}>
+        <form className="flex flex-col gap-4 mt-2 text-lg font-inter" onSubmit={handleEmailAuth}>
           <input
             className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 placeholder:text-system-blue2/60 outline-none"
-            placeholder="Hunter Username"
-            value={username}
-            onChange={e=>setUsername(e.target.value)}
-            maxLength={24}
+            placeholder="Hunter Email"
+            type="email"
+            value={email}
+            onChange={e=>setEmail(e.target.value)}
             required
           />
-          <input
-            className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 placeholder:text-system-blue2/60 outline-none"
-            placeholder="System Password"
-            type="password"
-            value={password}
-            onChange={e=>setPassword(e.target.value)}
-            maxLength={32}
-            required
-          />
-          <button type="submit" className="glow-button uppercase tracking-wider mt-1">
-            {mode === "login" ? "Unlock Access" : "Register Hunter"}
+          {mode === "email" && (
+            <input
+              className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 placeholder:text-system-blue2/60 outline-none"
+              placeholder="System Password"
+              type="password"
+              value={password}
+              onChange={e=>setPassword(e.target.value)}
+              required
+            />
+          )}
+          <button type="submit" className="glow-button uppercase tracking-wider mt-1" disabled={loading}>
+            {loading ? "Processing..." : mode === "email" ? "Unlock Access" : "Send Magic Link"}
           </button>
         </form>
+        
+        <div className="mt-4">
+          <button 
+            onClick={handleGoogleAuth}
+            disabled={loading}
+            className="w-full bg-white text-gray-800 font-semibold py-2 px-4 rounded border border-gray-300 hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            {loading ? "Processing..." : "Continue with Google"}
+          </button>
+        </div>
+
         <div className="mt-6 text-center text-sm">
-          {mode === "login" ? (
-            <span className="text-system-blue/80">No code?{' '}
-              <button className="underline hover:text-system-blue2 font-medium" onClick={()=>{setMode("register"); setError("");}}>Hunter Registration</button>
+          {mode === "email" ? (
+            <span className="text-system-blue/80">Prefer magic link?{' '}
+              <button className="underline hover:text-system-blue2 font-medium" onClick={()=>{setMode("magic"); setError("");}}>Magic Link Access</button>
             </span>
           ):(
-            <span className="text-system-blue/80">Already a hunter?{' '}
-              <button className="underline hover:text-system-blue" onClick={()=>{setMode("login"); setError("");}}>System Access</button>
+            <span className="text-system-blue/80">Have a password?{' '}
+              <button className="underline hover:text-system-blue" onClick={()=>{setMode("email"); setError("");}}>System Access</button>
             </span>
           )}
         </div>
