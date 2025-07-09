@@ -3,8 +3,10 @@ import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import SystemPanel from "../components/SystemPanel"
 import { supabase } from "@/integrations/supabase/client"
+import { Eye, EyeOff } from "lucide-react"
 
 type AuthMode = "email" | "magic"
+type FormType = "login" | "signup"
 
 const subtitles = {
   email: "System Access: Hunter Login",
@@ -13,8 +15,10 @@ const subtitles = {
 
 export default function Login() {
   const [mode, setMode] = useState<AuthMode>("email")
+  const [formType, setFormType] = useState<FormType>("login")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -52,13 +56,30 @@ export default function Login() {
 
     try {
       if (mode === "email") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        
-        if (error) {
-          setError(error.message)
+        if (formType === "signup") {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: `${window.location.origin}/dashboard`
+            }
+          })
+          
+          if (error) {
+            setError(error.message)
+          } else {
+            setError("")
+            alert("Registration successful! Check your email to verify your account.")
+          }
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+          
+          if (error) {
+            setError(error.message)
+          }
         }
       } else {
         const { error } = await supabase.auth.signInWithOtp({
@@ -123,7 +144,7 @@ export default function Login() {
       </div>
       <SystemPanel className="max-w-lg w-full px-7 py-10 relative z-10" glow>
         <h1 className="text-3xl font-orbitron text-system-blue text-center mb-2 drop-shadow-[0_2px_16px_#00d4ffcc] tracking-widest">
-          {mode === "email" ? "SYSTEM ACCESS" : "MAGIC LINK ACCESS"}
+          {mode === "email" ? (formType === "signup" ? "SYSTEM REGISTRATION" : "SYSTEM ACCESS") : "MAGIC LINK ACCESS"}
         </h1>
         <p className="text-center mb-8 text-system-blue2 font-medium animate-fade-in">{subtitles[mode]}</p>
         {error && (
@@ -139,17 +160,30 @@ export default function Login() {
             required
           />
           {mode === "email" && (
-            <input
-              className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 placeholder:text-system-blue2/60 outline-none"
-              placeholder="System Password"
-              type="password"
-              value={password}
-              onChange={e=>setPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <input
+                className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 pr-12 placeholder:text-system-blue2/60 outline-none w-full"
+                placeholder="System Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={e=>setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-system-blue hover:text-system-blue2 transition-colors duration-200 focus:outline-none"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 drop-shadow-[0_0_8px_#00d4ff88] hover:drop-shadow-[0_0_12px_#00d4ffcc] transition-all duration-200" />
+                ) : (
+                  <Eye className="h-5 w-5 drop-shadow-[0_0_8px_#00d4ff88] hover:drop-shadow-[0_0_12px_#00d4ffcc] transition-all duration-200" />
+                )}
+              </button>
+            </div>
           )}
           <button type="submit" className="glow-button uppercase tracking-wider mt-1" disabled={loading}>
-            {loading ? "Processing..." : mode === "email" ? "Unlock Access" : "Send Magic Link"}
+            {loading ? "Processing..." : mode === "email" ? (formType === "signup" ? "Register Hunter" : "Unlock Access") : "Send Magic Link"}
           </button>
         </form>
         
@@ -169,7 +203,21 @@ export default function Login() {
           </button>
         </div>
 
-        <div className="mt-6 text-center text-sm">
+        {mode === "email" && (
+          <div className="mt-4 text-center text-sm">
+            <span className="text-system-blue/80">
+              {formType === "login" ? "New hunter? " : "Already registered? "}
+              <button 
+                className="underline hover:text-system-blue2 font-medium" 
+                onClick={()=>{setFormType(formType === "login" ? "signup" : "login"); setError("");}}
+              >
+                {formType === "login" ? "Register Here" : "Login Here"}
+              </button>
+            </span>
+          </div>
+        )}
+
+        <div className="mt-4 text-center text-sm">
           {mode === "email" ? (
             <span className="text-system-blue/80">Prefer magic link?{' '}
               <button className="underline hover:text-system-blue2 font-medium" onClick={()=>{setMode("magic"); setError("");}}>Magic Link Access</button>
