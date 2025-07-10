@@ -13,11 +13,7 @@ import SystemLog from "../components/SystemLog";
 import EmergencyQuestModal from "../components/EmergencyQuestModal";
 import { useNavigate } from "react-router-dom";
 import { useEmergencyQuestModal } from "../hooks/useEmergencyQuestModal";
-
-// Function to get the current logged-in user's name from localStorage
-function getCurrentUsername(): string | null {
-  return localStorage.getItem("shadowSystem_session");
-}
+import { supabase } from "@/integrations/supabase/client";
 
 console.log("Dashboard component loading...");
 
@@ -62,24 +58,50 @@ export default function Dashboard() {
     totalQuests, badges, showCeremony, lastBadge, currentRankIndex, dailyQuests, questCount
   });
 
-  // System notification message, show only ONCE per session
-  const [systemNotice, setSystemNotice] = React.useState<string | null>(() => {
-    // Only show if NOT already set for this tab session
-    if (window.sessionStorage.getItem("system_welcome_seen")) {
-      return null;
-    }
-    window.sessionStorage.setItem("system_welcome_seen", "1");
-    return "Welcome, Hunter. Your journey begins now.";
-  });
+  // Fetch username from Supabase profiles
+  const [username, setUsername] = React.useState("Hunter");
+  const [systemNotice, setSystemNotice] = React.useState<string | null>(null);
 
-  const username = getCurrentUsername() || "Hunter";
+  React.useEffect(() => {
+    const fetchUsername = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.username) {
+          setUsername(profile.username);
+        }
+      }
+    };
+
+    fetchUsername();
+  }, []);
+  
+  // Show personalized welcome message once username is loaded
+  React.useEffect(() => {
+    if (username && username !== "Hunter" && !window.sessionStorage.getItem("system_welcome_seen")) {
+      window.sessionStorage.setItem("system_welcome_seen", "1");
+      setSystemNotice(`Ready to grind, ${username}? Your Shadow System awaits.`);
+    }
+  }, [username]);
 
   const shadowArmy = useShadowArmy();
 
-  // System log state
-  const [systemLogs, setSystemLogs] = React.useState<{ message: string; timestamp: string; type?: "info"|"warning"|"achievement"; }[]>([
-    { message: `System online. Welcome back, Hunter ${username}. Today's quests are ready.`, timestamp: new Date().toLocaleTimeString(), type: "info" }
-  ]);
+  // System log state - initialize with dynamic username
+  const [systemLogs, setSystemLogs] = React.useState<{ message: string; timestamp: string; type?: "info"|"warning"|"achievement"; }[]>([]);
+
+  // Initialize system logs once we have the username
+  React.useEffect(() => {
+    if (username && systemLogs.length === 0) {
+      setSystemLogs([
+        { message: `System online. Welcome back, Hunter ${username}. Today's quests are ready.`, timestamp: new Date().toLocaleTimeString(), type: "info" }
+      ]);
+    }
+  }, [username, systemLogs.length]);
   function addSystemLog(msg: string, type?: "info" | "warning" | "achievement") {
     setSystemLogs(l => [
       ...l,

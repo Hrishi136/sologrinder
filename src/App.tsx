@@ -20,6 +20,7 @@ import SystemBootScreen from "@/components/SystemBootScreen";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { supabase } from "@/integrations/supabase/client";
+import UsernameSelectionModal from "@/components/UsernameSelectionModal";
 import React from "react";
 
 const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
@@ -31,7 +32,9 @@ const App = () => {
     return !window.sessionStorage.getItem(SYSTEM_BOOT_COMPLETE_KEY);
   });
   const [session, setSession] = React.useState(null);
+  const [profile, setProfile] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  const [showUsernameModal, setShowUsernameModal] = React.useState(false);
 
   React.useEffect(() => {
     if (!booted) {
@@ -56,6 +59,36 @@ const App = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check for user profile when authenticated
+  React.useEffect(() => {
+    const checkProfile = async () => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        setProfile(profile);
+        
+        // Show username modal if no profile exists
+        if (!profile) {
+          setShowUsernameModal(true);
+        }
+      } else {
+        setProfile(null);
+        setShowUsernameModal(false);
+      }
+    };
+
+    checkProfile();
+  }, [session]);
+
+  const handleUsernameComplete = (username: string) => {
+    setProfile({ username });
+    setShowUsernameModal(false);
+  };
 
   const isAuthenticated = !!session;
 
@@ -99,6 +132,12 @@ const App = () => {
               
               {/* PWA install prompt */}
               <PWAInstallPrompt />
+              
+              {/* Username selection modal */}
+              <UsernameSelectionModal 
+                open={showUsernameModal}
+                onComplete={handleUsernameComplete}
+              />
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>
