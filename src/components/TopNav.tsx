@@ -1,6 +1,7 @@
 
 import React from "react"
 import { useNavigate, NavLink } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
 
 const navItems = [
   { title: "Dashboard", path: "/dashboard" },
@@ -10,14 +11,12 @@ const navItems = [
   { title: "Performance", path: "/performance" },
 ]
 
-const SYSTEM_SESSION_KEY = "shadowSystem_session";
-
 export default function TopNav() {
   const navigate = useNavigate();
 
-  function handleLogout(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
+  async function handleLogout(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
     e.preventDefault();
-    localStorage.removeItem(SYSTEM_SESSION_KEY);
+    await supabase.auth.signOut();
     navigate("/login");
   }
 
