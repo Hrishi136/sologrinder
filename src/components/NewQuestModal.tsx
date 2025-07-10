@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Sword, Brain, Zap, Heart } from "lucide-react";
+import { useChallenges } from "@/hooks/useChallenges";
+import { useToast } from "./ui/use-toast";
 
 type Category = "combat" | "intelligence" | "agility" | "vitality";
 type Difficulty = "easy" | "medium" | "hard";
@@ -28,6 +30,10 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
   const [category, setCategory] = useState<Category | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { createChallenge } = useChallenges();
+  const { toast } = useToast();
 
   // Reset form when modal closes
   const handleClose = () => {
@@ -36,6 +42,43 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
     setCategory(null);
     setDifficulty(null);
     setDescription("");
+    setIsSubmitting(false);
+  };
+
+  // Handle quest creation
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!questName || !category || !difficulty) return;
+
+    setIsSubmitting(true);
+    
+    const categoryLabel = categoryOptions.find(opt => opt.value === category)?.label || category;
+    const difficultyData = difficultyOptions.find(opt => opt.value === difficulty);
+    
+    const challenge = await createChallenge({
+      title: questName,
+      description: description || undefined,
+      steps: JSON.stringify({
+        category: categoryLabel,
+        difficulty: difficulty,
+        points: difficultyData?.points || 0
+      })
+    });
+
+    if (challenge) {
+      toast({
+        title: "Quest Accepted!",
+        description: `Your ${difficulty} ${categoryLabel.toLowerCase()} quest has been created.`,
+      });
+      handleClose();
+    } else {
+      toast({
+        title: "Quest Creation Failed",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,9 +95,7 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
       <DialogContent className="system-panel system-panel-glow bg-[#0a0a0a90] border-system-blue2 border-2 p-6 rounded-2xl shadow-blue-glow animate-fade-in font-orbitron">
         <form
           className="w-full flex flex-col gap-6"
-          onSubmit={e => {
-            e.preventDefault();
-          }}
+          onSubmit={handleSubmit}
         >
           <DialogHeader>
             <DialogTitle className="text-system-blue2 tracking-widest mb-2 text-xl flex items-center gap-2">
@@ -160,14 +201,9 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
             <Button
               type="submit"
               className="glow-button bg-system-blue2/90 hover:bg-system-blue2 text-white px-6 py-2 rounded-lg font-orbitron text-base transition active:scale-95"
-              disabled={!questName || !category || !difficulty}
-              onClick={e => {
-                e.preventDefault();
-                // For now, just close modal and reset.
-                handleClose();
-              }}
+              disabled={!questName || !category || !difficulty || isSubmitting}
             >
-              Accept Quest
+              {isSubmitting ? "Creating..." : "Accept Quest"}
             </Button>
           </DialogFooter>
         </form>

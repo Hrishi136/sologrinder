@@ -14,12 +14,14 @@ interface SwipeableQuestCardProps {
   };
   onComplete: () => void;
   onEdit: () => void;
+  onDelete?: () => void;
 }
 
 export default function SwipeableQuestCard({ 
   quest, 
   onComplete, 
-  onEdit 
+  onEdit,
+  onDelete 
 }: SwipeableQuestCardProps) {
   const [hapticTrigger, setHapticTrigger] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);

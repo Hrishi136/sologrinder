@@ -2,8 +2,72 @@
 import React from "react"
 import SystemPanel from "../components/SystemPanel"
 import TopNav from "../components/TopNav"
+import NewQuestModal from "../components/NewQuestModal"
+import SwipeableQuestCard from "../components/SwipeableQuestCard"
+import { useChallenges } from "../hooks/useChallenges"
+import { useHunterProgression } from "../hooks/useHunterProgression"
+import { useToast } from "../components/ui/use-toast"
 
 export default function Quests() {
+  const { challenges, loading, deleteChallenge, completeChallenge } = useChallenges();
+  const { completeQuest } = useHunterProgression();
+  const { toast } = useToast();
+
+  const handleComplete = async (challengeId: string) => {
+    const challenge = challenges.find(c => c.id === challengeId);
+    if (!challenge) return;
+
+    // Parse challenge steps to get category and difficulty
+    let category = "combat";
+    let difficulty = "easy";
+    try {
+      const steps = JSON.parse(challenge.steps || "{}");
+      const categoryMap: Record<string, string> = {
+        "Combat Training": "combat",
+        "Intelligence Gathering": "intelligence", 
+        "Agility Development": "agility",
+        "Vitality Enhancement": "vitality"
+      };
+      category = categoryMap[steps.category] || "combat";
+      difficulty = steps.difficulty || "easy";
+    } catch (e) {
+      console.warn("Failed to parse challenge steps:", e);
+    }
+
+    // Complete in both systems
+    const progressSuccess = completeQuest(category, difficulty as "easy" | "medium" | "hard");
+    if (progressSuccess) {
+      await completeChallenge(challengeId);
+      toast({
+        title: "Quest Completed!",
+        description: "Your progress has been updated and stats gained.",
+      });
+    } else {
+      toast({
+        title: "Daily Limit Reached",
+        description: `You've completed the maximum ${difficulty} quests for today.`,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEdit = (challengeId: string) => {
+    // Navigate to quest detail page for editing
+    window.location.href = `/quest/${challengeId}`;
+  };
+
+  const handleDelete = async (challengeId: string) => {
+    if (confirm("Are you sure you want to delete this quest?")) {
+      const success = await deleteChallenge(challengeId);
+      if (success) {
+        toast({
+          title: "Quest Deleted",
+          description: "The quest has been removed from your list.",
+        });
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-system-bg relative">
       <TopNav />
@@ -13,39 +77,50 @@ export default function Quests() {
             <h2 className="font-orbitron text-2xl text-system-blue font-extrabold">
               Quest Management
             </h2>
-            <button className="glow-button" onClick={()=>alert("New Quest Modal coming soon!")}>
-              + New Quest
-            </button>
+            <NewQuestModal />
           </div>
-          <div className="grid gap-6">
-            {/* Quest cards dummy */}
-            {[
-              {id:1, name:"100 Push-ups", category:"Physical", difficulty:"E-Rank", completed: false},
-              {id:2, name:"Study Strategy for 20min", category:"Mental", difficulty:"D-Rank", completed: true}
-            ].map(q=>(
-              <SystemPanel key={q.id} className="py-4 px-6 flex flex-col sm:flex-row items-center justify-between mb-2">
-                <div>
-                  <h3 className="font-orbitron text-xl text-system-blue mb-1">{q.name}</h3>
-                  <div className="flex gap-3 text-system-blue2 text-sm">
-                    <span>{q.category} Training</span>
-                    <span>{q.difficulty}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-3 sm:mt-0">
-                  <button
-                    className="text-xs bg-system-blue2 bg-opacity-80 rounded px-3 py-1 font-orbitron font-semibold text-white hover:scale-105 transition-all"
-                    onClick={()=>window.location.href='/quest/1'}
-                  >View</button>
-                  <button
-                    className="text-xs bg-system-blue bg-opacity-30 rounded px-2 py-1 font-orbitron text-white hover:bg-opacity-70 transition"
-                  >Edit</button>
-                  <button
-                    className="text-xs bg-red-700 bg-opacity-50 rounded px-2 py-1 font-orbitron text-white hover:bg-opacity-80 transition"
-                  >Delete</button>
-                </div>
-              </SystemPanel>
-            ))}
-          </div>
+          
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="text-system-blue2 font-orbitron">Loading quests...</div>
+            </div>
+          ) : challenges.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-system-blue2 font-orbitron mb-4">No active quests</div>
+              <p className="text-white/70">Create your first quest to begin your hunter journey!</p>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {challenges.map(challenge => {
+                // Parse challenge metadata
+                let category = "Physical";
+                let difficulty = "E-Rank";
+                try {
+                  const steps = JSON.parse(challenge.steps || "{}");
+                  category = steps.category || "Physical";
+                  difficulty = `${steps.difficulty || "easy"}-rank`.replace("easy", "E").replace("medium", "D").replace("hard", "C");
+                } catch (e) {
+                  // Use defaults
+                }
+
+                return (
+                  <SwipeableQuestCard
+                    key={challenge.id}
+                    quest={{
+                      id: challenge.id,
+                      name: challenge.title,
+                      category: category,
+                      difficulty: difficulty,
+                      completed: false
+                    }}
+                    onComplete={() => handleComplete(challenge.id)}
+                    onEdit={() => handleEdit(challenge.id)}
+                    onDelete={() => handleDelete(challenge.id)}
+                  />
+                );
+              })}
+            </div>
+          )}
         </SystemPanel>
       </div>
     </div>
