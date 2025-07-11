@@ -22,6 +22,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import UsernameSelectionModal from "@/components/UsernameSelectionModal";
+import WelcomeBackModal from "@/components/WelcomeBackModal";
 import React from "react";
 
 const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
@@ -36,6 +37,8 @@ const App = () => {
   const [profile, setProfile] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [showUsernameModal, setShowUsernameModal] = React.useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = React.useState(false);
+  const [hasShownWelcome, setHasShownWelcome] = React.useState(false);
 
   React.useEffect(() => {
     if (!booted) {
@@ -76,6 +79,10 @@ const App = () => {
         // Show username modal if no profile exists
         if (!profile) {
           setShowUsernameModal(true);
+        } else if (!hasShownWelcome) {
+          // Show welcome modal for existing users on login
+          setShowWelcomeModal(true);
+          setHasShownWelcome(true);
         }
       } else {
         setProfile(null);
@@ -89,6 +96,9 @@ const App = () => {
   const handleUsernameComplete = (username: string) => {
     setProfile({ username });
     setShowUsernameModal(false);
+    // Show welcome modal for new users after username setup
+    setShowWelcomeModal(true);
+    setHasShownWelcome(true);
   };
 
   const isAuthenticated = !!session;
@@ -139,6 +149,13 @@ const App = () => {
               <UsernameSelectionModal 
                 open={showUsernameModal}
                 onComplete={handleUsernameComplete}
+              />
+              
+              {/* Welcome back modal */}
+              <WelcomeBackModal
+                username={profile?.username || 'Unknown Hunter'}
+                isVisible={showWelcomeModal}
+                onClose={() => setShowWelcomeModal(false)}
               />
             </BrowserRouter>
           </TooltipProvider>

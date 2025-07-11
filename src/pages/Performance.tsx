@@ -27,17 +27,29 @@ export default function Performance() {
   } = usePerformanceData();
 
   console.log("Performance page data:", {
-    stats, currentRank, powerLevel, rankPoints, streak, daysActive, totalQuests, badges, dailyQuests, questCount
+    powerLevel, streak, daysActive, totalQuests, questCount, categoryStats, successRate
   });
+
+  // Mock rank data based on power level
+  const currentRank = powerLevel < 500 ? "E-Rank" : powerLevel < 1000 ? "D-Rank" : powerLevel < 2000 ? "C-Rank" : "B-Rank";
+  const nextRank = currentRank === "E-Rank" ? "D-Rank" : currentRank === "D-Rank" ? "C-Rank" : currentRank === "C-Rank" ? "B-Rank" : "A-Rank";
+  const rankPoints = powerLevel;
+  const badges = Math.floor(totalQuests / 5); // 1 badge per 5 quests
 
   // Helper function to safely convert rankPoints to number
   const getRankPointsAsNumber = (): number => {
     return typeof rankPoints === 'number' ? rankPoints : 0;
   };
 
+  // Daily quest mock data based on questCount
+  const dailyQuests = {
+    easy: questCount.easy,
+    medium: questCount.medium, 
+    hard: questCount.hard
+  };
+
   // Helper function to safely sum daily quest values
   const getTotalDailyQuests = (): number => {
-    if (!dailyQuests) return 0;
     const easy = typeof dailyQuests.easy === 'number' ? dailyQuests.easy : 0;
     const medium = typeof dailyQuests.medium === 'number' ? dailyQuests.medium : 0;
     const hard = typeof dailyQuests.hard === 'number' ? dailyQuests.hard : 0;
@@ -95,12 +107,13 @@ export default function Performance() {
     return periods[questTimePeriod] || periods['last-4-weeks'];
   };
 
-  // Stat distribution data
-  const statDistributionData = stats.map(stat => ({
-    name: stat.label,
-    value: stat.val,
-    percentage: Math.round((stat.val / Math.max(stats.reduce((sum, s) => sum + s.val, 0), 1)) * 100)
-  }));
+  // Stat distribution data based on categoryStats
+  const statDistributionData = [
+    { name: 'Combat', value: categoryStats.combat, percentage: Math.round((categoryStats.combat / Math.max(totalQuests, 1)) * 100) },
+    { name: 'Intelligence', value: categoryStats.intelligence, percentage: Math.round((categoryStats.intelligence / Math.max(totalQuests, 1)) * 100) },
+    { name: 'Agility', value: categoryStats.agility, percentage: Math.round((categoryStats.agility / Math.max(totalQuests, 1)) * 100) },
+    { name: 'Vitality', value: categoryStats.vitality, percentage: Math.round((categoryStats.vitality / Math.max(totalQuests, 1)) * 100) }
+  ];
 
   // Performance metrics calculations
   const avgQuestsPerDay = daysActive > 0 ? (totalQuests / daysActive).toFixed(1) : '0';
@@ -176,7 +189,7 @@ export default function Performance() {
             <CardContent>
               <div className="text-2xl font-bold text-system-blue">{powerLevel}</div>
               <p className="text-xs text-white/60">
-                Rank: {currentRank?.name || 'E-Rank'}
+                Rank: {currentRank}
               </p>
             </CardContent>
           </Card>
@@ -404,19 +417,19 @@ export default function Performance() {
               <div className="flex justify-between items-center">
                 <span className="text-white/80">Current Rank</span>
                 <Badge className="bg-system-blue2 text-black">
-                  {currentRank?.name || 'E-Rank'}
+                  {currentRank}
                 </Badge>
               </div>
               
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-white/60">Progress to {nextRank?.name || 'MAX'}</span>
+                  <span className="text-white/60">Progress to {nextRank}</span>
                   <span className="text-white/60">
-                    {getRankPointsAsNumber()}/{nextRank?.points || 'MAX'} pts
+                    {getRankPointsAsNumber()}/1000 pts
                   </span>
                 </div>
                 <Progress 
-                  value={nextRank ? (getRankPointsAsNumber() / nextRank.points) * 100 : 100} 
+                  value={Math.min((getRankPointsAsNumber() / 1000) * 100, 100)} 
                   className="h-3 bg-gray-700"
                 />
               </div>
@@ -463,7 +476,7 @@ export default function Performance() {
               <div className="flex justify-between items-center">
                 <span className="text-white/80">Badges Earned</span>
                 <Badge variant="outline" className="border-yellow-400 text-yellow-400">
-                  {badges.length}
+                  {badges}
                 </Badge>
               </div>
 
