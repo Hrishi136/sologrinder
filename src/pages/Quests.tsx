@@ -1,128 +1,217 @@
-
-import React from "react"
-import SystemPanel from "../components/SystemPanel"
-import TopNav from "../components/TopNav"
+import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Target, Filter, Search } from "lucide-react"
 import NewQuestModal from "../components/NewQuestModal"
 import SwipeableQuestCard from "../components/SwipeableQuestCard"
+import EditQuestModal from "../components/EditQuestModal"
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
 import { useChallenges } from "../hooks/useChallenges"
-import { useHunterProgression } from "../hooks/useHunterProgression"
+import { Tables } from "../integrations/supabase/types"
 import { useToast } from "../components/ui/use-toast"
+import TopNav from "../components/TopNav"
 
 export default function Quests() {
-  const { challenges, loading, deleteChallenge, completeChallenge } = useChallenges();
-  const { completeQuest } = useHunterProgression();
+  const navigate = useNavigate();
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedQuest, setSelectedQuest] = useState<Tables<'Challenges'> | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const { challenges, loading, completeChallenge, updateChallenge, deleteChallenge, refreshChallenges } = useChallenges();
   const { toast } = useToast();
 
-  const handleComplete = async (challengeId: string) => {
-    const challenge = challenges.find(c => c.id === challengeId);
-    if (!challenge) return;
-
-    // Parse challenge steps to get category and difficulty
-    let category = "combat";
-    let difficulty = "easy";
-    try {
-      const steps = JSON.parse(challenge.steps || "{}");
-      const categoryMap: Record<string, string> = {
-        "Combat Training": "combat",
-        "Intelligence Gathering": "intelligence", 
-        "Agility Development": "agility",
-        "Vitality Enhancement": "vitality"
-      };
-      category = categoryMap[steps.category] || "combat";
-      difficulty = steps.difficulty || "easy";
-    } catch (e) {
-      console.warn("Failed to parse challenge steps:", e);
-    }
-
-    // Complete in both systems
-    const progressSuccess = completeQuest(category, difficulty as "easy" | "medium" | "hard");
-    if (progressSuccess) {
-      await completeChallenge(challengeId);
+  const handleQuestComplete = async (questId: string) => {
+    const success = await completeChallenge(questId);
+    if (success) {
       toast({
         title: "Quest Completed!",
-        description: "Your progress has been updated and stats gained.",
+        description: "Your progress has been updated.",
       });
-    } else {
+    }
+  };
+
+  const handleQuestEdit = (quest: Tables<'Challenges'>) => {
+    setSelectedQuest(quest);
+    setShowEditModal(true);
+  };
+
+  const handleQuestDelete = (quest: Tables<'Challenges'>) => {
+    setSelectedQuest(quest);
+    setShowDeleteModal(true);
+  };
+
+  const handleEditSave = async (updates: Partial<Tables<'Challenges'>>) => {
+    if (!selectedQuest) return;
+    
+    const success = await updateChallenge(selectedQuest.id, updates);
+    if (success) {
       toast({
-        title: "Daily Limit Reached",
-        description: `You've completed the maximum ${difficulty} quests for today.`,
-        variant: "destructive"
+        title: "Quest Updated!",
+        description: "Your quest has been saved successfully.",
       });
+      setShowEditModal(false);
+      setSelectedQuest(null);
     }
   };
 
-  const handleEdit = (challengeId: string) => {
-    // Navigate to quest detail page for editing
-    window.location.href = `/quest/${challengeId}`;
+  const handleDeleteConfirm = async () => {
+    if (!selectedQuest) return;
+    
+    setDeleteLoading(true);
+    const success = await deleteChallenge(selectedQuest.id);
+    if (success) {
+      toast({
+        title: "Quest Deleted",
+        description: "The quest has been removed from your list.",
+      });
+      setShowDeleteModal(false);
+      setSelectedQuest(null);
+    }
+    setDeleteLoading(false);
   };
 
-  const handleDelete = async (challengeId: string) => {
-    if (confirm("Are you sure you want to delete this quest?")) {
-      const success = await deleteChallenge(challengeId);
-      if (success) {
-        toast({
-          title: "Quest Deleted",
-          description: "The quest has been removed from your list.",
-        });
-      }
+  const getQuestData = (challenge: Tables<'Challenges'>) => {
+    let category = "Combat Training";
+    let difficulty = "easy";
+    
+    try {
+      const steps = JSON.parse(challenge.steps || "{}");
+      category = steps.category || "Combat Training";
+      difficulty = steps.difficulty || "easy";
+    } catch (e) {
+      // Use defaults
     }
+
+    const difficultyRank = difficulty === "easy" ? "E-Rank" : difficulty === "medium" ? "D-Rank" : "C-Rank";
+
+    return {
+      id: challenge.id,
+      name: challenge.title,
+      category,
+      difficulty: difficultyRank,
+      completed: (challenge.streak || 0) > 0
+    };
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full bg-system-bg relative">
+        <TopNav />
+        <div className="container mx-auto pt-8 flex items-center justify-center">
+          <div className="text-system-blue2 font-orbitron">Loading quests...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative">
+    <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
       <TopNav />
-      <div className="container mx-auto pt-4 flex flex-col gap-8 items-center">
-        <SystemPanel className="w-full max-w-4xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-orbitron text-2xl text-system-blue font-extrabold">
-              Quest Management
-            </h2>
-            <NewQuestModal />
-          </div>
-          
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="text-system-blue2 font-orbitron">Loading quests...</div>
-            </div>
-          ) : challenges.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-system-blue2 font-orbitron mb-4">No active quests</div>
-              <p className="text-white/70">Create your first quest to begin your hunter journey!</p>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {challenges.map(challenge => {
-                // Parse challenge metadata
-                let category = "Physical";
-                let difficulty = "E-Rank";
-                try {
-                  const steps = JSON.parse(challenge.steps || "{}");
-                  category = steps.category || "Physical";
-                  difficulty = `${steps.difficulty || "easy"}-rank`.replace("easy", "E").replace("medium", "D").replace("hard", "C");
-                } catch (e) {
-                  // Use defaults
-                }
-
-                return (
-                  <SwipeableQuestCard
-                    key={challenge.id}
-                    quest={{
-                      id: challenge.id,
-                      name: challenge.title,
-                      category: category,
-                      difficulty: difficulty,
-                      completed: false
-                    }}
-                    onComplete={() => handleComplete(challenge.id)}
-                    onEdit={() => handleEdit(challenge.id)}
-                    onDelete={() => handleDelete(challenge.id)}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </SystemPanel>
+      
+      {/* Particle background */}
+      <div className="particle-bg pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="particle-dot"
+            style={{
+              left: `${Math.random() * 100}%`,
+              width: `${12 + Math.random() * 8}px`,
+              height: `${12 + Math.random() * 8}px`,
+              animationDelay: `${-Math.random() * 10}s`,
+              opacity: 0.1 + Math.random() * 0.1,
+              bottom: `${Math.random() * 25}vh`,
+            }}
+          />
+        ))}
       </div>
+
+      <div className="container mx-auto pt-4 flex flex-col gap-8 items-center relative z-10">
+        <Card className="w-full max-w-4xl system-panel border-system-blue2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="font-orbitron text-2xl text-system-blue font-extrabold">
+                  Quest Management
+                </CardTitle>
+                <CardDescription className="text-white/70 mt-1">
+                  Manage and track your hunter quests
+                </CardDescription>
+              </div>
+              <Button 
+                onClick={() => setShowNewModal(true)}
+                className="glow-button flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New Quest
+              </Button>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            {challenges.length === 0 ? (
+              <div className="text-center py-12">
+                <Target className="h-16 w-16 text-system-blue2/50 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-system-blue mb-2">
+                  No Active Quests
+                </h3>
+                <p className="text-white/60 mb-6">
+                  Create your first quest to begin your hunter journey!
+                </p>
+                <Button 
+                  onClick={() => setShowNewModal(true)}
+                  className="glow-button"
+                >
+                  Create Your First Quest
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {challenges.map(challenge => {
+                  const questData = getQuestData(challenge);
+                  
+                  return (
+                    <SwipeableQuestCard
+                      key={challenge.id}
+                      quest={questData}
+                      onComplete={() => handleQuestComplete(challenge.id)}
+                      onEdit={() => handleQuestEdit(challenge)}
+                      onDelete={() => handleQuestDelete(challenge)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modals */}
+      <NewQuestModal />
+
+      <EditQuestModal
+        open={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedQuest(null);
+        }}
+        quest={selectedQuest}
+        onSave={handleEditSave}
+      />
+
+      <DeleteConfirmationModal
+        open={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedQuest(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={selectedQuest?.title || ''}
+        loading={deleteLoading}
+      />
     </div>
-  )
+  );
 }

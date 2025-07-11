@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Target, Users, BarChart3, Trophy, User } from 'lucide-react';
+import { Home, Target, Users, BarChart3, Trophy, User, TrendingUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Home' },
   { path: '/quests', icon: Target, label: 'Quests' },
+  { path: '/progress', icon: TrendingUp, label: 'Progress' },
   { path: '/leaderboard', icon: Trophy, label: 'Ranks' },
-  { path: '/community', icon: Users, label: 'Community' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
 

@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useHunterProgression } from "../hooks/useHunterProgression";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Target, Clock, Award, Zap, Calendar, ArrowLeft, ChevronDown } from "lucide-react";
+import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { usePerformanceData } from "../hooks/usePerformanceData"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { TrendingUp, Target, Clock, Award, Zap, Calendar, ArrowLeft, ChevronDown } from "lucide-react"
 
 export default function Performance() {
   const navigate = useNavigate();
@@ -15,18 +15,16 @@ export default function Performance() {
   const [questTimePeriod, setQuestTimePeriod] = useState('last-4-weeks');
   
   const {
-    stats,
-    currentRank,
-    nextRank,
     powerLevel,
-    rankPoints,
+    totalQuests,
+    successRate,
     streak,
     daysActive,
-    totalQuests,
-    badges,
-    dailyQuests,
     questCount,
-  } = useHunterProgression();
+    categoryStats,
+    weeklyCompletions,
+    loading
+  } = usePerformanceData();
 
   console.log("Performance page data:", {
     stats, currentRank, powerLevel, rankPoints, streak, daysActive, totalQuests, badges, dailyQuests, questCount

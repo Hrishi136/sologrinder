@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useSwipeGestures } from '@/hooks/useSwipeGestures';
 import HapticFeedback from './HapticFeedback';
-import { Edit, Check } from 'lucide-react';
+import { Edit, Check, Trash2 } from 'lucide-react';
 
 interface SwipeableQuestCardProps {
   quest: {
@@ -85,6 +85,15 @@ export default function SwipeableQuestCard({
               >
                 <Edit size={16} className="text-system-blue2" />
               </button>
+              
+              {onDelete && (
+                <button
+                  onClick={onDelete}
+                  className="min-h-[44px] min-w-[44px] bg-red-500/20 hover:bg-red-500/30 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <Trash2 size={16} className="text-red-400" />
+                </button>
+              )}
               
               {!quest.completed && (
                 <button
