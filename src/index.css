@@ -156,6 +156,33 @@
   animation: glitch 2s infinite;
 }
 
+.glitch-text-full {
+  animation: glitch-full 3s infinite, flicker 0.15s infinite alternate;
+  position: relative;
+}
+
+.glitch-text-full::before,
+.glitch-text-full::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text-full::before {
+  animation: glitch-1 2s infinite;
+  color: #ff0040;
+  z-index: -1;
+}
+
+.glitch-text-full::after {
+  animation: glitch-2 2s infinite;
+  color: #00ffff;
+  z-index: -2;
+}
+
 @keyframes glitch {
   0%, 100% {
     transform: translate(0);
@@ -171,6 +198,104 @@
   }
   80% {
     transform: translate(2px, -2px);
+  }
+}
+
+@keyframes glitch-full {
+  0%, 100% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  10% {
+    transform: translate(-5px, -2px);
+    filter: hue-rotate(90deg);
+  }
+  20% {
+    transform: translate(-10px, 2px);
+    filter: hue-rotate(180deg);
+  }
+  30% {
+    transform: translate(10px, -1px);
+    filter: hue-rotate(270deg);
+  }
+  40% {
+    transform: translate(-1px, -3px);
+    filter: hue-rotate(360deg);
+  }
+  50% {
+    transform: translate(-3px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  60% {
+    transform: translate(-5px, 0px);
+    filter: hue-rotate(180deg);
+  }
+  70% {
+    transform: translate(2px, 1px);
+    filter: hue-rotate(270deg);
+  }
+  80% {
+    transform: translate(-1px, -1px);
+    filter: hue-rotate(360deg);
+  }
+  90% {
+    transform: translate(1px, 2px);
+    filter: hue-rotate(90deg);
+  }
+}
+
+@keyframes glitch-1 {
+  0%, 100% {
+    transform: translate(0);
+    clip-path: inset(40% 0 61% 0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    clip-path: inset(92% 0 1% 0);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+    clip-path: inset(43% 0 1% 0);
+  }
+  60% {
+    transform: translate(2px, 2px);
+    clip-path: inset(25% 0 58% 0);
+  }
+  80% {
+    transform: translate(2px, -2px);
+    clip-path: inset(58% 0 43% 0);
+  }
+}
+
+@keyframes glitch-2 {
+  0%, 100% {
+    transform: translate(0);
+    clip-path: inset(25% 0 58% 0);
+  }
+  20% {
+    transform: translate(2px, -2px);
+    clip-path: inset(58% 0 43% 0);
+  }
+  40% {
+    transform: translate(2px, 2px);
+    clip-path: inset(92% 0 1% 0);
+  }
+  60% {
+    transform: translate(-2px, -2px);
+    clip-path: inset(40% 0 61% 0);
+  }
+  80% {
+    transform: translate(-2px, 2px);
+    clip-path: inset(43% 0 1% 0);
+  }
+}
+
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.4;
   }
 }
 

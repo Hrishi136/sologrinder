@@ -12,6 +12,13 @@ const WelcomeBackModal: React.FC<WelcomeBackModalProps> = ({ username, isVisible
 
   useEffect(() => {
     if (isVisible) {
+      // Play glitch sound effect
+      const audio = new Audio('https://example.com/glitch.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(() => {
+        // Silently handle audio play errors (autoplay restrictions)
+      });
+
       // Small delay before showing text for dramatic effect
       const timer = setTimeout(() => setShowText(true), 300);
       
@@ -45,10 +52,10 @@ const WelcomeBackModal: React.FC<WelcomeBackModalProps> = ({ username, isVisible
         <div className="relative p-12 text-center">
           {showText && (
             <div className="space-y-4">
-      <div className="glow-text text-2xl font-bold text-primary animate-fade-in">
+              <div className="glitch-text-full glow-text text-2xl font-bold text-primary">
                 WELCOME BACK, HUNTER
               </div>
-              <div className="glitch-text text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 animate-pulse">
+              <div className="glitch-text-full text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600">
                 {username.toUpperCase()}
               </div>
               <div className="text-sm text-muted-foreground/80 animate-fade-in">
