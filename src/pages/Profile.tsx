@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, User, Palette, Bell, Settings, Crown, Quote, Camera, Clock, Zap, LogOut, Lock, Sparkles, Music, Paintbrush } from "lucide-react";
+import { ArrowLeft, User, Palette, Bell, Settings, Crown, Quote, Camera, Clock, Zap, LogOut } from "lucide-react";
 
 interface UserProfile {
   hunterName: string;
@@ -209,7 +209,7 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-system-panel border border-system-blue/30">
+          <TabsList className="grid w-full grid-cols-3 bg-system-panel border border-system-blue/30">
             <TabsTrigger value="profile" className="text-white data-[state=active]:bg-system-blue data-[state=active]:text-black">
               Profile
             </TabsTrigger>
@@ -218,9 +218,6 @@ export default function Profile() {
             </TabsTrigger>
             <TabsTrigger value="notifications" className="text-white data-[state=active]:bg-system-blue data-[state=active]:text-black">
               Notifications
-            </TabsTrigger>
-            <TabsTrigger value="boost" className="text-white data-[state=active]:bg-system-blue data-[state=active]:text-black">
-              Boost Pack
             </TabsTrigger>
           </TabsList>
 
@@ -520,121 +517,6 @@ export default function Profile() {
                   <div className="text-white font-medium mb-2">Sample Motivational Quote</div>
                   <div className="text-system-blue italic">
                     "{motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]}"
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Hunter Boost Pack Tab */}
-          <TabsContent value="boost" className="space-y-6">
-            <Card className="system-panel border-system-blue2">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-yellow-400" />
-                  Hunter Boost Pack
-                  <span className="text-xs bg-yellow-400/20 text-yellow-400 px-2 py-1 rounded-full">Coming Soon</span>
-                </CardTitle>
-                <CardDescription className="text-white/60">
-                  Unlock exclusive features and customizations for your hunting experience
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                  
-                  {/* Animated Challenge Badges */}
-                  <div className="p-6 rounded-lg border-2 border-white/20 bg-white/5 relative overflow-hidden">
-                    <div className="absolute top-4 right-4">
-                      <Lock className="h-5 w-5 text-white/60" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Sparkles className="h-8 w-8 text-purple-400 animate-pulse" />
-                      <div>
-                        <h3 className="text-white font-semibold text-lg">Animated Challenge Badges</h3>
-                        <p className="text-white/60 text-sm">Dynamic badge effects</p>
-                      </div>
-                    </div>
-                    <p className="text-white/70 text-sm mb-4">
-                      Unlock exclusive animated badges with special effects, particle systems, and unique visual flair for each achievement milestone.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-white/50">
-                      <Lock className="h-3 w-3" />
-                      <span>Available in Boost Pack</span>
-                    </div>
-                  </div>
-
-                  {/* Exclusive UI Themes */}
-                  <div className="p-6 rounded-lg border-2 border-white/20 bg-white/5 relative overflow-hidden">
-                    <div className="absolute top-4 right-4">
-                      <Lock className="h-5 w-5 text-white/60" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Paintbrush className="h-8 w-8 text-system-blue animate-pulse" />
-                      <div>
-                        <h3 className="text-white font-semibold text-lg">Exclusive Solo Leveling Themes</h3>
-                        <p className="text-white/60 text-sm">Premium UI variations</p>
-                      </div>
-                    </div>
-                    <p className="text-white/70 text-sm mb-4">
-                      Access to premium Solo Leveling-inspired themes including Shadow Monarch Dark, Ice Sovereign, and Dragon Emperor variants.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-white/50">
-                      <Lock className="h-3 w-3" />
-                      <span>Available in Boost Pack</span>
-                    </div>
-                  </div>
-
-                  {/* Background Music */}
-                  <div className="p-6 rounded-lg border-2 border-white/20 bg-white/5 relative overflow-hidden">
-                    <div className="absolute top-4 right-4">
-                      <Lock className="h-5 w-5 text-white/60" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Music className="h-8 w-8 text-green-400 animate-pulse" />
-                      <div>
-                        <h3 className="text-white font-semibold text-lg">Background Music Options</h3>
-                        <p className="text-white/60 text-sm">Immersive soundscapes</p>
-                      </div>
-                    </div>
-                    <p className="text-white/70 text-sm mb-4">
-                      Choose from epic orchestral soundtracks, ambient dungeon themes, and intense battle music to enhance your questing experience.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-white/50">
-                      <Lock className="h-3 w-3" />
-                      <span>Available in Boost Pack</span>
-                    </div>
-                  </div>
-
-                  {/* Custom Achievement Animations */}
-                  <div className="p-6 rounded-lg border-2 border-white/20 bg-white/5 relative overflow-hidden">
-                    <div className="absolute top-4 right-4">
-                      <Lock className="h-5 w-5 text-white/60" />
-                    </div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Zap className="h-8 w-8 text-yellow-400 animate-pulse" />
-                      <div>
-                        <h3 className="text-white font-semibold text-lg">Custom Achievement Animations</h3>
-                        <p className="text-white/60 text-sm">Epic celebration effects</p>
-                      </div>
-                    </div>
-                    <p className="text-white/70 text-sm mb-4">
-                      Spectacular visual celebrations with particle effects, screen shakes, and glitch animations when completing major milestones.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-white/50">
-                      <Lock className="h-3 w-3" />
-                      <span>Available in Boost Pack</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Coming Soon Notice */}
-                <div className="mt-8 p-6 bg-gradient-to-r from-system-blue/20 to-purple-500/20 rounded-lg border border-system-blue/50">
-                  <div className="text-center">
-                    <Crown className="h-12 w-12 text-yellow-400 mx-auto mb-4 animate-pulse" />
-                    <h3 className="text-white font-bold text-xl mb-2">Coming Soon</h3>
-                    <p className="text-white/70">
-                      The Hunter Boost Pack is currently in development. Stay tuned for exclusive features that will elevate your Solo Leveling experience to legendary status.
-                    </p>
                   </div>
                 </div>
               </CardContent>

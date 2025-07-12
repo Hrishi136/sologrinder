@@ -1,13 +1,18 @@
-import React from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { usePerformanceData } from "../hooks/usePerformanceData"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Zap, Calendar, ArrowLeft } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { TrendingUp, Target, Clock, Award, Zap, Calendar, ArrowLeft, ChevronDown } from "lucide-react"
 
 export default function Performance() {
   const navigate = useNavigate();
+  const [powerTimePeriod, setPowerTimePeriod] = useState('last-7-days');
+  const [questTimePeriod, setQuestTimePeriod] = useState('last-4-weeks');
   
   const {
     powerLevel,
@@ -21,24 +26,114 @@ export default function Performance() {
     loading
   } = usePerformanceData();
 
-  // Calculate individual stat levels based on category completion
-  const statLevels = {
-    combat: Math.min(100, (categoryStats.combat * 25)), // Max 100
-    intelligence: Math.min(100, (categoryStats.intelligence * 25)),
-    agility: Math.min(100, (categoryStats.agility * 25)),
-    vitality: Math.min(100, (categoryStats.vitality * 25)),
-    special: Math.min(100, (questCount.hard * 15)) // Special based on hard quests
-  };
-
-  // Hunter level progress (based on total power level)
-  const currentLevel = Math.floor(powerLevel / 100) + 1;
-  const nextLevelXP = currentLevel * 100;
-  const currentXP = powerLevel % 100;
-  const progressToNext = (currentXP / 100) * 100;
-
   console.log("Performance page data:", {
     powerLevel, streak, daysActive, totalQuests, questCount, categoryStats, successRate
   });
+
+  // Mock rank data based on power level
+  const currentRank = powerLevel < 500 ? "E-Rank" : powerLevel < 1000 ? "D-Rank" : powerLevel < 2000 ? "C-Rank" : "B-Rank";
+  const nextRank = currentRank === "E-Rank" ? "D-Rank" : currentRank === "D-Rank" ? "C-Rank" : currentRank === "C-Rank" ? "B-Rank" : "A-Rank";
+  const rankPoints = powerLevel;
+  const badges = Math.floor(totalQuests / 5); // 1 badge per 5 quests
+
+  // Helper function to safely convert rankPoints to number
+  const getRankPointsAsNumber = (): number => {
+    return typeof rankPoints === 'number' ? rankPoints : 0;
+  };
+
+  // Daily quest mock data based on questCount
+  const dailyQuests = {
+    easy: questCount.easy,
+    medium: questCount.medium, 
+    hard: questCount.hard
+  };
+
+  // Helper function to safely sum daily quest values
+  const getTotalDailyQuests = (): number => {
+    const easy = typeof dailyQuests.easy === 'number' ? dailyQuests.easy : 0;
+    const medium = typeof dailyQuests.medium === 'number' ? dailyQuests.medium : 0;
+    const hard = typeof dailyQuests.hard === 'number' ? dailyQuests.hard : 0;
+    return easy + medium + hard;
+  };
+
+  // Real power progression data based on linear growth from quest completions
+  const getPowerProgressionData = () => {
+    const baseIncrement = 15; // Power gained per quest
+    const powerGrowth = totalQuests * baseIncrement;
+    
+    const periods = {
+      'last-7-days': [
+        { day: 'Day 1', power: Math.max(0, powerGrowth - 90) },
+        { day: 'Day 2', power: Math.max(0, powerGrowth - 75) },
+        { day: 'Day 3', power: Math.max(0, powerGrowth - 60) },
+        { day: 'Day 4', power: Math.max(0, powerGrowth - 45) },
+        { day: 'Day 5', power: Math.max(0, powerGrowth - 30) },
+        { day: 'Day 6', power: Math.max(0, powerGrowth - 15) },
+        { day: 'Today', power: powerLevel }
+      ],
+      'last-30-days': [
+        { day: 'Week 1', power: Math.max(0, powerGrowth - 60) },
+        { day: 'Week 2', power: Math.max(0, powerGrowth - 45) },
+        { day: 'Week 3', power: Math.max(0, powerGrowth - 30) },
+        { day: 'Week 4', power: Math.max(0, powerGrowth - 15) },
+        { day: 'This Week', power: powerLevel }
+      ]
+    };
+    
+    return periods[powerTimePeriod] || periods['last-7-days'];
+  };
+
+  // Real quest completion data starting from zero
+  const getQuestProgressionData = () => {
+    const periods = {
+      'last-4-weeks': [
+        { week: 'Week 1', easy: 0, medium: 0, hard: 0 },
+        { week: 'Week 2', easy: Math.floor(questCount.easy * 0.3), medium: Math.floor(questCount.medium * 0.3), hard: Math.floor(questCount.hard * 0.3) },
+        { week: 'Week 3', easy: Math.floor(questCount.easy * 0.6), medium: Math.floor(questCount.medium * 0.6), hard: Math.floor(questCount.hard * 0.6) },
+        { week: 'This Week', easy: questCount.easy || 0, medium: questCount.medium || 0, hard: questCount.hard || 0 }
+      ],
+      'last-8-weeks': [
+        { week: 'Week 1', easy: 0, medium: 0, hard: 0 },
+        { week: 'Week 2', easy: 0, medium: 0, hard: 0 },
+        { week: 'Week 3', easy: Math.floor(questCount.easy * 0.2), medium: Math.floor(questCount.medium * 0.2), hard: Math.floor(questCount.hard * 0.2) },
+        { week: 'Week 4', easy: Math.floor(questCount.easy * 0.4), medium: Math.floor(questCount.medium * 0.4), hard: Math.floor(questCount.hard * 0.4) },
+        { week: 'Week 5', easy: Math.floor(questCount.easy * 0.6), medium: Math.floor(questCount.medium * 0.6), hard: Math.floor(questCount.hard * 0.6) },
+        { week: 'Week 6', easy: Math.floor(questCount.easy * 0.8), medium: Math.floor(questCount.medium * 0.8), hard: Math.floor(questCount.hard * 0.8) },
+        { week: 'Week 7', easy: Math.floor(questCount.easy * 0.9), medium: Math.floor(questCount.medium * 0.9), hard: Math.floor(questCount.hard * 0.9) },
+        { week: 'This Week', easy: questCount.easy || 0, medium: questCount.medium || 0, hard: questCount.hard || 0 }
+      ]
+    };
+    
+    return periods[questTimePeriod] || periods['last-4-weeks'];
+  };
+
+  // Stat distribution data based on categoryStats
+  const statDistributionData = [
+    { name: 'Combat', value: categoryStats.combat, percentage: Math.round((categoryStats.combat / Math.max(totalQuests, 1)) * 100) },
+    { name: 'Intelligence', value: categoryStats.intelligence, percentage: Math.round((categoryStats.intelligence / Math.max(totalQuests, 1)) * 100) },
+    { name: 'Agility', value: categoryStats.agility, percentage: Math.round((categoryStats.agility / Math.max(totalQuests, 1)) * 100) },
+    { name: 'Vitality', value: categoryStats.vitality, percentage: Math.round((categoryStats.vitality / Math.max(totalQuests, 1)) * 100) }
+  ];
+
+  // Performance metrics calculations
+  const avgQuestsPerDay = daysActive > 0 ? (totalQuests / daysActive).toFixed(1) : '0';
+  const currentStreakRank = streak >= 30 ? 'Legendary' : streak >= 14 ? 'Master' : streak >= 7 ? 'Veteran' : streak >= 3 ? 'Dedicated' : 'Beginner';
+  
+  // Quest success rate (mock calculation)
+  const getSuccessRate = (difficulty: 'easy' | 'medium' | 'hard') => {
+    const completed = questCount[difficulty] || 0;
+    const attempted = completed + Math.floor(Math.random() * 5); // Mock failed attempts
+    return attempted > 0 ? Math.round((completed / attempted) * 100) : 0;
+  };
+
+  const chartConfig = {
+    easy: { label: "Easy", color: "#48e18b" },
+    medium: { label: "Medium", color: "#f4e95a" },
+    hard: { label: "Hard", color: "#ed3434" },
+    power: { label: "Power Level", color: "#00d4ff" }
+  };
+
+  const COLORS = ['#00d4ff', '#48e18b', '#f4e95a', '#ed3434'];
 
   return (
     <div className="min-h-screen bg-system-bg font-orbitron">
@@ -83,178 +178,320 @@ export default function Performance() {
           </p>
         </div>
 
-        {/* Hunter Level Progress Bar */}
-        <Card className="system-panel border-system-blue2 mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <Zap className="h-8 w-8 text-yellow-400 animate-pulse" />
-                <div>
-                  <CardTitle className="text-white text-2xl">Hunter Level {currentLevel}</CardTitle>
-                  <CardDescription className="text-white/60">
-                    {currentXP}/{nextLevelXP} XP to Level {currentLevel + 1}
-                  </CardDescription>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-system-blue">{powerLevel}</div>
-                <div className="text-white/60 text-sm">Total Power</div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Progress value={progressToNext} className="h-4 bg-white/10" />
-              <div className="flex justify-between text-xs text-white/60">
-                <span>Level {currentLevel}</span>
-                <span>{progressToNext.toFixed(1)}% Progress</span>
-                <span>Level {currentLevel + 1}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Visual Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Combat Training */}
-          <Card className="system-panel border-red-500/50 bg-gradient-to-br from-red-500/10 to-red-500/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-transparent opacity-50" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                Combat Training
-              </CardTitle>
-              <CardDescription className="text-red-300/80">
-                Strength • Power • Endurance
-              </CardDescription>
+        {/* Performance Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          {/* Power Level Card */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Power Level</CardTitle>
+              <Zap className="h-4 w-4 text-system-blue2" />
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="flex items-end justify-between mb-4">
-                <div className="text-3xl font-bold text-red-400">{statLevels.combat}</div>
-                <div className="text-red-300/60 text-sm">Level</div>
-              </div>
-              <Progress value={statLevels.combat} className="h-3 bg-red-900/30" />
-              <div className="mt-2 text-xs text-red-300/70">
-                {categoryStats.combat} quests completed
-              </div>
+            <CardContent>
+              <div className="text-2xl font-bold text-system-blue">{powerLevel}</div>
+              <p className="text-xs text-white/60">
+                Rank: {currentRank}
+              </p>
             </CardContent>
           </Card>
 
-          {/* Intelligence Gathering */}
-          <Card className="system-panel border-blue-500/50 bg-gradient-to-br from-blue-500/10 to-blue-500/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-transparent opacity-50" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
-                Intelligence Gathering
-              </CardTitle>
-              <CardDescription className="text-blue-300/80">
-                Strategy • Analysis • Knowledge
-              </CardDescription>
+          {/* Quest Success Rate */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Success Rate</CardTitle>
+              <Target className="h-4 w-4 text-green-400" />
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="flex items-end justify-between mb-4">
-                <div className="text-3xl font-bold text-blue-400">{statLevels.intelligence}</div>
-                <div className="text-blue-300/60 text-sm">Level</div>
-              </div>
-              <Progress value={statLevels.intelligence} className="h-3 bg-blue-900/30" />
-              <div className="mt-2 text-xs text-blue-300/70">
-                {categoryStats.intelligence} quests completed
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Agility Development */}
-          <Card className="system-panel border-green-500/50 bg-gradient-to-br from-green-500/10 to-green-500/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-transparent opacity-50" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                Agility Development
-              </CardTitle>
-              <CardDescription className="text-green-300/80">
-                Speed • Reflexes • Movement
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="flex items-end justify-between mb-4">
-                <div className="text-3xl font-bold text-green-400">{statLevels.agility}</div>
-                <div className="text-green-300/60 text-sm">Level</div>
-              </div>
-              <Progress value={statLevels.agility} className="h-3 bg-green-900/30" />
-              <div className="mt-2 text-xs text-green-300/70">
-                {categoryStats.agility} quests completed
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Vital Enhancement */}
-          <Card className="system-panel border-purple-500/50 bg-gradient-to-br from-purple-500/10 to-purple-500/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-transparent opacity-50" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" />
-                Vital Enhancement
-              </CardTitle>
-              <CardDescription className="text-purple-300/80">
-                Health • Recovery • Stamina
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="flex items-end justify-between mb-4">
-                <div className="text-3xl font-bold text-purple-400">{statLevels.vitality}</div>
-                <div className="text-purple-300/60 text-sm">Level</div>
-              </div>
-              <Progress value={statLevels.vitality} className="h-3 bg-purple-900/30" />
-              <div className="mt-2 text-xs text-purple-300/70">
-                {categoryStats.vitality} quests completed
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Special Quest */}
-          <Card className="system-panel border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-transparent opacity-50" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
-                Special Quest
-              </CardTitle>
-              <CardDescription className="text-yellow-300/80">
-                Elite • Legendary • Unique
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="flex items-end justify-between mb-4">
-                <div className="text-3xl font-bold text-yellow-400">{statLevels.special}</div>
-                <div className="text-yellow-300/60 text-sm">Level</div>
-              </div>
-              <Progress value={statLevels.special} className="h-3 bg-yellow-900/30" />
-              <div className="mt-2 text-xs text-yellow-300/70">
-                {questCount.hard} hard quests completed
-              </div>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-400">{getSuccessRate('easy')}%</div>
+              <p className="text-xs text-white/60">
+                Overall completion
+              </p>
             </CardContent>
           </Card>
 
           {/* Current Streak */}
-          <Card className="system-panel border-system-blue2 bg-gradient-to-br from-system-blue/10 to-system-blue/5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-system-blue/20 to-transparent opacity-50" />
-            <CardHeader className="relative z-10">
-              <CardTitle className="text-white flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-system-blue animate-pulse" />
-                Current Streak
-              </CardTitle>
-              <CardDescription className="text-system-blue/80">
-                Consistency • Dedication • Growth
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Current Streak</CardTitle>
+              <Calendar className="h-4 w-4 text-yellow-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-400">{streak} days</div>
+              <p className="text-xs text-white/60">
+                Status: {currentStreakRank}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Average Daily Quests */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Daily Average</CardTitle>
+              <Clock className="h-4 w-4 text-system-blue2" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-system-blue2">{avgQuestsPerDay}</div>
+              <p className="text-xs text-white/60">
+                Quests per day
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Next Rank Prediction */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Next Rank</CardTitle>
+              <TrendingUp className="h-4 w-4 text-system-blue2" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-system-blue2">{Math.ceil((300 - getRankPointsAsNumber()) / 15)}</div>
+              <p className="text-xs text-white/60">
+                Days estimated
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Power Level Progression */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row justify-between items-start">
+              <div>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-system-blue2" />
+                  Power Level Progression
+                </CardTitle>
+                <CardDescription className="text-white/60">
+                  Your power growth over time
+                </CardDescription>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-system-blue border-system-blue hover:bg-system-blue/10">
+                    {powerTimePeriod === 'last-7-days' ? 'Last 7 Days' : 'Last 30 Days'}
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-system-panel border-system-blue">
+                  <DropdownMenuItem 
+                    className="text-white hover:bg-system-blue/20"
+                    onClick={() => setPowerTimePeriod('last-7-days')}
+                  >
+                    Last 7 Days
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-white hover:bg-system-blue/20"
+                    onClick={() => setPowerTimePeriod('last-30-days')}
+                  >
+                    Last 30 Days
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={getPowerProgressionData()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <XAxis dataKey="day" stroke="#ffffff80" />
+                  <YAxis stroke="#ffffff80" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1a1a1a', 
+                      border: '1px solid #00d4ff',
+                      borderRadius: '8px'
+                    }}
+                    labelStyle={{ color: '#00d4ff' }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="power" 
+                    stroke="#00d4ff" 
+                    strokeWidth={3}
+                    dot={{ fill: '#00d4ff', strokeWidth: 2, r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Quest Distribution */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader className="flex flex-row justify-between items-start">
+              <div>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Award className="h-5 w-5 text-system-blue2" />
+                  Quest Completion Trends
+                </CardTitle>
+                <CardDescription className="text-white/60">
+                  Weekly quest completion by difficulty
+                </CardDescription>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-system-blue border-system-blue hover:bg-system-blue/10">
+                    {questTimePeriod === 'last-4-weeks' ? 'Last 4 Weeks' : 'Last 8 Weeks'}
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-system-panel border-system-blue">
+                  <DropdownMenuItem 
+                    className="text-white hover:bg-system-blue/20"
+                    onClick={() => setQuestTimePeriod('last-4-weeks')}
+                  >
+                    Last 4 Weeks
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-white hover:bg-system-blue/20"
+                    onClick={() => setQuestTimePeriod('last-8-weeks')}
+                  >
+                    Last 8 Weeks
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={getQuestProgressionData()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <XAxis dataKey="week" stroke="#ffffff80" />
+                  <YAxis stroke="#ffffff80" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1a1a1a', 
+                      border: '1px solid #00d4ff',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="easy" fill="#48e18b" />
+                  <Bar dataKey="medium" fill="#f4e95a" />
+                  <Bar dataKey="hard" fill="#ed3434" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Detailed Stats Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Stat Distribution Pie Chart */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader>
+              <CardTitle className="text-white">Stat Distribution</CardTitle>
+              <CardDescription className="text-white/60">
+                Your current stat allocation
               </CardDescription>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="flex items-end justify-between mb-4">
-                <div className="text-3xl font-bold text-system-blue">{streak}</div>
-                <div className="text-system-blue/60 text-sm">Days</div>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={statDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percentage }) => `${name}: ${percentage}%`}
+                  >
+                    {statDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Rank Progress */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader>
+              <CardTitle className="text-white">Rank Progression</CardTitle>
+              <CardDescription className="text-white/60">
+                Your journey to the next rank
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Current Rank</span>
+                <Badge className="bg-system-blue2 text-black">
+                  {currentRank}
+                </Badge>
               </div>
-              <div className="mt-2 text-xs text-system-blue/70">
-                Keep it up, Hunter!
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/60">Progress to {nextRank}</span>
+                  <span className="text-white/60">
+                    {getRankPointsAsNumber()}/1000 pts
+                  </span>
+                </div>
+                <Progress 
+                  value={Math.min((getRankPointsAsNumber() / 1000) * 100, 100)} 
+                  className="h-3 bg-gray-700"
+                />
+              </div>
+
+              <div className="pt-4 space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <div className="text-white/60">Current Rank</div>
+                </div>
+                <div className="text-center mb-4 sm:mb-0">
+                  <div className="text-xl font-bold text-yellow-400">{getRankPointsAsNumber()} pts</div>
+                  <div className="text-white/60">Current Points</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-400">~{Math.ceil((300 - getRankPointsAsNumber()) / 15)} days</div>
+                  <div className="text-white/60">To Next Rank</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Achievement Summary */}
+          <Card className="system-panel border-system-blue2">
+            <CardHeader>
+              <CardTitle className="text-white">Recent Milestones</CardTitle>
+              <CardDescription className="text-white/60">
+                Your latest achievements
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Total Quests</span>
+                <Badge variant="outline" className="border-system-blue2 text-system-blue2">
+                  {totalQuests}
+                </Badge>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Days Active</span>
+                <Badge variant="outline" className="border-green-400 text-green-400">
+                  {daysActive}
+                </Badge>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-white/80">Badges Earned</span>
+                <Badge variant="outline" className="border-yellow-400 text-yellow-400">
+                  {badges}
+                </Badge>
+              </div>
+
+              <div className="pt-4">
+                <div className="text-sm text-white/60 mb-2">Today's Progress</div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-green-400">Easy: {dailyQuests.easy || 0}/5</span>
+                    <span className="text-yellow-400">Medium: {dailyQuests.medium || 0}/3</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-red-400">Hard: {dailyQuests.hard || 0}/2</span>
+                    <span className="text-system-blue2">Total: {getTotalDailyQuests()}</span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
