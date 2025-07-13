@@ -14,6 +14,7 @@ import EmergencyQuestModal from "../components/EmergencyQuestModal";
 import { useNavigate } from "react-router-dom";
 import { useEmergencyQuestModal } from "../hooks/useEmergencyQuestModal";
 import { supabase } from "@/integrations/supabase/client";
+import FloatingHunterRank from "../components/FloatingHunterRank";
 
 console.log("Dashboard component loading...");
 
@@ -61,6 +62,7 @@ export default function Dashboard() {
   // Fetch username from Supabase profiles
   const [username, setUsername] = React.useState("Hunter");
   const [systemNotice, setSystemNotice] = React.useState<string | null>(null);
+  const [userRank, setUserRank] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     const fetchUsername = async () => {
@@ -219,6 +221,69 @@ export default function Dashboard() {
     }
   };
 
+  // Scroll to leaderboard when rank badge is clicked
+  const handleRankClick = () => {
+    const leaderboardElement = document.querySelector('[data-leaderboard]');
+    if (leaderboardElement) {
+      leaderboardElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Fetch user rank for floating badge
+  React.useEffect(() => {
+    const fetchUserRank = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+        try {
+          const { data: challengesData } = await supabase
+            .from('Challenges')
+            .select('user_id, streak, progress_json');
+
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('user_id, username');
+
+          if (challengesData && profilesData) {
+            const usernameMap = new Map<string, string>();
+            profilesData.forEach(profile => {
+              usernameMap.set(profile.user_id, profile.username);
+            });
+
+            const userScores = new Map<string, number>();
+            
+            challengesData.forEach((challenge) => {
+              const userId = challenge.user_id;
+              const streak = (challenge.streak as number) || 0;
+              const progressData = challenge.progress_json as any;
+              
+              let progressScore = 0;
+              if (progressData && typeof progressData === 'object') {
+                progressScore = Object.values(progressData).reduce((sum: number, val: any) => {
+                  return sum + (typeof val === 'number' ? val : 0);
+                }, 0) as number;
+              }
+              
+              const totalScore = streak * 10 + progressScore;
+              userScores.set(userId, (userScores.get(userId) || 0) + totalScore);
+            });
+
+            const sortedUsers = Array.from(userScores.entries())
+              .sort((a, b) => b[1] - a[1]);
+            
+            const userIndex = sortedUsers.findIndex(([userId]) => userId === user.id);
+            if (userIndex !== -1) {
+              setUserRank(userIndex + 1);
+            }
+          }
+        } catch (error) {
+        console.error('Error fetching user rank:', error);
+      }
+    };
+
+    fetchUserRank();
+  }, []);
+
   return (
     <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
       {/* Particle background – adapt slightly for all screens */}
@@ -280,8 +345,12 @@ export default function Dashboard() {
             recentAchievements={recentAchievements}
             nextMilestone={nextMilestone}
             handleViewFullArmy={handleViewFullArmy}
+            onUserRankClick={handleRankClick}
           />
         </div>
+
+        {/* Floating Hunter Rank Badge */}
+        <FloatingHunterRank rank={userRank} onClick={handleRankClick} />
 
         {/* NOTIFICATION HISTORY PANEL */}
         <div className="w-full max-w-md">

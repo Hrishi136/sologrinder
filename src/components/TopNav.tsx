@@ -30,14 +30,6 @@ export default function TopNav() {
         </span>
       </div>
       <div className="flex gap-3 sm:gap-6">
-        <NavLink
-          to="/leaderboard"
-          className={({ isActive }) =>
-            `font-orbitron px-2 py-1 text-base sm:text-lg tracking-wide border-b-2 ${isActive ? "border-system-blue text-system-blue" : "border-transparent text-white hover:text-system-blue hover:border-system-blue transition-colors duration-200"}`
-          }
-        >
-          Leaderboard
-        </NavLink>
         {navItems.map(n => (
           <NavLink
             key={n.title}
