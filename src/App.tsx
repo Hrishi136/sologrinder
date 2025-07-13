@@ -18,7 +18,7 @@ import Profile from "./pages/Profile";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
-import MobileBottomNav from "@/components/MobileBottomNav";
+
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import UsernameSelectionModal from "@/components/UsernameSelectionModal";
@@ -139,8 +139,6 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               
-              {/* Mobile bottom navigation */}
-              <MobileBottomNav />
               
               {/* PWA install prompt */}
               <PWAInstallPrompt />

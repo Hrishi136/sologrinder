@@ -2,6 +2,8 @@
 import React from "react"
 import { useNavigate, NavLink } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { User, Settings } from "lucide-react"
 
 const navItems = [
   { title: "Dashboard", path: "/dashboard" },
@@ -14,8 +16,7 @@ const navItems = [
 export default function TopNav() {
   const navigate = useNavigate();
 
-  async function handleLogout(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
-    e.preventDefault();
+  async function handleLogout() {
     await supabase.auth.signOut();
     navigate("/login");
   }
@@ -29,6 +30,14 @@ export default function TopNav() {
         </span>
       </div>
       <div className="flex gap-3 sm:gap-6">
+        <NavLink
+          to="/leaderboard"
+          className={({ isActive }) =>
+            `font-orbitron px-2 py-1 text-base sm:text-lg tracking-wide border-b-2 ${isActive ? "border-system-blue text-system-blue" : "border-transparent text-white hover:text-system-blue hover:border-system-blue transition-colors duration-200"}`
+          }
+        >
+          Leaderboard
+        </NavLink>
         {navItems.map(n => (
           <NavLink
             key={n.title}
@@ -42,13 +51,26 @@ export default function TopNav() {
         ))}
       </div>
       <div>
-        <a
-          href="/login"
-          className="text-system-blue font-orbitron font-bold underline decoration-system-blue hover:decoration-4"
-          onClick={handleLogout}
-        >
-          Log Out
-        </a>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-2 rounded-full bg-system-blue/10 border-2 border-system-blue hover:bg-system-blue/20 transition-colors duration-200">
+              <User className="h-5 w-5 text-system-blue" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-system-panel border-system-blue z-50">
+            <DropdownMenuItem className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20">
+              <Settings className="h-4 w-4 mr-2" />
+              Change Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20"
+              onClick={handleLogout}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </nav>
   )
