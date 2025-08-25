@@ -11,6 +11,7 @@ const navItems = [
   { title: "Army", path: "/army" },
   { title: "Stats", path: "/stats" },
   { title: "Performance", path: "/performance" },
+  { title: "Leaderboard", path: "/leaderboard" },
 ]
 
 export default function TopNav() {

@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { Sword, Brain, Zap, Heart } from "lucide-react";
-import { useChallenges } from "@/hooks/useChallenges";
+import { useChallengesV2 } from "@/hooks/useChallengesV2";
 import { useToast } from "./ui/use-toast";
 
 type Category = "combat" | "intelligence" | "agility" | "vitality";
@@ -32,7 +32,7 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { createChallenge } = useChallenges();
+  const { createChallenge } = useChallengesV2();
   const { toast } = useToast();
 
   // Reset form when modal closes
@@ -55,15 +55,7 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
     const categoryLabel = categoryOptions.find(opt => opt.value === category)?.label || category;
     const difficultyData = difficultyOptions.find(opt => opt.value === difficulty);
     
-    const challenge = await createChallenge({
-      title: questName,
-      description: description || undefined,
-      steps: JSON.stringify({
-        category: categoryLabel,
-        difficulty: difficulty,
-        points: difficultyData?.points || 0
-      })
-    });
+    const challenge = await createChallenge(questName, categoryLabel);
 
     if (challenge) {
       toast({

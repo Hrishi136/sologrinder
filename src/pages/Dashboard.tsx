@@ -349,8 +349,7 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Floating Hunter Rank Badge */}
-        <FloatingHunterRank rank={userRank} onClick={handleRankClick} />
+        {/* Floating Hunter Rank Badge - Removed since leaderboard moved to separate page */}
 
         {/* NOTIFICATION HISTORY PANEL */}
         <div className="w-full max-w-md">
