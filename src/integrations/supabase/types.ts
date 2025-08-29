@@ -109,6 +109,24 @@ export type Database = {
         }
         Relationships: []
       }
+      donors: {
+        Row: {
+          created_at: string
+          hunter_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          hunter_name: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          hunter_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

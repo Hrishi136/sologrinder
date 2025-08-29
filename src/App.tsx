@@ -13,6 +13,7 @@ import Stats from "./pages/Stats";
 import Performance from "./pages/Performance";
 import SystemAnalysis from "./pages/SystemAnalysis";
 import Leaderboard from "./pages/Leaderboard";
+import Support from "./pages/Support";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import Progress from "./pages/Progress";
@@ -133,6 +134,7 @@ const App = () => {
                 <Route path="/performance" element={isAuthenticated ? <Performance /> : <Navigate to="/login" />} />
                 <Route path="/system-analysis" element={isAuthenticated ? <SystemAnalysis /> : <Navigate to="/login" />} />
                 <Route path="/leaderboard" element={isAuthenticated ? <Leaderboard /> : <Navigate to="/login" />} />
+                <Route path="/support" element={isAuthenticated ? <Support /> : <Navigate to="/login" />} />
                 <Route path="/community" element={isAuthenticated ? <Community /> : <Navigate to="/login" />} />
                 <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
                 <Route path="/progress" element={isAuthenticated ? <Progress /> : <Navigate to="/login" />} />

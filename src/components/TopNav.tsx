@@ -3,13 +3,12 @@ import React from "react"
 import { useNavigate, NavLink } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { User, Settings } from "lucide-react"
+import { User, Settings, Heart } from "lucide-react"
 
 const navItems = [
   { title: "Dashboard", path: "/dashboard" },
   { title: "Quests", path: "/quests" },
   { title: "Army", path: "/army" },
-  { title: "Stats", path: "/stats" },
   { title: "Performance", path: "/performance" },
   { title: "Leaderboard", path: "/leaderboard" },
 ]
@@ -51,6 +50,13 @@ export default function TopNav() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-system-panel border-system-blue z-50">
+            <DropdownMenuItem 
+              className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20"
+              onClick={() => navigate("/support")}
+            >
+              <Heart className="h-4 w-4 mr-2" />
+              Support the App
+            </DropdownMenuItem>
             <DropdownMenuItem className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20">
               <Settings className="h-4 w-4 mr-2" />
               Change Profile
