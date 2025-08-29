@@ -51,8 +51,7 @@ export default function Support() {
   };
 
   const handleDonate = () => {
-    // Placeholder for Razorpay link - to be added later
-    window.open('https://razorpay.me/placeholder', '_blank');
+    window.open('https://razorpay.me/@sologrinder', '_blank');
   };
 
   return (
