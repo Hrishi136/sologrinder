@@ -142,7 +142,7 @@ export default function Quests() {
           
           <CardContent>
             {challenges.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12 flex flex-col items-center justify-center">
                 <Target className="h-16 w-16 text-system-blue2/50 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-system-blue mb-2">
                   No Active Quests
@@ -150,13 +150,15 @@ export default function Quests() {
                 <p className="text-white/60 mb-6">
                   Create your first quest to begin your hunter journey!
                 </p>
-                <Button 
-                  onClick={() => setShowNewModal(true)}
-                  className="glow-button flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Your First Quest
-                </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={() => setShowNewModal(true)}
+                    className="glow-button flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create Your First Quest
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -180,7 +182,10 @@ export default function Quests() {
       </div>
 
       {/* Modals */}
-      <NewQuestModal />
+      <NewQuestModal 
+        open={showNewModal}
+        onOpenChange={setShowNewModal}
+      />
 
       <EditQuestModal
         open={showEditModal}

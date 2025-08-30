@@ -24,8 +24,7 @@ const difficultyOptions: { label: string; value: Difficulty; color: string; poin
   { label: "Hard", value: "hard", color: "bg-red-600 text-white", points: 75 },
 ];
 
-export default function NewQuestModal({ triggerClass }: { triggerClass?: string }) {
-  const [open, setOpen] = useState(false);
+export default function NewQuestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [questName, setQuestName] = useState("");
   const [category, setCategory] = useState<Category | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -37,7 +36,7 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
 
   // Reset form when modal closes
   const handleClose = () => {
-    setOpen(false);
+    onOpenChange(false);
     setQuestName("");
     setCategory(null);
     setDifficulty(null);
@@ -74,16 +73,7 @@ export default function NewQuestModal({ triggerClass }: { triggerClass?: string 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="default"
-          className={`glow-button font-orbitron text-base px-5 py-2 ${triggerClass ?? ""}`}
-          style={{ boxShadow: "0 0 18px 3px #00d4ff77, 0 0 38px 6px #0080ff88" }}
-        >
-          + Accept New Quest
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="system-panel system-panel-glow bg-[#0a0a0a90] border-system-blue2 border-2 p-6 rounded-2xl shadow-blue-glow animate-fade-in font-orbitron">
         <form
           className="w-full flex flex-col gap-6"
