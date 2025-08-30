@@ -16,6 +16,7 @@ interface UserProfile {
   hunterName: string;
   title: string;
   motto: string;
+  bio: string;
   avatar: string;
   theme: 'classic-blue' | 'shadow-red' | 'monarch-gold';
   questPreferences: {
@@ -42,6 +43,7 @@ export default function Profile() {
     hunterName: "Shadow Hunter",
     title: currentRank?.name || "E-Rank",
     motto: "The shadows guide my path to strength",
+    bio: "A mysterious hunter walking the path of shadows...",
     avatar: "photo-1582562124811-c09040d0a901",
     theme: 'classic-blue',
     questPreferences: {
@@ -61,11 +63,14 @@ export default function Profile() {
   });
 
   const avatarOptions = [
-    { id: "photo-1582562124811-c09040d0a901", name: "Shadow Cat", description: "Orange tabby with mysterious aura" },
-    { id: "photo-1472396961693-142e6e269027", name: "Forest Guardian", description: "Two deer in mystical forest" },
-    { id: "photo-1535268647677-300dbf3d78d1", name: "Young Hunter", description: "Grey tabby kitten" },
-    { id: "photo-1441057206919-63d19fac2369", name: "Ice Guardians", description: "Two penguins on frozen peak" },
-    { id: "photo-1501286353178-1ec881214838", name: "Jungle Warrior", description: "Monkey in natural habitat" }
+    { id: "photo-1582562124811-c09040d0a901", name: "Shadow Hunter", description: "Orange cat with mysterious aura" },
+    { id: "photo-1472396961693-142e6e269027", name: "Forest Guardian", description: "Deer in mystical forest" },
+    { id: "photo-1535268647677-300dbf3d78d1", name: "Young Warrior", description: "Grey kitten hunter" },
+    { id: "photo-1441057206919-63d19fac2369", name: "Ice Guardian", description: "Penguins on frozen peak" },
+    { id: "photo-1501286353178-1ec881214838", name: "Jungle Hunter", description: "Monkey in natural habitat" },
+    { id: "photo-1574158622682-e40e69881006", name: "Night Stalker", description: "Black cat in shadows" },
+    { id: "photo-1425082661705-1834bfd09dca", name: "Mountain Guardian", description: "Fox in winter landscape" },
+    { id: "photo-1518717758536-85ae29035b6d", name: "Golden Hunter", description: "Golden retriever warrior" }
   ];
 
   const themeOptions = [
@@ -87,13 +92,65 @@ export default function Profile() {
   ];
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem('hunterProfile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    }
+    const loadProfile = async () => {
+      // Try to load from Supabase first
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profileData) {
+            setProfile(prev => ({
+              ...prev,
+              hunterName: profileData.username || prev.hunterName,
+              bio: profileData.bio || prev.bio,
+              avatar: profileData.avatar_url || prev.avatar,
+            }));
+          }
+        }
+      } catch (error) {
+        console.log('No profile found in database, using defaults');
+      }
+      
+      // Fallback to localStorage
+      const savedProfile = localStorage.getItem('hunterProfile');
+      if (savedProfile) {
+        const localProfile = JSON.parse(savedProfile);
+        setProfile(prev => ({ ...prev, ...localProfile }));
+      }
+    };
+    
+    loadProfile();
   }, []);
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
+    try {
+      // Save to Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .upsert({
+            user_id: user.id,
+            username: profile.hunterName,
+            bio: profile.bio,
+            avatar_url: profile.avatar,
+            updated_at: new Date().toISOString()
+          });
+        
+        if (error) {
+          console.error('Error saving profile:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving to database:', error);
+    }
+    
+    // Also save to localStorage as backup
     localStorage.setItem('hunterProfile', JSON.stringify(profile));
     // Apply theme changes
     document.documentElement.setAttribute('data-theme', profile.theme);
@@ -265,6 +322,20 @@ export default function Profile() {
                       onChange={(e) => updateProfile({ motto: e.target.value })}
                       className="bg-system-panel border-system-blue text-white resize-none"
                       placeholder="Enter your personal motto or quote"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-white flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Bio / Description
+                    </Label>
+                    <Textarea
+                      value={profile.bio}
+                      onChange={(e) => updateProfile({ bio: e.target.value })}
+                      className="bg-system-panel border-system-blue text-white resize-none"
+                      placeholder="Tell others about yourself..."
                       rows={3}
                     />
                   </div>
@@ -302,26 +373,45 @@ export default function Profile() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-3">
                     {avatarOptions.map((avatar) => (
                       <div
                         key={avatar.id}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
                           profile.avatar === avatar.id
-                            ? 'border-system-blue bg-system-blue/20'
+                            ? 'border-system-blue bg-system-blue/20 shadow-lg'
                             : 'border-white/20 hover:border-white/40'
                         }`}
                         onClick={() => updateProfile({ avatar: avatar.id })}
                       >
                         <img
-                          src={`https://images.unsplash.com/${avatar.id}?w=150&h=150&fit=crop&crop=faces`}
+                          src={`https://images.unsplash.com/${avatar.id}?w=120&h=120&fit=crop&crop=faces`}
                           alt={avatar.name}
-                          className="w-full h-24 object-cover rounded-lg mb-2"
+                          className="w-full h-20 object-cover rounded-lg mb-2"
                         />
-                        <div className="text-white text-sm font-medium">{avatar.name}</div>
-                        <div className="text-white/60 text-xs">{avatar.description}</div>
+                        <div className="text-white text-xs font-medium text-center">{avatar.name}</div>
                       </div>
                     ))}
+                  </div>
+                  
+                  {/* Current selection preview */}
+                  <div className="mt-4 p-3 bg-system-blue/10 rounded-lg border border-system-blue/30">
+                    <div className="text-white/80 text-sm mb-2">Selected Avatar:</div>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={`https://images.unsplash.com/${profile.avatar}?w=80&h=80&fit=crop&crop=faces`}
+                        alt="Selected avatar"
+                        className="w-12 h-12 object-cover rounded-full"
+                      />
+                      <div>
+                        <div className="text-white font-medium">
+                          {avatarOptions.find(a => a.id === profile.avatar)?.name}
+                        </div>
+                        <div className="text-white/60 text-xs">
+                          {avatarOptions.find(a => a.id === profile.avatar)?.description}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

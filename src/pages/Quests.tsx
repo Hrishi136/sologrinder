@@ -128,13 +128,15 @@ export default function Quests() {
                   Manage and track your hunter quests
                 </CardDescription>
               </div>
-              <Button 
-                onClick={() => setShowNewModal(true)}
-                className="glow-button flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                New Quest
-              </Button>
+              {challenges.length > 0 && (
+                <Button 
+                  onClick={() => setShowNewModal(true)}
+                  className="glow-button flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Quest
+                </Button>
+              )}
             </div>
           </CardHeader>
           
@@ -150,8 +152,9 @@ export default function Quests() {
                 </p>
                 <Button 
                   onClick={() => setShowNewModal(true)}
-                  className="glow-button"
+                  className="glow-button flex items-center gap-2"
                 >
+                  <Plus className="h-4 w-4" />
                   Create Your First Quest
                 </Button>
               </div>

@@ -58,14 +58,14 @@ export default function DeleteConfirmationModal({
             className="border-system-blue2 text-system-blue2 hover:bg-system-blue2/10 flex-1"
             disabled={loading}
           >
-            Keep Quest
+            Cancel
           </Button>
           <Button
             onClick={onConfirm}
             className="bg-red-500/80 hover:bg-red-500 text-white border-red-500 flex-1"
             disabled={loading}
           >
-            {loading ? 'Deleting...' : 'Delete Forever'}
+            {loading ? 'Deleting...' : 'Yes'}
           </Button>
         </DialogFooter>
       </DialogContent>
