@@ -16,6 +16,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Support from "./pages/Support";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import ProfileCustomization from "./pages/ProfileCustomization";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 import SystemBootScreen from "@/components/SystemBootScreen";
@@ -57,8 +58,18 @@ const App = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      
+      // Track daily login when user authenticates
+      if (session?.user) {
+        try {
+          await supabase.rpc('track_daily_login');
+        } catch (error) {
+          console.error('Error tracking login:', error);
+        }
+      }
+      
       setLoading(false);
     });
 
@@ -137,6 +148,7 @@ const App = () => {
                 <Route path="/support" element={isAuthenticated ? <Support /> : <Navigate to="/login" />} />
                 <Route path="/community" element={isAuthenticated ? <Community /> : <Navigate to="/login" />} />
                 <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+                <Route path="/profile/customize" element={isAuthenticated ? <ProfileCustomization /> : <Navigate to="/login" />} />
                 <Route path="/progress" element={isAuthenticated ? <Progress /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -50,10 +50,20 @@ export function usePerformanceData() {
 
   const calculatePerformanceStats = async () => {
     try {
-      // Get user creation date for days active calculation
+      // Get real days active from login sessions
       const { data: { user } } = await supabase.auth.getUser();
-      const userCreatedAt = user?.created_at ? new Date(user.created_at) : new Date();
-      const daysActive = Math.max(1, Math.ceil((Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)));
+      
+      // Count unique login dates for days active
+      const { data: loginSessions, error: loginError } = await supabase
+        .from('user_login_sessions')
+        .select('login_date')
+        .eq('user_id', user?.id || '');
+
+      if (loginError) {
+        console.error('Error fetching login sessions:', loginError);
+      }
+
+      const daysActive = loginSessions?.length || 1;
 
       let questCount = { easy: 0, medium: 0, hard: 0 };
       let categoryStats = { combat: 0, intelligence: 0, agility: 0, vitality: 0, special: 0 };
