@@ -66,7 +66,12 @@ export default function ProfileSettings() {
       }
 
       if (existingProfile) {
-        setProfile(existingProfile);
+        setProfile({
+          ...existingProfile,
+          bio: existingProfile.bio || '',
+          username: existingProfile.username || '',
+          avatar_url: existingProfile.avatar_url || avatarOptions[0].url
+        });
       } else {
         // Set default values for new profile
         setProfile(prev => ({
@@ -201,7 +206,7 @@ export default function ProfileSettings() {
       const profileData = {
         user_id: user.id,
         username: profile.username.trim(),
-        bio: profile.bio.trim(),
+        bio: profile.bio?.trim() || '',
         avatar_url: profile.avatar_url
       };
 
@@ -380,14 +385,14 @@ export default function ProfileSettings() {
                   Bio / Description
                 </label>
                 <Textarea
-                  value={profile.bio}
+                  value={profile.bio || ''}
                   onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
                   placeholder="Tell other hunters about yourself..."
                   className="bg-system-dark border-system-blue2 text-white min-h-[100px]"
                   maxLength={200}
                 />
                 <p className="text-sm text-white/60 mt-1">
-                  {profile.bio.length}/200 characters
+                  {(profile.bio || '').length}/200 characters
                 </p>
               </div>
             </CardContent>
