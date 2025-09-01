@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Heart, Sparkles } from "lucide-react";
+import { Heart, Sparkles, ArrowLeft } from "lucide-react";
 
 interface Donor {
   id: string;
@@ -10,6 +11,7 @@ interface Donor {
 }
 
 export default function Support() {
+  const navigate = useNavigate();
   const [donors, setDonors] = useState<Donor[]>([]);
 
   useEffect(() => {
@@ -57,6 +59,18 @@ export default function Support() {
   return (
     <div className="min-h-screen bg-system-bg bg-particles p-4">
       <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button 
+            onClick={() => navigate('/dashboard')}
+            variant="outline"
+            className="flex items-center gap-2 text-system-blue border-system-blue hover:bg-system-blue/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="font-orbitron text-4xl font-bold text-system-blue mb-4 drop-shadow-[0_2px_6px_#00d4ff]">

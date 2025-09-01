@@ -16,6 +16,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Support from "./pages/Support";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import ProfileSettings from "./pages/ProfileSettings";
 import ProfileCustomization from "./pages/ProfileCustomization";
 import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
@@ -61,12 +62,12 @@ const App = () => {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       
-      // Track daily login when user authenticates
+      // Track daily activity when user authenticates
       if (session?.user) {
         try {
-          await supabase.rpc('track_daily_login');
+          await supabase.rpc('track_daily_activity');
         } catch (error) {
-          console.error('Error tracking login:', error);
+          console.error('Error tracking daily activity:', error);
         }
       }
       
@@ -147,7 +148,7 @@ const App = () => {
                 <Route path="/leaderboard" element={isAuthenticated ? <Leaderboard /> : <Navigate to="/login" />} />
                 <Route path="/support" element={isAuthenticated ? <Support /> : <Navigate to="/login" />} />
                 <Route path="/community" element={isAuthenticated ? <Community /> : <Navigate to="/login" />} />
-                <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={isAuthenticated ? <ProfileSettings /> : <Navigate to="/login" />} />
                 <Route path="/profile/customize" element={isAuthenticated ? <ProfileCustomization /> : <Navigate to="/login" />} />
                 <Route path="/progress" element={isAuthenticated ? <Progress /> : <Navigate to="/login" />} />
                 <Route path="*" element={<NotFound />} />

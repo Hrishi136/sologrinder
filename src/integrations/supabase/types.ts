@@ -157,6 +157,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_daily_activity: {
+        Row: {
+          day: string
+          id: string
+          inserted_at: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          id?: string
+          inserted_at?: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          id?: string
+          inserted_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_login_sessions: {
         Row: {
           created_at: string
@@ -183,6 +204,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      track_daily_activity: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       track_daily_login: {
         Args: Record<PropertyKey, never>
         Returns: undefined

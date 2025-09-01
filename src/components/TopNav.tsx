@@ -59,7 +59,10 @@ export default function TopNav() {
               <Heart className="h-4 w-4 mr-2" />
               Support the App
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20">
+            <DropdownMenuItem 
+              className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20"
+              onClick={() => navigate("/profile")}
+            >
               <Settings className="h-4 w-4 mr-2" />
               Change Profile
             </DropdownMenuItem>
