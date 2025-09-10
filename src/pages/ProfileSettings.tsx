@@ -17,14 +17,14 @@ interface UserProfile {
 }
 
 const avatarOptions = [
-  { id: 1, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter1', name: 'Hunter Alpha' },
-  { id: 2, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter2', name: 'Hunter Beta' },
-  { id: 3, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter3', name: 'Hunter Gamma' },
-  { id: 4, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter4', name: 'Hunter Delta' },
-  { id: 5, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter5', name: 'Hunter Epsilon' },
-  { id: 6, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter6', name: 'Hunter Zeta' },
-  { id: 7, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter7', name: 'Hunter Eta' },
-  { id: 8, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter8', name: 'Hunter Theta' },
+  { id: 1, url: 'https://i.imgur.com/QjK7L8x.png', name: 'Sung Jinwoo' },
+  { id: 2, url: 'https://i.imgur.com/V3nQzXw.png', name: 'Shadow Monarch' },
+  { id: 3, url: 'https://i.imgur.com/8xP1mKt.png', name: 'Igris' },
+  { id: 4, url: 'https://i.imgur.com/7pYvR4k.png', name: 'Beru' },
+  { id: 5, url: 'https://i.imgur.com/9wX2Nqm.png', name: 'Iron' },
+  { id: 6, url: 'https://i.imgur.com/5tZ4Hxv.png', name: 'Tank' },
+  { id: 7, url: 'https://i.imgur.com/3kF2Wqs.png', name: 'Tusk' },
+  { id: 8, url: 'https://i.imgur.com/1mY6Prt.png', name: 'Kaisel' },
 ];
 
 export default function ProfileSettings() {
