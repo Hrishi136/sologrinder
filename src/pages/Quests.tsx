@@ -23,15 +23,7 @@ export default function Quests() {
   const { challenges, loading, toggleChallengeCompletion, deleteChallenge: deleteChallengeV2, refreshChallenges } = useChallengesV2();
   const { toast } = useToast();
 
-  const handleQuestComplete = async (questId: string) => {
-    const success = await toggleChallengeCompletion(questId);
-    if (success) {
-      toast({
-        title: "Quest Completed!",
-        description: "Your progress has been updated.",
-      });
-    }
-  };
+  // Remove quest completion from Quests page - only allow quest creation
 
   const handleQuestEdit = (quest: any) => {
     setSelectedQuest(quest);
@@ -116,7 +108,7 @@ export default function Quests() {
         ))}
       </div>
 
-      <div className="container mx-auto pt-4 flex flex-col gap-8 items-center relative z-10">
+      <div className="container mx-auto px-3 sm:px-4 pt-4 pb-20 flex flex-col gap-6 sm:gap-8 items-center relative z-10">
         <Card className="w-full max-w-4xl system-panel border-system-blue2">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -169,9 +161,10 @@ export default function Quests() {
                     <SwipeableQuestCard
                       key={challenge.id}
                       quest={questData}
-                      onComplete={() => handleQuestComplete(challenge.id)}
+                      onComplete={() => {}} // No completion on Quests page
                       onEdit={() => handleQuestEdit(challenge)}
                       onDelete={() => handleQuestDelete(challenge)}
+                      hideCompleteButton={true} // Hide complete button
                     />
                   );
                 })}
