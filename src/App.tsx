@@ -26,7 +26,6 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import UsernameSelectionModal from "@/components/UsernameSelectionModal";
 import WelcomeBackModal from "@/components/WelcomeBackModal";
-import MobileBottomNav from "@/components/MobileBottomNav";
 import React from "react";
 
 const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
@@ -155,9 +154,6 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               
-              
-              {/* Mobile bottom navigation - only shows on mobile */}
-              <MobileBottomNav />
               
               {/* PWA install prompt */}
               <PWAInstallPrompt />

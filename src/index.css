@@ -90,14 +90,9 @@
   .system-panel {
     @apply p-3;
   }
-  
-  /* Extra small font adjustments */
-  .font-orbitron {
-    font-size: 0.875rem;
-  }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .particle-bg {
     display: none; /* Reduce animation on mobile for performance */
   }
@@ -115,55 +110,6 @@
   /* Improved touch targets */
   .touch-target {
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-  }
-  
-  /* Mobile layout improvements */
-  .container {
-    @apply px-3;
-  }
-  
-  .system-panel {
-    @apply p-4;
-  }
-  
-  /* Responsive grid for dashboard */
-  .dashboard-grid {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
-  }
-  
-  /* Responsive text sizing */
-  h1 {
-    font-size: 1.5rem !important;
-  }
-  
-  h2 {
-    font-size: 1.25rem !important;
-  }
-  
-  h3 {
-    font-size: 1.125rem !important;
-  }
-  
-  /* Progress bar container fix */
-  .progress-container {
-    max-width: 100% !important;
-    overflow: hidden;
-  }
-  
-  .progress-bar {
-    max-width: 100% !important;
-  }
-  
-  /* Ensure all elements fit within viewport */
-  * {
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  /* Fix text overflow on mobile */
-  .font-orbitron {
-    word-break: break-word;
   }
 }
 

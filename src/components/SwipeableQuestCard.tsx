@@ -15,15 +15,13 @@ interface SwipeableQuestCardProps {
   onComplete: () => void;
   onEdit: () => void;
   onDelete?: () => void;
-  hideCompleteButton?: boolean; // Hide complete button for Quests page
 }
 
 export default function SwipeableQuestCard({ 
   quest, 
   onComplete, 
   onEdit,
-  onDelete,
-  hideCompleteButton = false
+  onDelete 
 }: SwipeableQuestCardProps) {
   const [hapticTrigger, setHapticTrigger] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -97,7 +95,7 @@ export default function SwipeableQuestCard({
                 </button>
               )}
               
-              {!quest.completed && !hideCompleteButton && (
+              {!quest.completed && (
                 <button
                   onClick={() => {
                     onComplete();

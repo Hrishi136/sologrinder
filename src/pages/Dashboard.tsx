@@ -305,9 +305,9 @@ export default function Dashboard() {
           />
         ))}
       </div>
-      <div className="container mx-auto px-2 sm:px-4 pt-2 pb-20 flex flex-col gap-4 sm:gap-6 items-center">
+      <div className="container mx-auto px-2 pt-2 pb-16 flex flex-col gap-6 sm:gap-8 items-center">
         {/* HEADER SECTION */}
-        <div className="w-full flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-start">
+        <div className="w-full flex justify-between items-start">
           <div className="flex-1">
             <DashboardHeader
               currentRank={currentRank}
@@ -319,11 +319,10 @@ export default function Dashboard() {
           </div>
           <Button 
             onClick={() => navigate("/support")}
-            className="bg-gradient-to-r from-system-blue to-system-blue2 hover:from-system-blue2 hover:to-system-glow text-white font-orbitron font-bold px-4 sm:px-6 py-2 text-sm sm:text-base transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#00d4ff] self-start sm:ml-4"
+            className="bg-gradient-to-r from-system-blue to-system-blue2 hover:from-system-blue2 hover:to-system-glow text-white font-orbitron font-bold px-6 py-2 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#00d4ff] ml-4"
           >
             <Heart className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Support App</span>
-            <span className="sm:hidden">Support</span>
+            Support App
           </Button>
         </div>
 

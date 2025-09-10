@@ -1,7 +1,7 @@
 
 import React from "react";
 import SystemPanel from "./SystemPanel";
-import DashboardQuestList from "./DashboardQuestList";
+import QuestCompletionPanel from "./QuestCompletionPanel";
 import HunterStatsPanel from "./HunterStatsPanel";
 import ShadowArmyPreview from "./ShadowArmyPreview";
 import RecentAchievements from "./RecentAchievements";
@@ -29,12 +29,15 @@ interface Props {
 
 export default function DashboardPanels(props: Props) {
   return (
-    <div className="w-full grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 dashboard-grid">
+    <div className="w-full grid gap-6 grid-cols-1 md:grid-cols-2">
       <SystemPanel className="p-5 min-h-[260px] bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in">
-        <DashboardQuestList
-          onQuestComplete={() => {
-            props.setSystemNotice("Quest completed! Check your stat panel for gains.");
-          }}
+        <QuestCompletionPanel
+          streak={props.streak}
+          dailyQuests={props.dailyQuests}
+          canCompleteQuest={props.canCompleteQuest}
+          completeQuest={props.completeQuest}
+          setSystemNotice={props.setSystemNotice}
+          QUEST_CATEGORIES={props.QUEST_CATEGORIES}
         />
       </SystemPanel>
       <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4 bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in">
