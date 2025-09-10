@@ -26,6 +26,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import UsernameSelectionModal from "@/components/UsernameSelectionModal";
 import WelcomeBackModal from "@/components/WelcomeBackModal";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import React from "react";
 
 const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
@@ -170,6 +171,9 @@ const App = () => {
                 isVisible={showWelcomeModal}
                 onClose={() => setShowWelcomeModal(false)}
               />
+              
+              {/* Mobile Bottom Navigation */}
+              <MobileBottomNav />
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>
