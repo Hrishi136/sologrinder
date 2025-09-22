@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useChallengesV2 } from "@/hooks/useChallengesV2";
+import { useStreakTracker } from "@/hooks/useStreakTracker";
 
 type Props = {
   streak: number;
@@ -34,6 +35,7 @@ export default function QuestCompletionPanel({
   QUEST_CATEGORIES
 }: Props) {
   const { challenges, loading, toggleChallengeCompletion } = useChallengesV2();
+  const { trackTodayActivity } = useStreakTracker();
   const [selectedQuestId, setSelectedQuestId] = useState<string>("");
   
   // Get the selected quest details
@@ -56,9 +58,11 @@ export default function QuestCompletionPanel({
     if (canCompleteQuest(difficulty)) {
       const success = await toggleChallengeCompletion(selectedQuest.id);
       if (success) {
+        // Track daily activity for streak calculation
+        await trackTodayActivity();
         // Also call the legacy completeQuest function for stat tracking
         completeQuest(selectedQuest.category || "Combat Training", difficulty);
-        setSystemNotice("Quest completed! Check your stat panel for gains.");
+        setSystemNotice("Quest completed! Check your performance tab for updated stats.");
       }
     }
   };

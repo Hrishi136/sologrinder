@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useChallenges } from './useChallenges';
+import { useChallengesV2 } from './useChallengesV2';
+import { useStreakTracker } from './useStreakTracker';
 import { supabase } from '@/integrations/supabase/client';
 
 interface PerformanceStats {
@@ -29,9 +30,10 @@ interface PerformanceStats {
 }
 
 export function usePerformanceData() {
-  const { challenges, loading: challengesLoading } = useChallenges();
+  const { challenges, loading: challengesLoading } = useChallengesV2();
+  const { currentStreak, loading: streakLoading } = useStreakTracker();
   const [performanceData, setPerformanceData] = useState<PerformanceStats>({
-    powerLevel: 0,
+    powerLevel: 30, // Start from level 1 (30 points)
     totalQuests: 0,
     successRate: 100,
     streak: 0,
@@ -43,10 +45,10 @@ export function usePerformanceData() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!challengesLoading && challenges.length >= 0) {
+    if (!challengesLoading && !streakLoading && challenges.length >= 0) {
       calculatePerformanceStats();
     }
-  }, [challenges, challengesLoading]);
+  }, [challenges, challengesLoading, streakLoading, currentStreak]);
 
   const calculatePerformanceStats = async () => {
     try {
@@ -71,18 +73,8 @@ export function usePerformanceData() {
       let totalStreak = 0;
 
       challenges.forEach(challenge => {
-        let category = 'Combat Training';
-        let difficulty = 'easy';
-        let points = 10;
-        
-        try {
-          const steps = JSON.parse(challenge.steps || '{}');
-          category = steps.category || 'Combat Training';
-          difficulty = steps.difficulty || 'easy';
-          points = steps.points || 10;
-        } catch (e) {
-          // Use defaults
-        }
+        const category = challenge.category || 'Combat Training';
+        const difficulty = challenge.difficulty || 'easy';
 
         // Count by difficulty
         if (difficulty === 'easy') questCount.easy++;
@@ -100,19 +92,20 @@ export function usePerformanceData() {
         const categoryKey = categoryMap[category] || 'combat';
         categoryStats[categoryKey]++;
 
-        // Add completions and streak
-        const completions = (challenge.progress_json as any)?.totalCompletions || challenge.streak || 0;
+        // Add completions and streak - use the new challenge progress system
+        const completions = challenge.streak || 0;
         totalCompletions += completions;
         totalStreak += challenge.streak || 0;
       });
 
-      // Calculate power level based on completions and difficulty
-      const powerLevel = Math.max(100, 
-        questCount.easy * 15 + 
+      // Calculate power level based on completions and difficulty with round level thresholds
+      const basePoints = questCount.easy * 15 + 
         questCount.medium * 30 + 
         questCount.hard * 50 + 
-        totalCompletions * 10
-      );
+        totalCompletions * 10;
+      
+      // Ensure starting from level 1 with round number thresholds
+      const powerLevel = Math.max(30, basePoints);
 
       // Generate weekly completion data (mock for now)
       const weeklyCompletions = [
@@ -126,7 +119,7 @@ export function usePerformanceData() {
         powerLevel,
         totalQuests: challenges.length,
         successRate: challenges.length > 0 ? Math.round((totalCompletions / Math.max(challenges.length, 1)) * 100) : 100,
-        streak: Math.round(totalStreak / Math.max(challenges.length, 1)),
+        streak: currentStreak, // Use the real IST-based streak
         daysActive,
         questCount,
         categoryStats,
@@ -142,7 +135,7 @@ export function usePerformanceData() {
 
   return {
     ...performanceData,
-    loading: loading || challengesLoading,
+    loading: loading || challengesLoading || streakLoading,
     refreshData: calculatePerformanceStats
   };
 }

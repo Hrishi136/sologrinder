@@ -297,7 +297,7 @@ export default function Profile() {
                     <Input
                       value={profile.hunterName}
                       onChange={(e) => updateProfile({ hunterName: e.target.value })}
-                      className="bg-system-panel border-system-blue text-white"
+                      className="bg-white border-system-blue text-black placeholder:text-gray-500"
                       placeholder="Enter your hunter name"
                     />
                   </div>
@@ -307,7 +307,7 @@ export default function Profile() {
                     <Input
                       value={profile.title}
                       onChange={(e) => updateProfile({ title: e.target.value })}
-                      className="bg-system-panel border-system-blue text-white"
+                      className="bg-white border-system-blue text-black placeholder:text-gray-500"
                       placeholder="Enter your title"
                     />
                   </div>
@@ -320,7 +320,7 @@ export default function Profile() {
                     <Textarea
                       value={profile.motto}
                       onChange={(e) => updateProfile({ motto: e.target.value })}
-                      className="bg-system-panel border-system-blue text-white resize-none"
+                      className="bg-white border-system-blue text-black placeholder:text-gray-500 resize-none"
                       placeholder="Enter your personal motto or quote"
                       rows={2}
                     />
@@ -334,7 +334,7 @@ export default function Profile() {
                     <Textarea
                       value={profile.bio}
                       onChange={(e) => updateProfile({ bio: e.target.value })}
-                      className="bg-system-panel border-system-blue text-white resize-none"
+                      className="bg-white border-system-blue text-black placeholder:text-gray-500 resize-none"
                       placeholder="Tell others about yourself..."
                       rows={3}
                     />

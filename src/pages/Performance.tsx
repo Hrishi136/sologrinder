@@ -86,10 +86,22 @@ export default function Performance() {
         stat.id === selectedFilter.toLowerCase()
       );
 
-  // Hunter Level Progress calculation
-  const hunterLevelProgress = Math.min((powerLevel / 1000) * 100, 100);
-  const currentLevel = Math.floor(powerLevel / 100) + 1;
-  const nextLevelPoints = (currentLevel * 100) - powerLevel;
+  // Hunter Level Progress calculation with round number thresholds
+  const levelThresholds = [30, 80, 150, 250, 400, 600, 850, 1150, 1500, 2000]; // Round numbers for each level
+  const getCurrentLevel = (points: number) => {
+    for (let i = 0; i < levelThresholds.length; i++) {
+      if (points < levelThresholds[i]) return i + 1;
+    }
+    return levelThresholds.length + 1;
+  };
+  
+  const currentLevel = getCurrentLevel(powerLevel);
+  const nextLevelThreshold = levelThresholds[currentLevel - 1] || (currentLevel * 500);
+  const previousLevelThreshold = currentLevel > 1 ? (levelThresholds[currentLevel - 2] || 0) : 0;
+  const progressInCurrentLevel = powerLevel - previousLevelThreshold;
+  const pointsNeededForCurrentLevel = nextLevelThreshold - previousLevelThreshold;
+  const hunterLevelProgress = (progressInCurrentLevel / pointsNeededForCurrentLevel) * 100;
+  const nextLevelPoints = nextLevelThreshold - powerLevel;
 
   return (
     <div className="min-h-screen bg-system-bg font-orbitron">
