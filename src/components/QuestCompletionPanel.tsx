@@ -40,18 +40,18 @@ export default function QuestCompletionPanel({
   const selectedQuest = challenges.find(q => q.id === selectedQuestId) || challenges[0];
   
   // Map categories to difficulty levels
-  const getDifficultyFromCategory = (category: string | null): "easy" | "medium" | "hard" => {
-    if (!category) return "easy";
-    const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes("hard") || lowerCategory.includes("intense") || lowerCategory.includes("extreme")) return "hard";
-    if (lowerCategory.includes("medium") || lowerCategory.includes("moderate") || lowerCategory.includes("intermediate")) return "medium";
+  const getDifficultyFromQuest = (difficulty: string | null): "easy" | "medium" | "hard" => {
+    if (!difficulty) return "easy";
+    const lowerDifficulty = difficulty.toLowerCase();
+    if (lowerDifficulty === "hard") return "hard";
+    if (lowerDifficulty === "medium") return "medium";
     return "easy";
   };
 
   const handleQuestComplete = async () => {
     if (!selectedQuest) return;
     
-    const difficulty = getDifficultyFromCategory(selectedQuest.category);
+    const difficulty = getDifficultyFromQuest(selectedQuest.difficulty);
     
     if (canCompleteQuest(difficulty)) {
       const success = await toggleChallengeCompletion(selectedQuest.id);
@@ -84,7 +84,7 @@ export default function QuestCompletionPanel({
     );
   }
 
-  const difficulty = getDifficultyFromCategory(selectedQuest?.category);
+  const difficulty = getDifficultyFromQuest(selectedQuest?.difficulty);
   const difficultyColor = difficulty === "hard" ? "#ed3434" : difficulty === "medium" ? "#f4e95a" : "#48e18b";
 
   return (
@@ -130,7 +130,7 @@ export default function QuestCompletionPanel({
       {/* Quest Info */}
       <ul className="list-disc pl-5 text-xs text-white/80">
         {selectedQuest && (
-          <li>Current Quest: <b>{selectedQuest.title}</b> - {selectedQuest.category || "General"} ({difficulty})</li>
+          <li>Current Quest: <b>{selectedQuest.title}</b> - {selectedQuest.category || "General"} ({selectedQuest.difficulty || "easy"})</li>
         )}
         <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
         <li>Daily quest cap: 5 easy, 3 medium, 2 hard</li>

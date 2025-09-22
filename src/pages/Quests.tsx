@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Target, Filter, Search } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import NewQuestModal from "../components/NewQuestModal"
 import SwipeableQuestCard from "../components/SwipeableQuestCard"
 import EditQuestModal from "../components/EditQuestModal"
@@ -20,6 +21,7 @@ export default function Quests() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedQuest, setSelectedQuest] = useState<any | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [filterType, setFilterType] = useState<'all' | 'current' | 'completed'>('all');
   const { challenges, loading, toggleChallengeCompletion, deleteChallenge: deleteChallengeV2, refreshChallenges } = useChallengesV2();
   const { toast } = useToast();
 
@@ -71,8 +73,11 @@ export default function Quests() {
 
   const getQuestData = (challenge: any) => {
     const category = challenge.category || "Combat Training";
-    const difficulty = "easy"; // Default difficulty since it's not stored in new schema
-    const difficultyRank = "E-Rank";
+    const difficulty = challenge.difficulty || "easy";
+    
+    // Convert difficulty to rank display
+    const difficultyRank = difficulty === "hard" ? "S-Rank" : 
+                          difficulty === "medium" ? "A-Rank" : "E-Rank";
 
     return {
       id: challenge.id,
@@ -82,6 +87,13 @@ export default function Quests() {
       completed: challenge.todayCompleted || false
     };
   };
+
+  // Filter challenges based on selected filter
+  const filteredChallenges = challenges.filter(challenge => {
+    if (filterType === 'current') return !challenge.todayCompleted;
+    if (filterType === 'completed') return challenge.todayCompleted;
+    return true; // 'all' shows everything
+  });
 
   if (loading) {
     return (
@@ -128,15 +140,29 @@ export default function Quests() {
                   Manage and track your hunter quests
                 </CardDescription>
               </div>
-              {challenges.length > 0 && (
-                <Button 
-                  onClick={() => setShowNewModal(true)}
-                  className="glow-button flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  New Quest
-                </Button>
-              )}
+              <div className="flex items-center gap-3">
+                {challenges.length > 0 && (
+                  <Select value={filterType} onValueChange={(value: 'all' | 'current' | 'completed') => setFilterType(value)}>
+                    <SelectTrigger className="w-40 bg-system-panel border-system-blue2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-system-panel border-system-blue2">
+                      <SelectItem value="all">All Quests</SelectItem>
+                      <SelectItem value="current">Current</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+                {challenges.length > 0 && (
+                  <Button 
+                    onClick={() => setShowNewModal(true)}
+                    className="glow-button flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    New Quest
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           
@@ -162,19 +188,33 @@ export default function Quests() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {challenges.map(challenge => {
-                  const questData = getQuestData(challenge);
-                  
-                  return (
-                    <SwipeableQuestCard
-                      key={challenge.id}
-                      quest={questData}
-                      onComplete={() => handleQuestComplete(challenge.id)}
-                      onEdit={() => handleQuestEdit(challenge)}
-                      onDelete={() => handleQuestDelete(challenge)}
-                    />
-                  );
-                })}
+                {filteredChallenges.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-white/60">
+                      {filterType === 'current' && 'No current quests available'}
+                      {filterType === 'completed' && 'No completed quests yet'}
+                      {filterType === 'all' && 'No quests found'}
+                    </p>
+                  </div>
+                ) : (
+                  filteredChallenges.map(challenge => {
+                    const questData = getQuestData(challenge);
+                    
+                    return (
+                      <div 
+                        key={challenge.id}
+                        className={challenge.todayCompleted ? 'opacity-60' : ''}
+                      >
+                        <SwipeableQuestCard
+                          quest={questData}
+                          onComplete={() => handleQuestComplete(challenge.id)}
+                          onEdit={() => handleQuestEdit(challenge)}
+                          onDelete={() => handleQuestDelete(challenge)}
+                        />
+                      </div>
+                    );
+                  })
+                )}
               </div>
             )}
           </CardContent>

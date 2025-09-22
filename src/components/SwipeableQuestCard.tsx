@@ -28,10 +28,7 @@ export default function SwipeableQuestCard({
 
   const { elementRef } = useSwipeGestures({
     onSwipeRight: () => {
-      if (!quest.completed) {
-        onComplete();
-        setHapticTrigger(prev => !prev);
-      }
+      // Removed swipe to complete functionality
     },
     onSwipeLeft: () => {
       onEdit();
@@ -52,10 +49,6 @@ export default function SwipeableQuestCard({
           <Edit size={20} className="text-yellow-400" />
         </div>
 
-        {/* Right swipe indicator (Complete) */}
-        <div className="absolute right-0 top-0 h-full w-16 bg-green-500/20 rounded-r-xl flex items-center justify-center opacity-0 transition-opacity">
-          <Check size={20} className="text-green-400" />
-        </div>
 
         {/* Quest content */}
         <div className="relative z-10">
@@ -77,7 +70,7 @@ export default function SwipeableQuestCard({
               {quest.category} Training
             </span>
             
-            {/* Touch-friendly action buttons */}
+            {/* Touch-friendly action buttons - removed completion button */}
             <div className="flex gap-2">
               <button
                 onClick={onEdit}
@@ -94,25 +87,13 @@ export default function SwipeableQuestCard({
                   <Trash2 size={16} className="text-red-400" />
                 </button>
               )}
-              
-              {!quest.completed && (
-                <button
-                  onClick={() => {
-                    onComplete();
-                    setHapticTrigger(prev => !prev);
-                  }}
-                  className="min-h-[44px] min-w-[44px] bg-green-500/20 hover:bg-green-500/30 rounded-lg flex items-center justify-center transition-colors"
-                >
-                  <Check size={16} className="text-green-400" />
-                </button>
-              )}
             </div>
           </div>
         </div>
 
         {/* Swipe hints */}
         <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 text-xs text-white/50 font-orbitron">
-          ← Edit • Complete →
+          ← Edit
         </div>
       </div>
     </HapticFeedback>

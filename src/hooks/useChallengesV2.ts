@@ -103,7 +103,7 @@ export function useChallengesV2() {
   };
 
   // Create new challenge
-  const createChallenge = async (title: string, category?: string): Promise<ChallengeWithProgress | null> => {
+  const createChallenge = async (title: string, category?: string, difficulty?: string, description?: string): Promise<ChallengeWithProgress | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -111,6 +111,8 @@ export function useChallengesV2() {
       const challengeData: ChallengeInsert = {
         title,
         category,
+        difficulty,
+        description,
         user_id: user.id,
       };
 

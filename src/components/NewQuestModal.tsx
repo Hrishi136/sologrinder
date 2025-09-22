@@ -54,7 +54,7 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
     const categoryLabel = categoryOptions.find(opt => opt.value === category)?.label || category;
     const difficultyData = difficultyOptions.find(opt => opt.value === difficulty);
     
-    const challenge = await createChallenge(questName, categoryLabel);
+    const challenge = await createChallenge(questName, categoryLabel, difficulty, description);
 
     if (challenge) {
       toast({
