@@ -16,7 +16,12 @@
     @apply bg-system-bg text-white font-inter;
     background-image: theme(backgroundImage.particles);
     min-height: 100vh;
-    /* Subtle noise overlay: uses a data uri png for texture, optional later */
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 

@@ -287,9 +287,9 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
+    <div className="min-h-screen w-full bg-system-bg relative font-orbitron overflow-x-hidden">
       {/* Particle background – adapt slightly for all screens */}
-      <div className="particle-bg pointer-events-none">
+      <div className="particle-bg pointer-events-none hidden sm:block">
         {[...Array(14)].map((_, i) => (
           <div
             key={i}
@@ -305,7 +305,7 @@ export default function Dashboard() {
           />
         ))}
       </div>
-      <div className="container mx-auto px-2 sm:px-4 md:px-6 pt-2 pb-16 sm:pb-20 flex flex-col gap-4 sm:gap-6 md:gap-8 items-center max-w-7xl">
+      <div className="w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-2 pb-16 sm:pb-20 flex flex-col gap-4 sm:gap-6 md:gap-8 items-center max-w-7xl box-border">
         {/* HEADER SECTION */}
         <div className="w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-start gap-3">
           <div className="flex-1 w-full min-w-0">
