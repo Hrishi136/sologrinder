@@ -123,49 +123,49 @@ export default function Performance() {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 relative z-10 max-w-7xl pb-20 sm:pb-8">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Button 
             onClick={() => navigate('/dashboard')}
             variant="outline"
-            className="flex items-center gap-2 text-system-blue border-system-blue hover:bg-system-blue/10"
+            className="flex items-center gap-2 text-system-blue border-system-blue hover:bg-system-blue/10 min-h-[44px] px-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            <span className="text-sm sm:text-base">Back to Dashboard</span>
           </Button>
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-system-blue mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-system-blue mb-2 break-words px-2">
             Hunter Training Analytics
           </h1>
-          <p className="text-white/80 text-lg">
+          <p className="text-white/80 text-sm sm:text-base md:text-lg px-2">
             Monitor your development across all disciplines
           </p>
         </div>
 
         {/* Hunter Level Progress Bar */}
-        <Card className="system-panel border-system-blue mb-8">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Target className="h-5 w-5 text-system-blue" />
-              Hunter Level Progress
+        <Card className="system-panel border-system-blue mb-6 sm:mb-8 w-full">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-system-blue flex-shrink-0" />
+              <span className="break-words">Hunter Level Progress</span>
             </CardTitle>
-            <CardDescription className="text-white/60">
+            <CardDescription className="text-white/60 text-xs sm:text-sm break-words">
               Level {currentLevel} • {nextLevelPoints} points to next level
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="space-y-2 w-full">
+              <div className="flex justify-between text-xs sm:text-sm gap-2">
                 <span className="text-white/80">Current Progress</span>
-                <span className="text-system-blue font-bold">{hunterLevelProgress.toFixed(1)}%</span>
+                <span className="text-system-blue font-bold whitespace-nowrap">{hunterLevelProgress.toFixed(1)}%</span>
               </div>
               <Progress 
                 value={hunterLevelProgress} 
-                className="h-3 bg-gray-800"
+                className="h-2 sm:h-3 bg-gray-800 w-full"
               />
               <div className="flex justify-between text-xs text-white/60">
                 <span>Level {currentLevel}</span>
@@ -176,50 +176,50 @@ export default function Performance() {
         </Card>
 
         {/* Filter Dropdown */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6 w-full">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="text-system-blue border-system-blue hover:bg-system-blue/10"
+                className="text-system-blue border-system-blue hover:bg-system-blue/10 w-full sm:w-auto min-h-[44px] text-sm sm:text-base"
               >
-                Choose Training Stats: {selectedFilter}
-                <ChevronDown className="h-4 w-4 ml-2" />
+                <span className="truncate">Choose Training Stats: {selectedFilter}</span>
+                <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-system-panel border-system-blue z-50">
+            <DropdownMenuContent className="bg-system-panel border-system-blue z-50 w-[200px]">
               <DropdownMenuItem 
-                className="text-white hover:bg-system-blue/20"
+                className="text-white hover:bg-system-blue/20 text-sm"
                 onClick={() => setSelectedFilter('All')}
               >
                 All
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-white hover:bg-system-blue/20"
+                className="text-white hover:bg-system-blue/20 text-sm"
                 onClick={() => setSelectedFilter('Combat')}
               >
                 Combat
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-white hover:bg-system-blue/20"
+                className="text-white hover:bg-system-blue/20 text-sm"
                 onClick={() => setSelectedFilter('Intelligence')}
               >
                 Intelligence
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-white hover:bg-system-blue/20"
+                className="text-white hover:bg-system-blue/20 text-sm"
                 onClick={() => setSelectedFilter('Agility')}
               >
                 Agility
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-white hover:bg-system-blue/20"
+                className="text-white hover:bg-system-blue/20 text-sm"
                 onClick={() => setSelectedFilter('Vital')}
               >
                 Vital
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-white hover:bg-system-blue/20"
+                className="text-white hover:bg-system-blue/20 text-sm"
                 onClick={() => setSelectedFilter('Special Quest')}
               >
                 Special Quest
@@ -229,7 +229,7 @@ export default function Performance() {
         </div>
 
         {/* Stat Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
           {filteredStats.map((stat) => {
             const Icon = stat.icon;
             const percentage = (stat.value / stat.maxValue) * 100;
@@ -237,7 +237,7 @@ export default function Performance() {
             return (
               <Card 
                 key={stat.id}
-                className={`system-panel border-2 transition-all duration-300 hover:scale-105 animate-pulse-slow ${stat.glowColor}`}
+                className={`system-panel border-2 transition-all duration-300 hover:scale-105 animate-pulse-slow ${stat.glowColor} w-full min-w-0`}
                 style={{
                   background: `linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)`,
                   borderColor: stat.color.includes('red') ? '#ef4444' : 
@@ -246,14 +246,14 @@ export default function Performance() {
                               stat.color.includes('green') ? '#22c55e' : '#a855f7'
                 }}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className={`p-3 rounded-full bg-gradient-to-r ${stat.color} shadow-lg ${stat.glowColor}`}>
-                      <Icon className="h-6 w-6 text-white" />
+                <CardHeader className="pb-3 p-4 sm:p-6">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className={`p-2 sm:p-3 rounded-full bg-gradient-to-r ${stat.color} shadow-lg ${stat.glowColor} flex-shrink-0`}>
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
                     <Badge 
                       variant="outline" 
-                      className="text-white border-current"
+                      className="text-white border-current text-xs sm:text-sm whitespace-nowrap"
                       style={{
                         borderColor: stat.color.includes('red') ? '#ef4444' : 
                                     stat.color.includes('blue') ? '#3b82f6' :
@@ -265,28 +265,28 @@ export default function Performance() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="text-lg font-bold text-white mb-1">{stat.title}</h3>
-                      <p className="text-sm text-white/60">{stat.description}</p>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="space-y-3 w-full min-w-0">
+                    <div className="min-w-0">
+                      <h3 className="text-base sm:text-lg font-bold text-white mb-1 break-words">{stat.title}</h3>
+                      <p className="text-xs sm:text-sm text-white/60 break-words">{stat.description}</p>
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
+                    <div className="space-y-2 w-full">
+                      <div className="flex justify-between text-xs sm:text-sm gap-2">
                         <span className="text-white/80">Progress</span>
-                        <span className="text-white font-bold">{stat.value}/{stat.maxValue}</span>
+                        <span className="text-white font-bold whitespace-nowrap">{stat.value}/{stat.maxValue}</span>
                       </div>
                       <Progress 
                         value={percentage} 
-                        className="h-2"
+                        className="h-2 w-full"
                         style={{
                           background: 'rgba(255,255,255,0.1)'
                         }}
                       />
                     </div>
                     
-                    <div className="text-xs text-white/50 italic">
+                    <div className="text-xs text-white/50 italic break-words">
                       System analysis: {percentage > 80 ? 'Exceptional' : percentage > 60 ? 'Advanced' : percentage > 40 ? 'Intermediate' : 'Developing'}
                     </div>
                   </div>

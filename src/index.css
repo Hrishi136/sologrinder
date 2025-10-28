@@ -88,11 +88,15 @@
   }
   
   .system-panel {
-    @apply p-3;
+    @apply p-3 text-sm;
   }
+  
+  h1 { @apply text-2xl; }
+  h2 { @apply text-xl; }
+  h3 { @apply text-lg; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .particle-bg {
     display: none; /* Reduce animation on mobile for performance */
   }
@@ -104,28 +108,51 @@
   /* Touch-friendly button sizing */
   button {
     min-height: 44px;
-    min-width: 44px;
   }
   
   /* Improved touch targets */
   .touch-target {
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
-}
-
-@media (min-width: 768px) and (max-width: 1024px) {
-  .container {
-    @apply px-4;
+  
+  /* Responsive text sizes */
+  .system-panel {
+    @apply p-4;
+  }
+  
+  /* Ensure cards don't overflow */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1440px) {
+@media (min-width: 641px) and (max-width: 768px) {
+  .container {
+    @apply px-3;
+  }
+  
+  .system-panel {
+    @apply p-5;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    @apply px-4;
+  }
+  
+  .system-panel {
+    @apply p-6;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
   .container {
     @apply px-6;
   }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1441px) {
   .container {
     @apply px-8;
   }

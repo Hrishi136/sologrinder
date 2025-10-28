@@ -305,10 +305,10 @@ export default function Dashboard() {
           />
         ))}
       </div>
-      <div className="container mx-auto px-2 pt-2 pb-16 flex flex-col gap-6 sm:gap-8 items-center">
+      <div className="container mx-auto px-2 sm:px-4 md:px-6 pt-2 pb-16 sm:pb-20 flex flex-col gap-4 sm:gap-6 md:gap-8 items-center max-w-7xl">
         {/* HEADER SECTION */}
-        <div className="w-full flex justify-between items-start">
-          <div className="flex-1">
+        <div className="w-full flex flex-col sm:flex-row justify-between items-stretch sm:items-start gap-3">
+          <div className="flex-1 w-full min-w-0">
             <DashboardHeader
               currentRank={currentRank}
               badges={badges}
@@ -319,10 +319,10 @@ export default function Dashboard() {
           </div>
           <Button 
             onClick={() => navigate("/support")}
-            className="bg-gradient-to-r from-system-blue to-system-blue2 hover:from-system-blue2 hover:to-system-glow text-white font-orbitron font-bold px-6 py-2 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#00d4ff] ml-4"
+            className="bg-gradient-to-r from-system-blue to-system-blue2 hover:from-system-blue2 hover:to-system-glow text-white font-orbitron font-bold px-4 sm:px-6 py-3 sm:py-2 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_15px_#00d4ff] w-full sm:w-auto min-h-[44px]"
           >
             <Heart className="h-4 w-4 mr-2" />
-            Support App
+            <span className="text-sm sm:text-base">Support App</span>
           </Button>
         </div>
 

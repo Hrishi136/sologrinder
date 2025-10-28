@@ -92,15 +92,15 @@ export default function QuestCompletionPanel({
   const difficultyColor = difficulty === "hard" ? "#ed3434" : difficulty === "medium" ? "#f4e95a" : "#48e18b";
 
   return (
-    <div>
-      <h3 className="font-orbitron text-xl text-system-blue mb-4">
+    <div className="w-full min-w-0">
+      <h3 className="font-orbitron text-lg sm:text-xl text-system-blue mb-3 sm:mb-4">
         Complete Today's Quests
       </h3>
       
       {/* Quest Selection */}
-      <div className="mb-3">
+      <div className="mb-3 w-full">
         <select 
-          className="rounded bg-[#181e28] text-system-blue2 px-2 py-1 w-full" 
+          className="rounded bg-[#181e28] text-system-blue2 px-3 py-2 w-full text-sm sm:text-base min-h-[44px]" 
           value={selectedQuestId} 
           onChange={e => setSelectedQuestId(e.target.value)}
         >
@@ -113,9 +113,9 @@ export default function QuestCompletionPanel({
       </div>
 
       {/* Complete Button */}
-      <div className="flex items-center gap-4 mb-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 mb-3 w-full">
         <button 
-          className={`glow-button text-base py-1 px-3 flex-1 ${
+          className={`glow-button text-sm sm:text-base py-2 sm:py-1 px-3 flex-1 min-h-[44px] ${
             canCompleteQuest(difficulty) && !selectedQuest?.todayCompleted 
               ? '' 
               : 'opacity-30 pointer-events-none'
@@ -126,15 +126,15 @@ export default function QuestCompletionPanel({
         >
           {selectedQuest?.todayCompleted ? "Quest Completed Today" : "Mark Quest Complete"}
         </button>
-        <span className="text-xs text-system-blue2 min-w-[85px]">
+        <span className="text-xs sm:text-sm text-system-blue2 text-center sm:text-left sm:min-w-[85px]">
           {dailyQuests[difficulty]}/{difficulty === "easy" ? 5 : difficulty === "medium" ? 3 : 2} today
         </span>
       </div>
 
       {/* Quest Info */}
-      <ul className="list-disc pl-5 text-xs text-white/80">
+      <ul className="list-disc pl-4 sm:pl-5 text-xs sm:text-sm text-white/80 space-y-1 break-words">
         {selectedQuest && (
-          <li>Current Quest: <b>{selectedQuest.title}</b> - {selectedQuest.category || "General"} ({selectedQuest.difficulty || "easy"})</li>
+          <li className="break-words">Current Quest: <b>{selectedQuest.title}</b> - {selectedQuest.category || "General"} ({selectedQuest.difficulty || "easy"})</li>
         )}
         <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
         <li>Daily quest cap: 5 easy, 3 medium, 2 hard</li>
