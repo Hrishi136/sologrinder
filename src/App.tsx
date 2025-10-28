@@ -117,9 +117,7 @@ const App = () => {
 
   const isAuthenticated = !!session;
 
-  if (loading) {
-    return null; // or a loading spinner
-  }
+  // Do not block initial render on auth loading; render routes immediately
 
   return (
     <>
@@ -136,22 +134,21 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/login" element={<Login />} />
-                {/* Protected section */}
-                <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
-                <Route path="/quests" element={isAuthenticated ? <Quests /> : <Navigate to="/login" />} />
-                <Route path="/quest/:id" element={isAuthenticated ? <QuestDetail /> : <Navigate to="/login" />} />
-                <Route path="/army" element={isAuthenticated ? <Army /> : <Navigate to="/login" />} />
-                <Route path="/stats" element={isAuthenticated ? <Stats /> : <Navigate to="/login" />} />
-                <Route path="/performance" element={isAuthenticated ? <Performance /> : <Navigate to="/login" />} />
-                <Route path="/system-analysis" element={isAuthenticated ? <SystemAnalysis /> : <Navigate to="/login" />} />
-                <Route path="/leaderboard" element={isAuthenticated ? <Leaderboard /> : <Navigate to="/login" />} />
-                <Route path="/support" element={isAuthenticated ? <Support /> : <Navigate to="/login" />} />
-                <Route path="/community" element={isAuthenticated ? <Community /> : <Navigate to="/login" />} />
-                <Route path="/profile" element={isAuthenticated ? <ProfileSettings /> : <Navigate to="/login" />} />
-                <Route path="/profile/customize" element={isAuthenticated ? <ProfileCustomization /> : <Navigate to="/login" />} />
-                <Route path="/progress" element={isAuthenticated ? <Progress /> : <Navigate to="/login" />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/quests" element={<Quests />} />
+                <Route path="/quest/:id" element={<QuestDetail />} />
+                <Route path="/army" element={<Army />} />
+                <Route path="/stats" element={<Stats />} />
+                <Route path="/performance" element={<Performance />} />
+                <Route path="/system-analysis" element={<SystemAnalysis />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/profile" element={<ProfileSettings />} />
+                <Route path="/profile/customize" element={<ProfileCustomization />} />
+                <Route path="/progress" element={<Progress />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               

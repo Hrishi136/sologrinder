@@ -61,29 +61,26 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Register service worker
+      // Disable service worker to prevent stale cache issues on mobile and ensure fresh loads
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(reg => reg.unregister());
+        }).catch(()=>{});
+        if (window.caches) {
+          caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+        }
       }
       
-      // Hide splash screen after app loads
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          const splash = document.getElementById('splash-screen');
-          if (splash) {
-            splash.classList.add('hidden');
-            setTimeout(() => splash.remove(), 500);
-          }
-        }, 1500);
-      });
+      // Hide splash screen as soon as possible (DOMContentLoaded + fallback)
+      const hideSplash = () => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+          splash.classList.add('hidden');
+          setTimeout(() => splash.remove(), 500);
+        }
+      };
+      document.addEventListener('DOMContentLoaded', () => setTimeout(hideSplash, 600));
+      window.addEventListener('load', () => setTimeout(hideSplash, 300)); // ensure removal even if fonts delay
     </script>
   </body>
 </html>
