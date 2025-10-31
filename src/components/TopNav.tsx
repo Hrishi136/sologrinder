@@ -31,18 +31,20 @@ export default function TopNav() {
           className="h-6 sm:h-8 w-auto drop-shadow-[0_2px_4px_#00d4ff]"
         />
       </div>
-      <div className="flex gap-3 sm:gap-6">
-        {navItems.map(n => (
-          <NavLink
-            key={n.title}
-            to={n.path}
-            className={({ isActive }) =>
-              `font-orbitron px-2 py-1 text-base sm:text-lg tracking-wide border-b-2 ${isActive ? "border-system-blue text-system-blue" : "border-transparent text-white hover:text-system-blue hover:border-system-blue transition-colors duration-200"}`
-            }
-          >
-            {n.title}
-          </NavLink>
-        ))}
+      <div className="w-full max-w-full overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="flex flex-nowrap items-center gap-3 sm:gap-6 px-1">
+          {navItems.map(n => (
+            <NavLink
+              key={n.title}
+              to={n.path}
+              className={({ isActive }) =>
+                `shrink-0 font-orbitron px-2 py-1 text-base sm:text-lg tracking-wide border-b-2 ${isActive ? "border-system-blue text-system-blue" : "border-transparent text-white hover:text-system-blue hover:border-system-blue transition-colors duration-200"}`
+              }
+            >
+              {n.title}
+            </NavLink>
+          ))}
+        </div>
       </div>
       <div>
         <DropdownMenu>

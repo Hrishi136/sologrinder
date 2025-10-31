@@ -57,7 +57,7 @@ export default function SystemBootScreen({
       </div>
       {/* System window */}
       <div className="relative z-10">
-        <div className="min-w-[360px] max-w-lg px-9 py-8 system-panel system-panel-glow shadow-blue-glow rounded-xl animate-fade-in flex flex-col items-center gap-5 border-2 border-system-blue"
+        <div className="w-full max-w-sm sm:max-w-lg px-6 sm:px-9 py-8 system-panel system-panel-glow shadow-blue-glow rounded-xl animate-fade-in flex flex-col items-center gap-5 border-2 border-system-blue"
           style={{
             boxShadow:
               "0 0 32px 10px #00d4ff77, 0 0 72px 18px #0080ff86, 0 0 18px 3px #0af"

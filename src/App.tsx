@@ -34,8 +34,11 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [booted, setBooted] = React.useState<boolean>(() => {
-    // Optional: only show on "cold" navigation, not every route
-    return !window.sessionStorage.getItem(SYSTEM_BOOT_COMPLETE_KEY);
+    try {
+      return !window.sessionStorage.getItem(SYSTEM_BOOT_COMPLETE_KEY);
+    } catch {
+      return true;
+    }
   });
   const [session, setSession] = React.useState(null);
   const [profile, setProfile] = React.useState(null);
@@ -46,7 +49,9 @@ const App = () => {
 
   React.useEffect(() => {
     if (!booted) {
-      window.sessionStorage.setItem(SYSTEM_BOOT_COMPLETE_KEY, "true");
+      try {
+        window.sessionStorage.setItem(SYSTEM_BOOT_COMPLETE_KEY, "true");
+      } catch {}
     }
   }, [booted]);
 

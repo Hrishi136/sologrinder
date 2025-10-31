@@ -86,6 +86,11 @@
   width: 8px;
 }
 
+/* Hide scrollbar utility for horizontal navs */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
 /* Mobile responsive breakpoints and touch targets */
 @media (max-width: 320px) {
   .container {
