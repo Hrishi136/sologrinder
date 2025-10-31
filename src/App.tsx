@@ -33,27 +33,12 @@ const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [booted, setBooted] = React.useState<boolean>(() => {
-    try {
-      return !window.sessionStorage.getItem(SYSTEM_BOOT_COMPLETE_KEY);
-    } catch {
-      return true;
-    }
-  });
   const [session, setSession] = React.useState(null);
   const [profile, setProfile] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [showUsernameModal, setShowUsernameModal] = React.useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = React.useState(false);
   const [hasShownWelcome, setHasShownWelcome] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!booted) {
-      try {
-        window.sessionStorage.setItem(SYSTEM_BOOT_COMPLETE_KEY, "true");
-      } catch {}
-    }
-  }, [booted]);
 
   React.useEffect(() => {
     // Get initial session
@@ -124,64 +109,53 @@ const App = () => {
 
   // Do not block initial render on auth loading; render routes immediately
 
-  return (
-    <>
-      {booted && (
-        <SystemBootScreen
-          onBootComplete={() => setBooted(false)}
+return (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/quests" element={<Quests />} />
+          <Route path="/quest/:id" element={<QuestDetail />} />
+          <Route path="/army" element={<Army />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/performance" element={<Performance />} />
+          <Route path="/system-analysis" element={<SystemAnalysis />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/profile" element={<ProfileSettings />} />
+          <Route path="/profile/customize" element={<ProfileCustomization />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+
+        {/* PWA install prompt */}
+        <PWAInstallPrompt />
+
+        {/* Username selection modal */}
+        <UsernameSelectionModal 
+          open={showUsernameModal}
+          onComplete={handleUsernameComplete}
         />
-      )}
-      {/* rest of the app is hidden while SystemBootScreen is visible */}
-      {!booted && (
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/quests" element={<Quests />} />
-                <Route path="/quest/:id" element={<QuestDetail />} />
-                <Route path="/army" element={<Army />} />
-                <Route path="/stats" element={<Stats />} />
-                <Route path="/performance" element={<Performance />} />
-                <Route path="/system-analysis" element={<SystemAnalysis />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/profile" element={<ProfileSettings />} />
-                <Route path="/profile/customize" element={<ProfileCustomization />} />
-                <Route path="/progress" element={<Progress />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              
-              
-              {/* PWA install prompt */}
-              <PWAInstallPrompt />
-              
-              {/* Username selection modal */}
-              <UsernameSelectionModal 
-                open={showUsernameModal}
-                onComplete={handleUsernameComplete}
-              />
-              
-              {/* Welcome back modal */}
-              <WelcomeBackModal
-                username={profile?.username || 'Unknown Hunter'}
-                isVisible={showWelcomeModal}
-                onClose={() => setShowWelcomeModal(false)}
-              />
-              
-              {/* Mobile Bottom Navigation */}
-              <MobileBottomNav />
-            </BrowserRouter>
-          </TooltipProvider>
-        </QueryClientProvider>
-      )}
-    </>
-  );
+
+        {/* Welcome back modal */}
+        <WelcomeBackModal
+          username={profile?.username || 'Unknown Hunter'}
+          isVisible={showWelcomeModal}
+          onClose={() => setShowWelcomeModal(false)}
+        />
+
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav />
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 };
 
 export default App;
