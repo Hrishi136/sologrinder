@@ -15,7 +15,7 @@ import SystemAnalysis from "./pages/SystemAnalysis";
 import Leaderboard from "./pages/Leaderboard";
 import Support from "./pages/Support";
 import Community from "./pages/Community";
-import Profile from "./pages/Profile";
+
 import ProfileSettings from "./pages/ProfileSettings";
 import ProfileCustomization from "./pages/ProfileCustomization";
 import Progress from "./pages/Progress";

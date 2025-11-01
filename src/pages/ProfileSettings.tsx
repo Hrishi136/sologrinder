@@ -1,45 +1,67 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, User, Upload, Check, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Check } from "lucide-react";
+import { toast } from "sonner";
 
 interface UserProfile {
-  id?: string;
-  user_id: string;
   username: string;
   bio: string;
   avatar_url: string;
 }
 
 const avatarOptions = [
-  { id: 1, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter1', name: 'Hunter Alpha' },
-  { id: 2, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter2', name: 'Hunter Beta' },
-  { id: 3, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter3', name: 'Hunter Gamma' },
-  { id: 4, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter4', name: 'Hunter Delta' },
-  { id: 5, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter5', name: 'Hunter Epsilon' },
-  { id: 6, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter6', name: 'Hunter Zeta' },
-  { id: 7, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter7', name: 'Hunter Eta' },
-  { id: 8, url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hunter8', name: 'Hunter Theta' },
+  {
+    id: "sung-jinwoo",
+    name: "Sung Jinwoo",
+    url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop"
+  },
+  {
+    id: "cha-haein",
+    name: "Cha Hae-In",
+    url: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop"
+  },
+  {
+    id: "go-gunhee",
+    name: "Go Gun-Hee",
+    url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop"
+  },
+  {
+    id: "beru",
+    name: "Beru",
+    url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop"
+  },
+  {
+    id: "thomas-andre",
+    name: "Thomas Andre",
+    url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop"
+  },
+  {
+    id: "querehsha",
+    name: "Querehsha",
+    url: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&h=200&fit=crop"
+  },
+  {
+    id: "yoo-jinho",
+    name: "Yoo Jinho",
+    url: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop"
+  }
 ];
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [usernameError, setUsernameError] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile>({
-    user_id: '',
-    username: '',
-    bio: '',
+    username: "",
+    bio: "",
     avatar_url: avatarOptions[0].url
   });
+  const [selectedAvatar, setSelectedAvatar] = useState(avatarOptions[0].url);
 
   useEffect(() => {
     loadProfile();
@@ -71,11 +93,11 @@ export default function ProfileSettings() {
 
       if (existingProfile) {
         setProfile({
-          ...existingProfile,
-          bio: existingProfile.bio || '',
-          username: existingProfile.username || '',
+          username: existingProfile.username || "",
+          bio: existingProfile.bio || "",
           avatar_url: existingProfile.avatar_url || avatarOptions[0].url
         });
+        setSelectedAvatar(existingProfile.avatar_url || avatarOptions[0].url);
       } else {
         // Create a default profile row so later screens can rely on it existing
         const defaultProfile = {
@@ -92,7 +114,12 @@ export default function ProfileSettings() {
           setLoadError('Failed to initialize profile.');
           return;
         }
-        setProfile(defaultProfile);
+        setProfile({
+          username: defaultProfile.username,
+          bio: defaultProfile.bio,
+          avatar_url: defaultProfile.avatar_url
+        });
+        setSelectedAvatar(defaultProfile.avatar_url);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -103,345 +130,206 @@ export default function ProfileSettings() {
     }
   };
 
-  const checkUsernameUniqueness = async (username: string) => {
-    if (!username.trim() || username === profile.username) {
-      setUsernameError('');
-      return true;
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username.trim())
-        .neq('user_id', user?.id || '')
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking username:', error);
-        return true; // Allow if we can't check
-      }
-
-      if (data) {
-        setUsernameError('Hunter name is already taken');
-        return false;
-      }
-
-      setUsernameError('');
-      return true;
-    } catch (error) {
-      console.error('Error checking username:', error);
-      return true; // Allow if we can't check
-    }
-  };
-
-  const handleUsernameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUsername = e.target.value;
-    setProfile(prev => ({ ...prev, username: newUsername }));
-    
-    // Debounce username check
-    setTimeout(() => {
-      checkUsernameUniqueness(newUsername);
-    }, 500);
-  };
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        toast.error('Failed to upload image');
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
-      toast.success('Image uploaded successfully!');
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSaveProfile = async () => {
     if (!profile.username.trim()) {
-      toast.error('Hunter name is required');
-      return;
-    }
-
-    if (usernameError) {
-      toast.error('Please fix the username error');
-      return;
-    }
-
-    const isUnique = await checkUsernameUniqueness(profile.username);
-    if (!isUnique) {
+      toast.error("Hunter Name is required!");
       return;
     }
 
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         navigate('/login');
         return;
       }
 
-      const profileData = {
-        user_id: user.id,
-        username: profile.username.trim(),
-        bio: profile.bio?.trim() || '',
-        avatar_url: profile.avatar_url
-      };
-
       const { error } = await supabase
         .from('profiles')
-        .upsert(profileData, { onConflict: 'user_id' });
+        .upsert({
+          user_id: user.id,
+          username: profile.username,
+          bio: profile.bio,
+          avatar_url: selectedAvatar,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
 
       if (error) {
+        toast.error("Failed to save profile");
         console.error('Error saving profile:', error);
-        toast.error('Failed to save profile');
-        return;
+      } else {
+        toast.success("Profile saved successfully!");
+        setProfile(prev => ({ ...prev, avatar_url: selectedAvatar }));
       }
-
-      toast.success('Profile updated successfully!');
-      navigate('/dashboard');
     } catch (error) {
+      toast.error("An error occurred");
       console.error('Error saving profile:', error);
-      toast.error('Failed to save profile');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleAvatarSelect = (avatarUrl: string) => {
-    setProfile(prev => ({ ...prev, avatar_url: avatarUrl }));
+  const handleAvatarSelect = (url: string) => {
+    setSelectedAvatar(url);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-system-blue">Loading profile...</div>
+      <div className="min-h-screen bg-system-bg flex items-center justify-center">
+        <div className="text-system-blue text-xl font-orbitron">Loading Profile...</div>
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-system-bg flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="text-white/80">Something went wrong loading your profile.</div>
-          <button
-            className="glow-button px-6 py-2"
+          <Button
             onClick={() => { setLoading(true); loadProfile(); }}
+            className="bg-system-blue text-black hover:bg-system-blue/80"
           >
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
+    <div className="min-h-screen bg-system-bg font-orbitron overflow-x-hidden">
       {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-br from-system-dark via-[#0a0a0a] to-system-darker"></div>
-      <div className="fixed top-20 left-20 w-72 h-72 bg-system-blue/20 rounded-full blur-3xl"></div>
-      <div className="fixed bottom-20 right-20 w-96 h-96 bg-system-blue2/20 rounded-full blur-3xl"></div>
+      <div className="particle-bg pointer-events-none">
+        {[...Array(10)].map((_, i) => (
+          <div
+            key={i}
+            className="particle-dot"
+            style={{
+              left: `${Math.random() * 100}%`,
+              width: `${10 + Math.random() * 6}px`,
+              height: `${10 + Math.random() * 6}px`,
+              animationDelay: `${-Math.random() * 8}s`,
+              opacity: 0.15,
+              bottom: `${Math.random() * 50}vh`,
+            }}
+          />
+        ))}
+      </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-            className="text-system-blue hover:text-white"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <h1 className="text-3xl font-bold text-white font-orbitron">
-            Profile Settings
-          </h1>
-        </div>
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        {/* Back Button */}
+        <Button
+          onClick={() => navigate('/dashboard')}
+          variant="outline"
+          className="mb-6 sm:mb-8 flex items-center gap-2 text-system-blue border-system-blue hover:bg-system-blue/10 transition-all"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Back to Dashboard</span>
+          <span className="sm:hidden">Back</span>
+        </Button>
 
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Current Avatar Display */}
-          <Card className="system-panel border-system-blue2">
-            <CardHeader>
-              <CardTitle className="text-system-blue font-orbitron flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Current Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-system-blue2">
-                <img 
-                  src={profile.avatar_url} 
-                  alt="Current avatar" 
-                  className="w-full h-full object-cover"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                />
-              </div>
-              <div>
-                <h3 className="text-white font-semibold">{profile.username || 'Hunter'}</h3>
-                <p className="text-white/60 text-sm">{profile.bio || 'No bio set'}</p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Main Content Container */}
+        <div className="flex flex-col items-center justify-center space-y-8">
+          {/* Page Title */}
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-system-blue drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]">
+              Hunter Profile
+            </h1>
+            <p className="text-white/70 text-sm sm:text-base">
+              Customize your Solo Grinder identity
+            </p>
+          </div>
 
-          {/* Avatar Selection */}
-          <Card className="system-panel border-system-blue2">
-            <CardHeader>
-              <CardTitle className="text-system-blue font-orbitron">
-                Choose Avatar
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Upload Custom Image */}
-              <div className="border-2 border-dashed border-system-blue2/50 rounded-lg p-4">
-                <div className="text-center">
-                  <Upload className="h-8 w-8 text-system-blue2 mx-auto mb-2" />
-                  <p className="text-white/80 text-sm mb-2">Upload Custom Avatar</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="avatar-upload"
-                    disabled={uploading}
-                  />
-                  <label
-                    htmlFor="avatar-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-system-blue/20 border border-system-blue2 rounded-lg text-white text-sm cursor-pointer hover:bg-system-blue/30 transition-colors"
+          {/* Profile Card */}
+          <div className="w-full bg-gradient-to-br from-[#0a0a0a] to-[#1a1a2e] border-2 border-system-blue/30 rounded-2xl p-6 sm:p-8 shadow-[0_0_30px_rgba(0,212,255,0.2)] space-y-8">
+            
+            {/* Avatar Selection Section */}
+            <div className="space-y-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-system-blue flex items-center gap-2">
+                Choose Your Avatar
+              </h2>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4">
+                {avatarOptions.map((avatar) => (
+                  <div
+                    key={avatar.id}
+                    onClick={() => handleAvatarSelect(avatar.url)}
+                    className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-300 transform hover:scale-105 ${
+                      selectedAvatar === avatar.url
+                        ? 'border-system-blue shadow-[0_0_20px_rgba(0,212,255,0.6)]'
+                        : 'border-white/20 hover:border-system-blue/50'
+                    }`}
                   >
-                    {uploading ? 'Uploading...' : 'Choose File'}
-                  </label>
-                  <p className="text-white/60 text-xs mt-1">Max 5MB, JPG/PNG</p>
-                </div>
+                    <img
+                      src={avatar.url}
+                      alt={avatar.name}
+                      loading="lazy"
+                      className="w-full aspect-square object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                    />
+                    {selectedAvatar === avatar.url && (
+                      <div className="absolute inset-0 bg-system-blue/20 flex items-center justify-center">
+                        <div className="bg-system-blue rounded-full p-1.5">
+                          <Check className="h-5 w-5 text-black" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                      <p className="text-white text-xs sm:text-sm font-medium text-center truncate">
+                        {avatar.name}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* Preset Avatars */}
-              <div>
-                <p className="text-white/80 text-sm mb-3">Or choose from presets:</p>
-                <div className="grid grid-cols-4 gap-4">
-                  {avatarOptions.map((avatar) => (
-                    <button
-                      key={avatar.id}
-                      onClick={() => handleAvatarSelect(avatar.url)}
-                      className={`w-16 h-16 rounded-full overflow-hidden border-2 transition-all hover:scale-110 ${
-                        profile.avatar_url === avatar.url
-                          ? 'border-system-blue shadow-blue-glow'
-                          : 'border-system-blue2/50 hover:border-system-blue2'
-                      }`}
-                    >
-                      <img 
-                        src={avatar.url} 
-                        alt={avatar.name}
-                        loading="lazy"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Profile Form */}
-          <Card className="system-panel border-system-blue2">
-            <CardHeader>
-              <CardTitle className="text-system-blue font-orbitron">
-                Profile Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-system-blue mb-2">
-                  Hunter Name *
+            {/* User Information Section */}
+            <div className="space-y-6">
+              <h2 className="text-xl sm:text-2xl font-semibold text-system-blue">
+                Hunter Details
+              </h2>
+              
+              {/* Hunter Name Input */}
+              <div className="space-y-2">
+                <label className="text-[#00BFFF] text-sm sm:text-base font-medium block">
+                  Hunter Name
                 </label>
                 <Input
                   value={profile.username}
-                  onChange={handleUsernameChange}
+                  onChange={(e) => setProfile({ ...profile, username: e.target.value })}
                   placeholder="Enter your hunter name"
-                  className="bg-system-dark border-system-blue2 text-white"
-                  maxLength={50}
+                  className="bg-[#1E1E1E] border-2 border-system-blue/40 text-[#00BFFF] placeholder:text-[#00BFFF]/40 focus:border-system-blue focus:ring-2 focus:ring-system-blue/20 rounded-lg text-base sm:text-lg h-12"
                 />
-                {usernameError && (
-                  <div className="flex items-center gap-1 mt-1 text-red-400 text-sm">
-                    <AlertCircle className="h-3 w-3" />
-                    {usernameError}
-                  </div>
-                )}
-                {!usernameError && profile.username && profile.username !== '' && (
-                  <div className="flex items-center gap-1 mt-1 text-green-400 text-sm">
-                    <Check className="h-3 w-3" />
-                    Hunter name is available
-                  </div>
-                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-system-blue mb-2">
+              {/* Bio Textarea */}
+              <div className="space-y-2">
+                <label className="text-[#00BFFF] text-sm sm:text-base font-medium block">
                   Bio / Description
                 </label>
                 <Textarea
-                  value={profile.bio || ''}
-                  onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
-                  placeholder="Tell other hunters about yourself..."
-                  className="bg-system-dark border-system-blue2 text-white min-h-[100px]"
-                  maxLength={200}
+                  value={profile.bio}
+                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                  placeholder="Tell your story as a hunter..."
+                  className="bg-[#1E1E1E] border-2 border-system-blue/40 text-[#00BFFF] placeholder:text-[#00BFFF]/40 focus:border-system-blue focus:ring-2 focus:ring-system-blue/20 rounded-lg text-base sm:text-lg min-h-[120px] resize-none"
+                  rows={5}
                 />
-                <p className="text-sm text-white/60 mt-1">
-                  {(profile.bio || '').length}/200 characters
-                </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Save Button */}
-          <div className="flex justify-center">
-            <Button
-              onClick={handleSaveProfile}
-              disabled={saving || !profile.username.trim() || !!usernameError}
-              className="glow-button flex items-center gap-2 px-8 py-3"
-            >
-              <Save className="h-4 w-4" />
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Button>
+            {/* Save Changes Button */}
+            <div className="flex justify-center pt-4">
+              <Button
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="w-full sm:w-auto px-8 sm:px-12 py-6 text-lg font-bold bg-gradient-to-r from-system-blue to-[#00BFFF] text-black hover:shadow-[0_0_25px_rgba(0,212,255,0.6)] transition-all duration-300 rounded-lg disabled:opacity-50"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
