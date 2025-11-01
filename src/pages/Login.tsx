@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import SystemPanel from "../components/SystemPanel"
 import { supabase } from "@/integrations/supabase/client"
 import { Eye, EyeOff } from "lucide-react"
@@ -22,22 +22,24 @@ export default function Login() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = (location.state as any)?.from?.pathname || "/dashboard"
 
   // Check for existing session and handle auth state changes
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session?.user && window.location.pathname !== "/dashboard") {
-          navigate("/dashboard")
+      (_event, session) => {
+        if (session?.user) {
+          navigate(from, { replace: true })
         }
       }
     )
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user && window.location.pathname !== "/dashboard") {
-        navigate("/dashboard")
+      if (session?.user) {
+        navigate(from, { replace: true })
       }
     })
 

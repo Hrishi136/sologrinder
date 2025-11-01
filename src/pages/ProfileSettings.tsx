@@ -33,6 +33,7 @@ export default function ProfileSettings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [usernameError, setUsernameError] = useState('');
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile>({
     user_id: '',
     username: '',
@@ -45,8 +46,11 @@ export default function ProfileSettings() {
   }, []);
 
   const loadProfile = async () => {
+    console.time('profile_load');
+    setLoadError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('[Profile] auth.getUser ->', !!user);
       if (!user) {
         navigate('/login');
         return;
@@ -61,7 +65,7 @@ export default function ProfileSettings() {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
-        toast.error('Failed to load profile');
+        setLoadError('Failed to load profile.');
         return;
       }
 
@@ -73,17 +77,28 @@ export default function ProfileSettings() {
           avatar_url: existingProfile.avatar_url || avatarOptions[0].url
         });
       } else {
-        // Set default values for new profile
-        setProfile(prev => ({
-          ...prev,
+        // Create a default profile row so later screens can rely on it existing
+        const defaultProfile = {
           user_id: user.id,
-          username: user.email?.split('@')[0] || 'Hunter'
-        }));
+          username: user.email?.split('@')[0] || 'Hunter',
+          bio: '',
+          avatar_url: avatarOptions[0].url
+        };
+        const { error: upsertErr } = await supabase
+          .from('profiles')
+          .upsert(defaultProfile, { onConflict: 'user_id' });
+        if (upsertErr) {
+          console.error('Error creating default profile:', upsertErr);
+          setLoadError('Failed to initialize profile.');
+          return;
+        }
+        setProfile(defaultProfile);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      toast.error('Failed to load profile');
+      setLoadError('Failed to load profile.');
     } finally {
+      console.timeEnd('profile_load');
       setLoading(false);
     }
   };
@@ -242,6 +257,22 @@ export default function ProfileSettings() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-white/80">Something went wrong loading your profile.</div>
+          <button
+            className="glow-button px-6 py-2"
+            onClick={() => { setLoading(true); loadProfile(); }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
       {/* Background Effects */}
@@ -281,6 +312,7 @@ export default function ProfileSettings() {
                   src={profile.avatar_url} 
                   alt="Current avatar" 
                   className="w-full h-full object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                 />
               </div>
               <div>
@@ -338,6 +370,8 @@ export default function ProfileSettings() {
                       <img 
                         src={avatar.url} 
                         alt={avatar.name}
+                        loading="lazy"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                         className="w-full h-full object-cover"
                       />
                     </button>

@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Quests from "./pages/Quests";
@@ -41,27 +41,15 @@ const App = () => {
   const [hasShownWelcome, setHasShownWelcome] = React.useState(false);
 
   React.useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Listen for auth changes FIRST to avoid race conditions
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      
-      // Track daily activity when user authenticates
-      if (session?.user) {
-        try {
-          await supabase.rpc('track_daily_activity');
-        } catch (error) {
-          console.error('Error tracking daily activity:', error);
-        }
-      }
-      
       setLoading(false);
     });
 
@@ -97,6 +85,20 @@ const App = () => {
     checkProfile();
   }, [session]);
 
+  // Defer activity tracking outside auth callback to prevent deadlocks
+  React.useEffect(() => {
+    if (session?.user) {
+      setTimeout(() => {
+        (async () => {
+          try {
+            await supabase.rpc('track_daily_activity');
+          } catch (error) {
+            console.error('Error tracking daily activity:', error);
+          }
+        })();
+      }, 0);
+    }
+  }, [session?.user]);
   const handleUsernameComplete = (username: string) => {
     setProfile({ username });
     setShowUsernameModal(false);
@@ -107,6 +109,29 @@ const App = () => {
 
   const isAuthenticated = !!session;
 
+  // Route guards
+  const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const location = useLocation();
+    if (loading) return null;
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+    return <>{children}</>;
+  };
+
+  const PublicOnly: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    if (loading) return null;
+    if (isAuthenticated) {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <>{children}</>;
+  };
+
+  const RootRedirect: React.FC = () => {
+    if (loading) return null;
+    return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  };
+
   // Do not block initial render on auth loading; render routes immediately
 
 return (
@@ -116,22 +141,22 @@ return (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/quests" element={<Quests />} />
-          <Route path="/quest/:id" element={<QuestDetail />} />
-          <Route path="/army" element={<Army />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="/performance" element={<Performance />} />
-          <Route path="/system-analysis" element={<SystemAnalysis />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/profile" element={<ProfileSettings />} />
-          <Route path="/profile/customize" element={<ProfileCustomization />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
+          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+          <Route path="/quests" element={<RequireAuth><Quests /></RequireAuth>} />
+          <Route path="/quest/:id" element={<RequireAuth><QuestDetail /></RequireAuth>} />
+          <Route path="/army" element={<RequireAuth><Army /></RequireAuth>} />
+          <Route path="/stats" element={<RequireAuth><Stats /></RequireAuth>} />
+          <Route path="/performance" element={<RequireAuth><Performance /></RequireAuth>} />
+          <Route path="/system-analysis" element={<RequireAuth><SystemAnalysis /></RequireAuth>} />
+          <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
+          <Route path="/support" element={<RequireAuth><Support /></RequireAuth>} />
+          <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><ProfileSettings /></RequireAuth>} />
+          <Route path="/profile/customize" element={<RequireAuth><ProfileCustomization /></RequireAuth>} />
+          <Route path="/progress" element={<RequireAuth><Progress /></RequireAuth>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
         {/* PWA install prompt */}
