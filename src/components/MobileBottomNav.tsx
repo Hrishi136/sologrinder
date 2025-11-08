@@ -1,24 +1,19 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Target, Users, BarChart3, Trophy, User, TrendingUp } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Home, Target, Users, Trophy, TrendingUp } from 'lucide-react';
 
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Home' },
   { path: '/quests', icon: Target, label: 'Quests' },
   { path: '/progress', icon: TrendingUp, label: 'Progress' },
   { path: '/leaderboard', icon: Trophy, label: 'Ranks' },
-  { path: '/profile', icon: User, label: 'Profile' },
+  { path: '/army', icon: Users, label: 'Army' },
 ];
 
 export default function MobileBottomNav() {
-  const isMobile = useIsMobile();
-
-  if (!isMobile) return null;
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-system-panel/95 backdrop-blur-md border-t-2 border-system-blue/30">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-system-panel/95 backdrop-blur-md border-b-2 border-system-blue/30">
       <div className="flex justify-around items-center py-2 px-4">
         {navItems.map(({ path, icon: Icon, label }) => (
           <NavLink

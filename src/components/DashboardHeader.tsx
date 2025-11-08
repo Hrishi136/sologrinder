@@ -1,6 +1,5 @@
 
 import React from "react";
-import TopNav from "./TopNav";
 
 export default function DashboardHeader({
   currentRank,
@@ -17,7 +16,6 @@ export default function DashboardHeader({
 }) {
   return (
     <>
-      <TopNav />
       <div className="w-full flex flex-col sm:flex-row items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-[#0a0a0a90] border-2 border-system-blue2 rounded-xl shadow-blue-glow animate-fade-in mb-2 gap-3 sm:gap-0">
         <div className="flex flex-col gap-1 w-full sm:w-auto">
           <div className="flex items-center flex-wrap gap-2 justify-center sm:justify-start">
