@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      avatar_options: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: number
+          slot_number: number
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: number
+          slot_number: number
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: number
+          slot_number?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       challenge_progress: {
         Row: {
           challenge_id: string
@@ -210,14 +234,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      track_daily_activity: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      track_daily_login: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      track_daily_activity: { Args: never; Returns: undefined }
+      track_daily_login: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
