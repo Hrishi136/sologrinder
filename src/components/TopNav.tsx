@@ -1,9 +1,10 @@
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import logo from "@/assets/logo.png";
 import { useNavigate, NavLink } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { User, Settings, Heart } from "lucide-react"
 
 const navItems = [
@@ -16,6 +17,26 @@ const navItems = [
 
 export default function TopNav() {
   const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserAvatar = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (profile?.avatar_url) {
+          setAvatarUrl(profile.avatar_url);
+        }
+      }
+    };
+    
+    loadUserAvatar();
+  }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -49,8 +70,19 @@ export default function TopNav() {
       <div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="p-2 rounded-full bg-system-blue/10 border-2 border-system-blue hover:bg-system-blue/20 transition-colors duration-200">
-              <User className="h-5 w-5 text-system-blue" />
+            <button className="p-1 rounded-full border-2 border-system-blue bg-system-blue/10 hover:bg-system-blue/20 transition-colors duration-200">
+              {avatarUrl ? (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={avatarUrl} alt="User Avatar" />
+                  <AvatarFallback className="bg-system-blue/20 text-system-blue">
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="p-1.5 text-system-blue">
+                  <User className="h-5 w-5" />
+                </div>
+              )}
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-system-panel border-system-blue z-50">

@@ -14,41 +14,14 @@ interface UserProfile {
 }
 
 const avatarOptions = [
-  {
-    id: "sung-jinwoo",
-    name: "Sung Jinwoo",
-    url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop"
-  },
-  {
-    id: "cha-haein",
-    name: "Cha Hae-In",
-    url: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop"
-  },
-  {
-    id: "go-gunhee",
-    name: "Go Gun-Hee",
-    url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop"
-  },
-  {
-    id: "beru",
-    name: "Beru",
-    url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop"
-  },
-  {
-    id: "thomas-andre",
-    name: "Thomas Andre",
-    url: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop"
-  },
-  {
-    id: "querehsha",
-    name: "Querehsha",
-    url: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&h=200&fit=crop"
-  },
-  {
-    id: "yoo-jinho",
-    name: "Yoo Jinho",
-    url: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop"
-  }
+  { id: "avatar1", url: "/avatars/avatar1.png" },
+  { id: "avatar2", url: "/avatars/avatar2.png" },
+  { id: "avatar3", url: "/avatars/avatar3.png" },
+  { id: "avatar4", url: "/avatars/avatar4.png" },
+  { id: "avatar5", url: "/avatars/avatar5.png" },
+  { id: "avatar6", url: "/avatars/avatar6.png" },
+  { id: "avatar7", url: "/avatars/avatar7.png" },
+  { id: "avatar8", url: "/avatars/avatar8.png" }
 ];
 
 export default function ProfileSettings() {
@@ -246,6 +219,37 @@ export default function ProfileSettings() {
           {/* Profile Card */}
           <div className="w-full bg-gradient-to-br from-[#0a0a0a] to-[#1a1a2e] border-2 border-system-blue/30 rounded-2xl p-6 sm:p-8 shadow-[0_0_30px_rgba(0,212,255,0.2)] space-y-8">
             
+            {/* Live Preview Box */}
+            <div className="bg-gradient-to-br from-[#1a1a2e] to-[#0a0a0a] border-2 border-system-blue/50 rounded-xl p-6 shadow-[0_0_20px_rgba(0,212,255,0.3)]">
+              <h2 className="text-xl sm:text-2xl font-semibold text-system-blue mb-4 flex items-center gap-2">
+                Profile Preview
+              </h2>
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="flex-shrink-0">
+                  <img
+                    src={selectedAvatar}
+                    alt="Selected Avatar"
+                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-system-blue shadow-[0_0_20px_rgba(0,212,255,0.5)]"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                  />
+                </div>
+                <div className="flex-1 space-y-2 text-center sm:text-left">
+                  <div>
+                    <p className="text-sm text-system-blue/70">Hunter Name</p>
+                    <p className="text-xl sm:text-2xl font-bold text-system-blue">
+                      {profile.username || 'Not set'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-system-blue/70">Bio</p>
+                    <p className="text-base text-white/80">
+                      {profile.bio || 'No bio yet...'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Avatar Selection Section */}
             <div className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-semibold text-system-blue flex items-center gap-2">
@@ -264,7 +268,7 @@ export default function ProfileSettings() {
                   >
                     <img
                       src={avatar.url}
-                      alt={avatar.name}
+                      alt={`Avatar ${avatar.id}`}
                       loading="lazy"
                       className="w-full aspect-square object-cover"
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
@@ -276,11 +280,6 @@ export default function ProfileSettings() {
                         </div>
                       </div>
                     )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                      <p className="text-white text-xs sm:text-sm font-medium text-center truncate">
-                        {avatar.name}
-                      </p>
-                    </div>
                   </div>
                 ))}
               </div>
