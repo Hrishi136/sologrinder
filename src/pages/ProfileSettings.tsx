@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Check, Upload } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 
 interface UserProfile {
@@ -31,8 +31,6 @@ export default function ProfileSettings() {
   });
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [avatarOptions, setAvatarOptions] = useState<AvatarOption[]>([]);
-  const [uploadingSlot, setUploadingSlot] = useState<number | null>(null);
-  const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
 
   useEffect(() => {
     loadProfile();
@@ -160,73 +158,6 @@ export default function ProfileSettings() {
     setSelectedAvatar(url);
   };
 
-  const handleAvatarUpload = async (slotNumber: number, file: File) => {
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
-      return;
-    }
-
-    setUploadingSlot(slotNumber);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Create unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `avatar-slot-${slotNumber}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Update avatar_options table
-      const { error: updateError } = await supabase
-        .from('avatar_options')
-        .update({ avatar_url: publicUrl })
-        .eq('slot_number', slotNumber);
-
-      if (updateError) throw updateError;
-
-      // Update local state
-      setAvatarOptions(prev => 
-        prev.map(opt => 
-          opt.slot_number === slotNumber 
-            ? { ...opt, avatar_url: publicUrl }
-            : opt
-        )
-      );
-
-      toast.success("Avatar uploaded successfully!");
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast.error("Failed to upload avatar");
-    } finally {
-      setUploadingSlot(null);
-    }
-  };
-
-  const triggerFileInput = (slotNumber: number) => {
-    fileInputRefs.current[slotNumber]?.click();
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-system-bg flex items-center justify-center">
@@ -335,61 +266,29 @@ export default function ProfileSettings() {
                 Choose Your Avatar
               </h2>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4">
-                {avatarOptions.map((avatar) => (
-                  <div key={avatar.id} className="relative">
-                    <input
-                      ref={(el) => (fileInputRefs.current[avatar.slot_number] = el)}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleAvatarUpload(avatar.slot_number, file);
-                      }}
+                {avatarOptions.filter(avatar => avatar.avatar_url).map((avatar) => (
+                  <div
+                    key={avatar.id}
+                    onClick={() => handleAvatarSelect(avatar.avatar_url!)}
+                    className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-300 transform hover:scale-105 ${
+                      selectedAvatar === avatar.avatar_url
+                        ? 'border-system-blue shadow-[0_0_20px_rgba(0,212,255,0.6)]'
+                        : 'border-white/20 hover:border-system-blue/50'
+                    }`}
+                  >
+                    <img
+                      src={avatar.avatar_url}
+                      alt={`Avatar ${avatar.slot_number}`}
+                      loading="lazy"
+                      className="w-full aspect-square object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                     />
-                    <div
-                      onClick={() => avatar.avatar_url && handleAvatarSelect(avatar.avatar_url)}
-                      className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-300 transform hover:scale-105 ${
-                        selectedAvatar === avatar.avatar_url
-                          ? 'border-system-blue shadow-[0_0_20px_rgba(0,212,255,0.6)]'
-                          : 'border-white/20 hover:border-system-blue/50'
-                      }`}
-                    >
-                      {avatar.avatar_url ? (
-                        <>
-                          <img
-                            src={avatar.avatar_url}
-                            alt={`Avatar ${avatar.slot_number}`}
-                            loading="lazy"
-                            className="w-full aspect-square object-cover"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                          />
-                          {selectedAvatar === avatar.avatar_url && (
-                            <div className="absolute inset-0 bg-system-blue/20 flex items-center justify-center">
-                              <div className="bg-system-blue rounded-full p-1.5">
-                                <Check className="h-5 w-5 text-black" />
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="w-full aspect-square bg-[#1a1a2e] flex items-center justify-center">
-                          <div className="text-center">
-                            <Upload className="h-8 w-8 text-system-blue/50 mx-auto mb-2" />
-                            <p className="text-xs text-system-blue/50">Click to upload</p>
-                          </div>
+                    {selectedAvatar === avatar.avatar_url && (
+                      <div className="absolute inset-0 bg-system-blue/20 flex items-center justify-center">
+                        <div className="bg-system-blue rounded-full p-1.5">
+                          <Check className="h-5 w-5 text-black" />
                         </div>
-                      )}
-                    </div>
-                    {!avatar.avatar_url && (
-                      <Button
-                        onClick={() => triggerFileInput(avatar.slot_number)}
-                        disabled={uploadingSlot === avatar.slot_number}
-                        className="absolute inset-0 w-full h-full bg-transparent hover:bg-system-blue/10 border-0"
-                        variant="ghost"
-                      >
-                        {uploadingSlot === avatar.slot_number ? "Uploading..." : ""}
-                      </Button>
+                      </div>
                     )}
                   </div>
                 ))}
