@@ -343,26 +343,31 @@ export default function ProfileSettings() {
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 sm:gap-4">
                 {avatarOptions.map((avatar) => (
                   <div key={avatar.id} className="relative">
-                    <input
-                      ref={(el) => (fileInputRefs.current[avatar.slot_number] = el)}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleAvatarUpload(avatar.slot_number, file);
-                      }}
-                    />
+                    {/* Only show file input for empty slots */}
+                    {!avatar.avatar_url && (
+                      <input
+                        ref={(el) => (fileInputRefs.current[avatar.slot_number] = el)}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleAvatarUpload(avatar.slot_number, file);
+                        }}
+                      />
+                    )}
                     <div
                       onClick={() => {
                         if (avatar.avatar_url) {
+                          // If avatar exists, only allow selection
                           handleAvatarSelect(avatar.avatar_url);
                         } else {
+                          // If empty slot, trigger upload
                           triggerFileInput(avatar.slot_number);
                         }
                       }}
                       className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all duration-300 transform hover:scale-105 ${
-                        selectedAvatar === avatar.avatar_url
+                        avatar.avatar_url && selectedAvatar === avatar.avatar_url
                           ? 'border-system-blue shadow-[0_0_20px_rgba(0,212,255,0.6)]'
                           : 'border-white/20 hover:border-system-blue/50'
                       } ${uploadingSlot === avatar.slot_number ? 'pointer-events-none' : ''}`}
