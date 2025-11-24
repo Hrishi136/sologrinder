@@ -109,7 +109,7 @@ export default function Community() {
   ];
 
   return (
-    <div className="min-h-screen bg-system-bg font-orbitron">
+    <div className="min-h-screen bg-system-bg font-orbitron pt-16">
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">
         {[...Array(12)].map((_, i) => (

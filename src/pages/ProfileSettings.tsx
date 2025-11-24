@@ -183,7 +183,7 @@ export default function ProfileSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-system-bg font-orbitron overflow-x-hidden">
+    <div className="min-h-screen bg-system-bg font-orbitron overflow-x-hidden pt-16">
       {/* Background Effects */}
       <div className="particle-bg pointer-events-none">
         {[...Array(10)].map((_, i) => (

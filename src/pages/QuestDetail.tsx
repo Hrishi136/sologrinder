@@ -102,7 +102,7 @@ export default function QuestDetail() {
   const difficultyRank = difficulty === "easy" ? "E-Rank" : difficulty === "medium" ? "D-Rank" : "C-Rank";
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative">
+    <div className="min-h-screen w-full bg-system-bg relative pt-16">
       <TopNav />
       <div className="container mx-auto pt-8 flex flex-col items-center">
         <SystemPanel className="w-full max-w-2xl p-8">

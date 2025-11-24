@@ -28,7 +28,7 @@ export default function ShadowArmyDashboard() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-system-bg flex flex-col items-center font-orbitron animate-fade-in pt-8 pb-24">
+    <div className="min-h-screen w-full bg-system-bg flex flex-col items-center font-orbitron animate-fade-in pt-24 pb-24">
       <div className="w-full max-w-5xl flex justify-between items-center mb-6 px-4">
         <div>
           <h1 className="text-2xl text-system-blue2 font-bold flex items-center gap-2">

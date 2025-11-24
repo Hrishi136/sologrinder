@@ -103,7 +103,7 @@ export default function Progress() {
   }
 
   return (
-    <div className="min-h-screen bg-system-bg font-orbitron">
+    <div className="min-h-screen bg-system-bg font-orbitron pt-16">
       <TopNav />
       
       {/* Particle background */}

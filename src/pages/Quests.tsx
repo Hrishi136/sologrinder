@@ -107,7 +107,7 @@ export default function Quests() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative font-orbitron">
+    <div className="min-h-screen w-full bg-system-bg relative font-orbitron pt-16">
       <TopNav />
       
       {/* Particle background */}
