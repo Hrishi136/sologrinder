@@ -135,7 +135,7 @@ export default function ProfileCustomization() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden pt-16">
       {/* Background Effects */}
       <div className="fixed inset-0 bg-gradient-to-br from-system-dark via-[#0a0a0a] to-system-darker"></div>
       <div className="fixed top-20 left-20 w-72 h-72 bg-system-blue/20 rounded-full blur-3xl"></div>

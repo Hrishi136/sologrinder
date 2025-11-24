@@ -287,7 +287,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative font-orbitron overflow-x-hidden">
+    <div className="min-h-screen w-full bg-system-bg relative font-orbitron overflow-x-hidden pt-16">
       {/* Particle background – adapt slightly for all screens */}
       <div className="particle-bg pointer-events-none hidden sm:block">
         {[...Array(14)].map((_, i) => (

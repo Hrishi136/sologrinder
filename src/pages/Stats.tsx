@@ -20,7 +20,7 @@ export default function Stats() {
   ).toFixed(1);
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative">
+    <div className="min-h-screen w-full bg-system-bg relative pt-16">
       <TopNav />
       <div className="container mx-auto pt-6 flex flex-col items-center gap-10">
         <SystemPanel className="w-full max-w-2xl p-7">

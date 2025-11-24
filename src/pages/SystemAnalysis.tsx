@@ -53,7 +53,7 @@ export default function SystemAnalysis() {
   const estimatedDaysToNextRank = Math.ceil((300 - powerLevel) / 15); // Assuming 15 power per quest
 
   return (
-    <div className="min-h-screen bg-system-bg font-orbitron">
+    <div className="min-h-screen bg-system-bg font-orbitron pt-16">
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">
         {[...Array(8)].map((_, i) => (

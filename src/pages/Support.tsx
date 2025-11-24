@@ -57,7 +57,7 @@ export default function Support() {
   };
 
   return (
-    <div className="min-h-screen bg-system-bg bg-particles p-4">
+    <div className="min-h-screen bg-system-bg bg-particles p-4 pt-20">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <div className="mb-6">
