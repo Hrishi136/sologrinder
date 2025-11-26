@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useEmergencyQuestModal } from "../hooks/useEmergencyQuestModal";
 import { supabase } from "@/integrations/supabase/client";
 import FloatingHunterRank from "../components/FloatingHunterRank";
+import ProfileButton from "@/components/ProfileButton";
 
 console.log("Dashboard component loading...");
 
@@ -288,6 +289,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative font-orbitron overflow-x-hidden pt-16">
+      <ProfileButton />
       {/* Particle background – adapt slightly for all screens */}
       <div className="particle-bg pointer-events-none hidden sm:block">
         {[...Array(14)].map((_, i) => (
