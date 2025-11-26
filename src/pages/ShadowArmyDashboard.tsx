@@ -3,6 +3,7 @@ import React from "react";
 import ShadowArmyGrid from "../components/ShadowArmyGrid";
 import ArmyStatsPanel from "../components/ArmyStatsPanel";
 import { useNavigate } from "react-router-dom";
+import ProfileButton from "@/components/ProfileButton";
 
 export default function ShadowArmyDashboard() {
   // Mock data: for now, static, in future use real progression
@@ -29,6 +30,7 @@ export default function ShadowArmyDashboard() {
 
   return (
     <div className="min-h-screen w-full bg-system-bg flex flex-col items-center font-orbitron animate-fade-in pt-24 pb-24">
+      <ProfileButton />
       <div className="w-full max-w-5xl flex justify-between items-center mb-6 px-4">
         <div>
           <h1 className="text-2xl text-system-blue2 font-bold flex items-center gap-2">

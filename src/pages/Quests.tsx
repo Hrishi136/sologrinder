@@ -12,6 +12,7 @@ import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
 import { useChallengesV2 } from "../hooks/useChallengesV2"
 import { Tables } from "../integrations/supabase/types"
 import { useToast } from "../components/ui/use-toast"
+import ProfileButton from "@/components/ProfileButton"
 
 
 export default function Quests() {
@@ -107,7 +108,7 @@ export default function Quests() {
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative font-orbitron pt-20 pb-8 px-4">{/* Added padding for nav and content spacing */}
-      
+      <ProfileButton />
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">
         {[...Array(6)].map((_, i) => (

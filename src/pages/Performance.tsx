@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ArrowLeft, ChevronDown, Sword, Brain, Zap, Heart, Star, Target } from "lucide-react"
+import ProfileButton from "@/components/ProfileButton"
 
 export default function Performance() {
   const navigate = useNavigate();
@@ -105,6 +106,7 @@ export default function Performance() {
 
   return (
     <div className="min-h-screen bg-system-bg font-orbitron pt-16">
+      <ProfileButton />
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">
         {[...Array(12)].map((_, i) => (

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, CheckCircle2, Target } from 'lucide-react';
 import { useChallenges } from '@/hooks/useChallenges';
 import { Tables } from '@/integrations/supabase/types';
-import TopNav from '@/components/TopNav';
+import ProfileButton from '@/components/ProfileButton';
 
 interface ChallengeWithProgress extends Tables<'Challenges'> {
   category: string;
@@ -103,7 +103,7 @@ export default function Progress() {
 
   return (
     <div className="min-h-screen bg-system-bg font-orbitron pt-20">
-      
+      <ProfileButton />
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">
         {[...Array(8)].map((_, i) => (

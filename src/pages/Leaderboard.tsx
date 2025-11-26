@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import TopNav from '@/components/TopNav';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award, Crown } from 'lucide-react';
+import ProfileButton from '@/components/ProfileButton';
 
 interface LeaderboardEntry {
   id: string;
@@ -141,6 +141,7 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background pt-20">
+      <ProfileButton />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         <div className="text-center py-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent mb-2">
