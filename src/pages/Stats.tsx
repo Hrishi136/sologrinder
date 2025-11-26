@@ -1,7 +1,7 @@
 
 import React from "react";
 import SystemPanel from "../components/SystemPanel";
-import TopNav from "../components/TopNav";
+;
 import { useHunterProgression } from "../hooks/useHunterProgression";
 
 export default function Stats() {
@@ -20,9 +20,8 @@ export default function Stats() {
   ).toFixed(1);
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative pt-16">
-      <TopNav />
-      <div className="container mx-auto pt-6 flex flex-col items-center gap-10">
+    <div className="min-h-screen w-full bg-system-bg relative pt-20">
+      <div className="container mx-auto flex flex-col items-center gap-10">
         <SystemPanel className="w-full max-w-2xl p-7">
           <h2 className="font-orbitron text-2xl text-system-blue font-extrabold mb-5">
             Hunter Stats & Rank Progress
