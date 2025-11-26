@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react"
 import SystemPanel from "../components/SystemPanel"
-import TopNav from "../components/TopNav"
+
 import { useParams, useNavigate } from "react-router-dom"
 import { useChallenges } from "../hooks/useChallenges"
 import { Tables } from "../integrations/supabase/types"
@@ -54,9 +54,8 @@ export default function QuestDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full bg-system-bg relative">
-        <TopNav />
-        <div className="container mx-auto pt-8 flex flex-col items-center">
+      <div className="min-h-screen w-full bg-system-bg relative pt-20">
+        <div className="container mx-auto flex flex-col items-center">
           <SystemPanel className="w-full max-w-2xl p-8">
             <div className="text-center text-system-blue2 font-orbitron">Loading quest...</div>
           </SystemPanel>
@@ -67,9 +66,8 @@ export default function QuestDetail() {
 
   if (!challenge) {
     return (
-      <div className="min-h-screen w-full bg-system-bg relative">
-        <TopNav />
-        <div className="container mx-auto pt-8 flex flex-col items-center">
+      <div className="min-h-screen w-full bg-system-bg relative pt-20">
+        <div className="container mx-auto flex flex-col items-center">
           <SystemPanel className="w-full max-w-2xl p-8">
             <div className="text-center">
               <h2 className="font-orbitron text-xl text-system-blue font-extrabold mb-4">
@@ -102,9 +100,8 @@ export default function QuestDetail() {
   const difficultyRank = difficulty === "easy" ? "E-Rank" : difficulty === "medium" ? "D-Rank" : "C-Rank";
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative pt-16">
-      <TopNav />
-      <div className="container mx-auto pt-8 flex flex-col items-center">
+    <div className="min-h-screen w-full bg-system-bg relative pt-20">
+      <div className="container mx-auto flex flex-col items-center">
         <SystemPanel className="w-full max-w-2xl p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-orbitron text-2xl text-system-blue font-extrabold">

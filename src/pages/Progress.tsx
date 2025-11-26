@@ -93,9 +93,8 @@ export default function Progress() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-system-bg">
-        <TopNav />
-        <div className="container mx-auto pt-8 flex items-center justify-center">
+      <div className="min-h-screen bg-system-bg pt-20">
+        <div className="container mx-auto flex items-center justify-center">
           <div className="text-system-blue2 font-orbitron">Loading progress...</div>
         </div>
       </div>
@@ -103,8 +102,7 @@ export default function Progress() {
   }
 
   return (
-    <div className="min-h-screen bg-system-bg font-orbitron pt-16">
-      <TopNav />
+    <div className="min-h-screen bg-system-bg font-orbitron pt-20">
       
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">

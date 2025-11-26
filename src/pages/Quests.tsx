@@ -12,7 +12,7 @@ import DeleteConfirmationModal from "../components/DeleteConfirmationModal"
 import { useChallengesV2 } from "../hooks/useChallengesV2"
 import { Tables } from "../integrations/supabase/types"
 import { useToast } from "../components/ui/use-toast"
-import TopNav from "../components/TopNav"
+
 
 export default function Quests() {
   const navigate = useNavigate();
@@ -98,8 +98,7 @@ export default function Quests() {
   if (loading) {
     return (
       <div className="min-h-screen w-full bg-system-bg relative">
-        <TopNav />
-        <div className="container mx-auto pt-8 flex items-center justify-center">
+        <div className="container mx-auto pt-24 flex items-center justify-center">
           <div className="text-system-blue2 font-orbitron">Loading quests...</div>
         </div>
       </div>
@@ -107,8 +106,7 @@ export default function Quests() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative font-orbitron pt-16">
-      <TopNav />
+    <div className="min-h-screen w-full bg-system-bg relative font-orbitron pt-20 pb-8 px-4">{/* Added padding for nav and content spacing */}
       
       {/* Particle background */}
       <div className="particle-bg pointer-events-none">
@@ -128,41 +126,39 @@ export default function Quests() {
         ))}
       </div>
 
-      <div className="container mx-auto pt-4 flex flex-col gap-8 items-center relative z-10">
-        <Card className="w-full max-w-4xl system-panel border-system-blue2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+      <div className="container mx-auto flex flex-col gap-8 items-center relative z-10">
+        <Card className="w-full max-w-4xl system-panel border-system-blue2 overflow-hidden">
+          <CardHeader className="space-y-4">
+            <div className="flex flex-col gap-4">
               <div>
-                <CardTitle className="font-orbitron text-2xl text-system-blue font-extrabold">
+                <CardTitle className="font-orbitron text-xl sm:text-2xl text-system-blue font-extrabold">
                   Quest Management
                 </CardTitle>
-                <CardDescription className="text-white/70 mt-1">
+                <CardDescription className="text-white/70 mt-1 text-sm">
                   Manage and track your hunter quests
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-3">
-                {challenges.length > 0 && (
+              {challenges.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
                   <Select value={filterType} onValueChange={(value: 'all' | 'current' | 'completed') => setFilterType(value)}>
-                    <SelectTrigger className="w-40 bg-system-panel border-system-blue2">
+                    <SelectTrigger className="w-full sm:w-40 bg-system-panel border-system-blue2">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-system-panel border-system-blue2">
+                    <SelectContent className="bg-system-panel border-system-blue2 z-50">
                       <SelectItem value="all">All Quests</SelectItem>
                       <SelectItem value="current">Current</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
-                )}
-                {challenges.length > 0 && (
                   <Button 
                     onClick={() => setShowNewModal(true)}
-                    className="glow-button flex items-center gap-2"
+                    className="glow-button flex items-center justify-center gap-2 w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4" />
-                    New Quest
+                    <span>New Quest</span>
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </CardHeader>
           

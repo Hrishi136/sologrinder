@@ -32,9 +32,8 @@ export default function Army() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative">
-      <TopNav />
-      <div className="container mx-auto pt-4 flex flex-col items-center gap-10">
+    <div className="min-h-screen w-full bg-system-bg relative pt-20">
+      <div className="container mx-auto flex flex-col items-center gap-10">
         <SystemPanel className="w-full max-w-4xl p-7">
           <h2 className="font-orbitron text-2xl text-system-blue font-extrabold mb-5">
             Shadow Army Collection
