@@ -16,29 +16,29 @@ export default function DashboardHeader({
 }) {
   return (
     <>
-      <div className="w-full flex flex-col sm:flex-row items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-[#0a0a0a90] border-2 border-system-blue2 rounded-xl shadow-blue-glow animate-fade-in mb-2 gap-3 sm:gap-0">
-        <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <div className="flex items-center flex-wrap gap-2 justify-center sm:justify-start">
-            <span className="text-system-blue2 text-lg sm:text-xl md:text-2xl font-extrabold tracking-widest break-words">
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-[#0a0a0a90] border-2 border-system-blue2 rounded-xl shadow-blue-glow animate-fade-in mb-2 gap-3 sm:gap-0 overflow-hidden">
+        <div className="flex flex-col gap-1 w-full sm:w-auto min-w-0">
+          <div className="flex items-center flex-wrap gap-1 sm:gap-2 justify-center sm:justify-start">
+            <span className="text-system-blue2 text-base sm:text-xl md:text-2xl font-extrabold tracking-wider sm:tracking-widest truncate max-w-[120px] sm:max-w-none">
               [{currentRank.name}]
             </span>
             {badges.length > 0 &&
-              <span title="Rank Badge">
-                <span className="inline-block text-shadow-lg animate-pulse text-lg sm:text-xl">
+              <span title="Rank Badge" className="flex-shrink-0">
+                <span className="inline-block text-shadow-lg animate-pulse text-base sm:text-xl">
                   🏅
                 </span>
               </span>
             }
-            <span className="text-white text-sm sm:text-base md:text-lg break-words">Hunter: <b className="break-all">{username}</b></span>
+            <span className="text-white text-xs sm:text-base md:text-lg truncate max-w-[140px] sm:max-w-none">Hunter: <b className="truncate">{username}</b></span>
           </div>
-          <div className="text-xs sm:text-sm text-white/80 text-center sm:text-left">System status: <span className="text-system-blue font-bold">Online</span></div>
+          <div className="text-xs text-white/80 text-center sm:text-left">System status: <span className="text-system-blue font-bold">Online</span></div>
         </div>
-        <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
-          <span className="text-system-blue2 font-bold text-sm sm:text-base">Power Level</span>
-          <span className="font-orbitron text-xl sm:text-2xl md:text-3xl text-system-blue animate-pulse transition-all duration-500">
+        <div className="flex flex-col items-center sm:items-end w-full sm:w-auto flex-shrink-0">
+          <span className="text-system-blue2 font-bold text-xs sm:text-base">Power Level</span>
+          <span className="font-orbitron text-lg sm:text-2xl md:text-3xl text-system-blue animate-pulse transition-all duration-500">
             {powerLevel}
           </span>
-          <span className="text-xs sm:text-sm text-white/60">Days Active: {daysActive}</span>
+          <span className="text-xs text-white/60">Days Active: {daysActive}</span>
         </div>
       </div>
     </>

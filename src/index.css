@@ -90,6 +90,40 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Mobile-first global containment */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow on mobile */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Text containment utilities */
+.text-contain {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Card containment - ensure content stays within cards */
+.card-contain {
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Progress bar containment */
+.progress-contain {
+  overflow: hidden;
+  position: relative;
+  max-width: 100%;
+}
+
+.progress-contain > * {
+  max-width: 100%;
+}
 
 /* Mobile responsive breakpoints and touch targets */
 @media (max-width: 320px) {
@@ -99,20 +133,21 @@
   
   .system-panel {
     @apply p-3 text-sm;
+    overflow: hidden;
   }
   
-  h1 { @apply text-2xl; }
-  h2 { @apply text-xl; }
-  h3 { @apply text-lg; }
+  h1 { @apply text-xl; }
+  h2 { @apply text-lg; }
+  h3 { @apply text-base; }
 }
 
 @media (max-width: 640px) {
   .particle-bg {
-    display: none; /* Reduce animation on mobile for performance */
+    display: none;
   }
   
   body {
-    padding-bottom: 80px; /* Space for bottom nav */
+    padding-bottom: 20px;
   }
   
   /* Touch-friendly button sizing */
@@ -127,12 +162,24 @@
   
   /* Responsive text sizes */
   .system-panel {
-    @apply p-4;
+    @apply p-3;
+    overflow: hidden;
   }
   
   /* Ensure cards don't overflow */
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Responsive font scaling */
+  .font-orbitron {
+    font-size: clamp(0.75rem, 2.5vw, 1rem);
+  }
+  
+  /* Leaderboard and ranking entries */
+  .leaderboard-entry {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 

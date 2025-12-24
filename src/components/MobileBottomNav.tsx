@@ -13,24 +13,26 @@ const navItems = [
 
 export default function MobileBottomNav() {
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-system-panel/95 backdrop-blur-md border-b-2 border-system-blue/30">
-      <div className="flex justify-around items-center py-2 px-4">
-        {navItems.map(({ path, icon: Icon, label }) => (
-          <NavLink
-            key={path}
-            to={path}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center min-h-[44px] px-3 py-1 rounded-lg transition-all duration-200 ${
-                isActive 
-                  ? 'text-system-blue bg-system-blue/10' 
-                  : 'text-white/70 hover:text-system-blue hover:bg-system-blue/5'
-              }`
-            }
-          >
-            <Icon size={20} className="mb-1" />
-            <span className="text-xs font-orbitron">{label}</span>
-          </NavLink>
-        ))}
+    <div className="fixed top-0 left-0 right-0 z-50 bg-system-panel/95 backdrop-blur-md border-b-2 border-system-blue/30 safe-area-inset">
+      <div className="flex items-center py-2 px-2 sm:px-4 overflow-x-auto no-scrollbar w-full">
+        <div className="flex justify-between sm:justify-around items-center w-full min-w-0">
+          {navItems.map(({ path, icon: Icon, label }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) =>
+                `flex flex-col items-center justify-center min-h-[48px] min-w-[56px] px-2 sm:px-3 py-1 rounded-lg transition-all duration-200 flex-shrink-0 ${
+                  isActive 
+                    ? 'text-system-blue bg-system-blue/10' 
+                    : 'text-white/70 hover:text-system-blue hover:bg-system-blue/5'
+                }`
+              }
+            >
+              <Icon size={18} className="mb-0.5 sm:mb-1" />
+              <span className="text-[10px] sm:text-xs font-orbitron whitespace-nowrap">{label}</span>
+            </NavLink>
+          ))}
+        </div>
       </div>
     </div>
   );

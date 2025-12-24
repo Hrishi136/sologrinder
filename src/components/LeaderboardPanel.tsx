@@ -141,47 +141,47 @@ export default function LeaderboardPanel({ onUserRankClick }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-orbitron text-xl text-system-blue mb-2 font-bold">
+    <div className="flex flex-col gap-3 sm:gap-4 overflow-hidden">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <h3 className="font-orbitron text-base sm:text-xl text-system-blue font-bold truncate">
           Leaderboard
         </h3>
         {currentUserRank && (
           <button 
             onClick={() => onUserRankClick?.(currentUserRank)}
-            className="px-3 py-1 bg-system-blue/20 border border-system-blue rounded-full text-xs font-orbitron text-system-blue hover:bg-system-blue/30 transition-colors animate-pulse"
+            className="px-2 sm:px-3 py-1 bg-system-blue/20 border border-system-blue rounded-full text-[10px] sm:text-xs font-orbitron text-system-blue hover:bg-system-blue/30 transition-colors animate-pulse flex-shrink-0"
           >
             You: #{currentUserRank}
           </button>
         )}
       </div>
       
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3 overflow-hidden">
         {leaderboard.length === 0 ? (
-          <div className="text-center py-4 text-system-blue/60">
-            <p className="font-orbitron">No hunters found</p>
-            <p className="text-xs">Complete challenges to appear on the leaderboard</p>
+          <div className="text-center py-3 sm:py-4 text-system-blue/60">
+            <p className="font-orbitron text-sm">No hunters found</p>
+            <p className="text-xs">Complete challenges to appear</p>
           </div>
         ) : (
           leaderboard.map((entry) => (
             <div 
               key={entry.user_id} 
-              className="flex items-center gap-3 p-3 bg-system-blue/5 rounded border border-system-blue/20 hover:bg-system-blue/10 transition-colors"
+              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-system-blue/5 rounded border border-system-blue/20 hover:bg-system-blue/10 transition-colors overflow-hidden"
             >
-              <div className="flex items-center justify-center w-8">
+              <div className="flex items-center justify-center w-6 sm:w-8 flex-shrink-0">
                 {getRankIcon(entry.rank)}
               </div>
-              <div className="flex items-center gap-2 flex-1">
-                <User className="h-4 w-4 text-system-blue/60" />
-                <span className="font-orbitron text-white font-medium">
+              <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0 overflow-hidden">
+                <User className="h-3 w-3 sm:h-4 sm:w-4 text-system-blue/60 flex-shrink-0" />
+                <span className="font-orbitron text-white font-medium text-xs sm:text-base truncate">
                   {entry.username}
                 </span>
               </div>
-              <div className="text-right">
-                <div className="font-orbitron text-system-blue font-bold">
+              <div className="text-right flex-shrink-0">
+                <div className="font-orbitron text-system-blue font-bold text-xs sm:text-base">
                   {entry.score.toLocaleString()}
                 </div>
-                <div className="text-xs text-system-blue/60">XP</div>
+                <div className="text-[10px] sm:text-xs text-system-blue/60">XP</div>
               </div>
             </div>
           ))
@@ -189,7 +189,7 @@ export default function LeaderboardPanel({ onUserRankClick }: Props) {
       </div>
       
       {leaderboard.length > 0 && (
-        <div className="text-center text-xs text-system-blue/60 font-orbitron">
+        <div className="text-center text-[10px] sm:text-xs text-system-blue/60 font-orbitron">
           Rankings update in real-time
         </div>
       )}
