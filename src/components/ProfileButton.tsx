@@ -34,20 +34,20 @@ export default function ProfileButton() {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed top-[68px] right-3 sm:right-4 z-40">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-1 rounded-full border-2 border-system-blue bg-system-blue/10 hover:bg-system-blue/20 transition-colors duration-200">
+          <button className="p-1 rounded-full border-2 border-system-blue bg-system-panel/95 hover:bg-system-blue/20 transition-colors duration-200 shadow-lg backdrop-blur-sm min-w-[44px] min-h-[44px] flex items-center justify-center">
             {avatarUrl ? (
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                 <AvatarImage src={avatarUrl} alt="User Avatar" />
                 <AvatarFallback className="bg-system-blue/20 text-system-blue">
-                  <User className="h-5 w-5" />
+                  <User className="h-4 w-4 sm:h-5 sm:w-5" />
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <div className="p-2 text-system-blue">
-                <User className="h-6 w-6" />
+              <div className="p-1 text-system-blue">
+                <User className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             )}
           </button>

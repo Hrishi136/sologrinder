@@ -102,10 +102,10 @@ export default function Progress() {
   }
 
   return (
-    <div className="min-h-screen bg-system-bg font-orbitron pt-20">
+    <div className="min-h-screen bg-system-bg font-orbitron pt-20 overflow-x-hidden">
       <ProfileButton />
       {/* Particle background */}
-      <div className="particle-bg pointer-events-none">
+      <div className="particle-bg pointer-events-none hidden sm:block">
         {[...Array(8)].map((_, i) => (
           <div
             key={i}
@@ -122,135 +122,135 @@ export default function Progress() {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Button 
             onClick={() => navigate('/dashboard')}
             variant="outline"
-            className="flex items-center gap-2 text-system-blue border-system-blue hover:bg-system-blue/10"
+            className="flex items-center gap-2 text-system-blue border-system-blue hover:bg-system-blue/10 text-xs sm:text-sm"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             Back to Dashboard
           </Button>
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-system-blue mb-2">
-            Weekly Progress Tracker
+        <div className="text-center mb-6 sm:mb-8 px-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-system-blue mb-2">
+            Weekly Progress
           </h1>
-          <p className="text-white/80 text-lg">
-            Monitor your quest completion patterns
+          <p className="text-white/80 text-sm sm:text-lg">
+            Monitor your quest completion
           </p>
         </div>
 
         {/* Progress Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="system-panel border-system-blue2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Active Quests</CardTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="system-panel border-system-blue2 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-white/80">Active Quests</CardTitle>
               <Target className="h-4 w-4 text-system-blue2" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-system-blue">{challenges.length}</div>
-              <p className="text-xs text-white/60">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-system-blue">{challenges.length}</div>
+              <p className="text-[10px] sm:text-xs text-white/60">
                 Across all categories
               </p>
             </CardContent>
           </Card>
 
-          <Card className="system-panel border-system-blue2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">This Week</CardTitle>
+          <Card className="system-panel border-system-blue2 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-white/80">This Week</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-green-400" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-400">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-green-400">
                 {challengesWithProgress.reduce((sum, ch) => sum + ch.completionsThisWeek, 0)}
               </div>
-              <p className="text-xs text-white/60">
+              <p className="text-[10px] sm:text-xs text-white/60">
                 Total completions
               </p>
             </CardContent>
           </Card>
 
-          <Card className="system-panel border-system-blue2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Consistency</CardTitle>
+          <Card className="system-panel border-system-blue2 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-white/80">Consistency</CardTitle>
               <Calendar className="h-4 w-4 text-yellow-400" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-400">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-yellow-400">
                 {Math.round((challengesWithProgress.reduce((sum, ch) => sum + ch.completionsThisWeek, 0) / Math.max(challenges.length * 7, 1)) * 100)}%
               </div>
-              <p className="text-xs text-white/60">
-                Weekly completion rate
+              <p className="text-[10px] sm:text-xs text-white/60">
+                Weekly rate
               </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Progress by Category */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {CATEGORIES.map(category => {
             const categoryQuests = getQuestsByCategory(category);
             if (categoryQuests.length === 0) return null;
 
             return (
               <div key={category}>
-                <h2 className="text-2xl font-bold text-system-blue mb-4 flex items-center gap-3">
-                  {category}
-                  <Badge className="bg-system-blue2/20 text-system-blue2">
+                <h2 className="text-lg sm:text-2xl font-bold text-system-blue mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <span className="truncate">{category}</span>
+                  <Badge className="bg-system-blue2/20 text-system-blue2 text-[10px] sm:text-xs flex-shrink-0">
                     {categoryQuests.length} quests
                   </Badge>
                 </h2>
 
-                <div className="grid gap-4">
+                <div className="grid gap-3 sm:gap-4">
                   {categoryQuests.map(challenge => (
-                    <Card key={challenge.id} className="system-panel border-system-blue2/30">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                    <Card key={challenge.id} className="system-panel border-system-blue2/30 overflow-hidden">
+                      <CardContent className="p-3 sm:p-6">
+                        <div className="flex flex-col gap-3 sm:gap-4">
                           {/* Quest Info */}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-bold text-system-blue text-lg">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 flex-wrap">
+                              <h3 className="font-bold text-system-blue text-sm sm:text-lg truncate max-w-[200px] sm:max-w-none">
                                 {challenge.title}
                               </h3>
-                              <Badge className={getDifficultyColor(challenge.difficulty)}>
+                              <Badge className={`${getDifficultyColor(challenge.difficulty)} text-[10px] sm:text-xs flex-shrink-0`}>
                                 {getDifficultyRank(challenge.difficulty)}
                               </Badge>
                             </div>
                             
-                            <div className="flex items-center gap-4 text-sm text-white/70">
-                              <span>Streak: {challenge.streak || 0} days</span>
-                              <span>This week: {challenge.completionsThisWeek}/7</span>
+                            <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-white/70 flex-wrap">
+                              <span>Streak: {challenge.streak || 0}d</span>
+                              <span>Week: {challenge.completionsThisWeek}/7</span>
                             </div>
                           </div>
 
                           {/* Weekly Progress Tracker */}
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="text-sm text-white/60 font-orbitron">
+                          <div className="flex flex-col items-start sm:items-center gap-1 sm:gap-2">
+                            <div className="text-[10px] sm:text-sm text-white/60 font-orbitron">
                               Weekly Progress
                             </div>
-                            <div className="flex gap-1">
+                            <div className="flex gap-0.5 sm:gap-1 overflow-x-auto w-full sm:w-auto pb-1">
                               {challenge.weeklyProgress.map((completed, dayIndex) => (
                                 <div
                                   key={dayIndex}
-                                  className="flex flex-col items-center gap-1"
+                                  className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0"
                                 >
-                                  <div className="text-xs text-white/50">
+                                  <div className="text-[8px] sm:text-xs text-white/50">
                                     {getDayName(dayIndex)}
                                   </div>
                                   <div 
-                                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                                    className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${
                                       completed 
                                         ? 'bg-green-500/30 border-green-400' 
                                         : 'bg-system-bg/50 border-white/20'
                                     }`}
                                   >
                                     {completed && (
-                                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                                      <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
                                     )}
                                   </div>
                                 </div>
@@ -259,17 +259,19 @@ export default function Progress() {
                           </div>
 
                           {/* Progress Bar */}
-                          <div className="flex flex-col gap-2 min-w-[200px]">
-                            <div className="flex justify-between text-sm">
+                          <div className="flex flex-col gap-1 sm:gap-2 w-full overflow-hidden">
+                            <div className="flex justify-between text-xs sm:text-sm">
                               <span className="text-white/60">Progress</span>
                               <span className="text-system-blue2">
                                 {challenge.completionsThisWeek}/7
                               </span>
                             </div>
-                            <ProgressBar 
-                              value={(challenge.completionsThisWeek / 7) * 100} 
-                              className="h-2"
-                            />
+                            <div className="w-full overflow-hidden rounded-full">
+                              <ProgressBar 
+                                value={(challenge.completionsThisWeek / 7) * 100} 
+                                className="h-2"
+                              />
+                            </div>
                           </div>
                         </div>
                       </CardContent>

@@ -29,8 +29,8 @@ interface Props {
 
 export default function DashboardPanels(props: Props) {
   return (
-    <div className="w-full grid gap-6 grid-cols-1 md:grid-cols-2">
-      <SystemPanel className="p-5 min-h-[260px] bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in">
+    <div className="w-full grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
+      <SystemPanel className="p-3 sm:p-5 min-h-[200px] sm:min-h-[260px] bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in overflow-hidden">
         <QuestCompletionPanel
           streak={props.streak}
           dailyQuests={props.dailyQuests}
@@ -40,9 +40,9 @@ export default function DashboardPanels(props: Props) {
           QUEST_CATEGORIES={props.QUEST_CATEGORIES}
         />
       </SystemPanel>
-      <SystemPanel className="p-5 min-h-[200px] flex flex-col gap-4 bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-orbitron text-system-blue text-lg">Hunter Status</h3>
+      <SystemPanel className="p-3 sm:p-5 min-h-[180px] sm:min-h-[200px] flex flex-col gap-3 sm:gap-4 bg-[#0a0a0a90] border-2 border-system-blue2 shadow-blue-glow animate-fade-in overflow-hidden">
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
+          <h3 className="font-orbitron text-system-blue text-base sm:text-lg truncate">Hunter Status</h3>
         </div>
         <HunterStatsPanel stats={[
           { label: "Power", val: Math.floor(props.powerLevel / 100) },

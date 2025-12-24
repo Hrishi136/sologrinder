@@ -140,54 +140,54 @@ export default function Leaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-20 overflow-x-hidden">
       <ProfileButton />
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
-        <div className="text-center py-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent mb-2">
+      <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
+        <div className="text-center py-4 sm:py-8">
+          <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent mb-2">
             Hunter Leaderboard
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-xs sm:text-base px-4">
             Rankings based on quest completions and active challenges
           </p>
           {userRank && (
-            <Badge variant="outline" className="mt-4">
+            <Badge variant="outline" className="mt-3 sm:mt-4 text-xs sm:text-sm">
               Your Rank: #{userRank}
             </Badge>
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {leaderboard.map((entry) => (
-            <Card key={entry.id} className={`${getRankColor(entry.rank)} transition-all duration-300 hover:scale-[1.02]`}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
+            <Card key={entry.id} className={`${getRankColor(entry.rank)} transition-all duration-300 hover:scale-[1.02] overflow-hidden`}>
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                  <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+                    <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                       {getRankIcon(entry.rank)}
-                      <span className="text-2xl font-bold">#{entry.rank}</span>
+                      <span className="text-lg sm:text-2xl font-bold">#{entry.rank}</span>
                     </div>
                     
-                    <Avatar className="w-12 h-12">
+                    <Avatar className="w-8 h-8 sm:w-12 sm:h-12 flex-shrink-0">
                       <AvatarImage src="" />
-                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                      <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs sm:text-base">
                         {entry.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div>
-                      <h3 className="font-semibold text-lg">{entry.username}</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 overflow-hidden">
+                      <h3 className="font-semibold text-sm sm:text-lg truncate">{entry.username}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {entry.activeChallenges} active challenges
                       </p>
                     </div>
                   </div>
 
-                  <div className="text-right space-y-2">
-                    <div className="text-2xl font-bold text-primary">
+                  <div className="text-left sm:text-right flex-shrink-0 ml-auto sm:ml-0">
+                    <div className="text-lg sm:text-2xl font-bold text-primary">
                       {entry.score.toLocaleString()} XP
                     </div>
-                    <div className="flex space-x-4 text-sm text-muted-foreground">
+                    <div className="flex space-x-2 sm:space-x-4 text-xs sm:text-sm text-muted-foreground">
                       <span>Today: {entry.completedToday}</span>
                       <span>Total: {entry.totalChallenges}</span>
                     </div>
@@ -200,8 +200,8 @@ export default function Leaderboard() {
 
         {leaderboard.length === 0 && (
           <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No hunters found. Be the first to start your journey!</p>
+            <CardContent className="p-6 sm:p-8 text-center">
+              <p className="text-muted-foreground text-sm sm:text-base">No hunters found. Be the first to start your journey!</p>
             </CardContent>
           </Card>
         )}

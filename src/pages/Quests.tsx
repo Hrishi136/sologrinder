@@ -107,10 +107,10 @@ export default function Quests() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative font-orbitron pt-20 pb-8 px-4">{/* Added padding for nav and content spacing */}
+    <div className="min-h-screen w-full bg-system-bg relative font-orbitron pt-20 pb-8 px-2 sm:px-4 overflow-x-hidden">
       <ProfileButton />
       {/* Particle background */}
-      <div className="particle-bg pointer-events-none">
+      <div className="particle-bg pointer-events-none hidden sm:block">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
@@ -127,22 +127,22 @@ export default function Quests() {
         ))}
       </div>
 
-      <div className="container mx-auto flex flex-col gap-8 items-center relative z-10">
-        <Card className="w-full max-w-4xl system-panel border-system-blue2 overflow-hidden">
-          <CardHeader className="space-y-4">
-            <div className="flex flex-col gap-4">
-              <div>
-                <CardTitle className="font-orbitron text-xl sm:text-2xl text-system-blue font-extrabold">
+      <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 sm:gap-8 items-center relative z-10">
+        <Card className="w-full system-panel border-system-blue2 overflow-hidden">
+          <CardHeader className="space-y-3 sm:space-y-4 p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="min-w-0">
+                <CardTitle className="font-orbitron text-lg sm:text-2xl text-system-blue font-extrabold truncate">
                   Quest Management
                 </CardTitle>
-                <CardDescription className="text-white/70 mt-1 text-sm">
+                <CardDescription className="text-white/70 mt-1 text-xs sm:text-sm">
                   Manage and track your hunter quests
                 </CardDescription>
               </div>
               {challenges.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full">
                   <Select value={filterType} onValueChange={(value: 'all' | 'current' | 'completed') => setFilterType(value)}>
-                    <SelectTrigger className="w-full sm:w-40 bg-system-panel border-system-blue2">
+                    <SelectTrigger className="w-full sm:w-40 bg-system-panel border-system-blue2 text-xs sm:text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-system-panel border-system-blue2 z-50">
@@ -153,7 +153,7 @@ export default function Quests() {
                   </Select>
                   <Button 
                     onClick={() => setShowNewModal(true)}
-                    className="glow-button flex items-center justify-center gap-2 w-full sm:w-auto"
+                    className="glow-button flex items-center justify-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
                   >
                     <Plus className="h-4 w-4" />
                     <span>New Quest</span>
@@ -163,23 +163,23 @@ export default function Quests() {
             </div>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="p-3 sm:p-6">
             {challenges.length === 0 ? (
-              <div className="text-center py-12 flex flex-col items-center justify-center">
-                <Target className="h-16 w-16 text-system-blue2/50 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-system-blue mb-2">
+              <div className="text-center py-8 sm:py-12 flex flex-col items-center justify-center">
+                <Target className="h-12 w-12 sm:h-16 sm:w-16 text-system-blue2/50 mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-lg sm:text-xl font-bold text-system-blue mb-2">
                   No Active Quests
                 </h3>
-                <p className="text-white/60 mb-6">
+                <p className="text-white/60 mb-4 sm:mb-6 text-sm sm:text-base px-4">
                   Create your first quest to begin your hunter journey!
                 </p>
                 <div className="flex justify-center">
                   <Button 
                     onClick={() => setShowNewModal(true)}
-                    className="glow-button flex items-center gap-2"
+                    className="glow-button flex items-center gap-2 text-sm sm:text-base"
                   >
                     <Plus className="h-4 w-4" />
-                    Create Your First Quest
+                    Create First Quest
                   </Button>
                 </div>
               </div>
