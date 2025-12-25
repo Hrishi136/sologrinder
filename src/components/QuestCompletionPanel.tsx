@@ -13,6 +13,7 @@ type Props = {
     label: string;
   }[];
 };
+
 const DIFFICULTIES = [{
   key: "easy",
   label: "Easy",
@@ -26,6 +27,7 @@ const DIFFICULTIES = [{
   label: "Hard",
   color: "#ed3434"
 }];
+
 export default function QuestCompletionPanel({
   streak,
   dailyQuests,
@@ -55,7 +57,9 @@ export default function QuestCompletionPanel({
     
     const difficulty = getDifficultyFromQuest(selectedQuest.difficulty);
     
+    // Check if user can still complete quests of this difficulty today
     if (canCompleteQuest(difficulty)) {
+      // Always mark as complete (don't toggle off)
       const success = await toggleChallengeCompletion(selectedQuest.id);
       if (success) {
         // Track daily activity for streak calculation
@@ -90,6 +94,9 @@ export default function QuestCompletionPanel({
 
   const difficulty = getDifficultyFromQuest(selectedQuest?.difficulty);
   const difficultyColor = difficulty === "hard" ? "#ed3434" : difficulty === "medium" ? "#f4e95a" : "#48e18b";
+  const dailyLimit = difficulty === "easy" ? 5 : difficulty === "medium" ? 3 : 2;
+  const completedToday = dailyQuests[difficulty] || 0;
+  const canComplete = canCompleteQuest(difficulty);
 
   return (
     <div className="w-full min-w-0 overflow-hidden">
@@ -116,18 +123,16 @@ export default function QuestCompletionPanel({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2 sm:mb-3 w-full">
         <button 
           className={`glow-button text-xs sm:text-base py-2 px-2 sm:px-3 flex-1 min-h-[44px] truncate ${
-            canCompleteQuest(difficulty) && !selectedQuest?.todayCompleted 
-              ? '' 
-              : 'opacity-30 pointer-events-none'
+            canComplete ? '' : 'opacity-30 pointer-events-none'
           }`} 
           style={{ background: difficultyColor }}
           onClick={handleQuestComplete}
-          disabled={selectedQuest?.todayCompleted}
+          disabled={!canComplete}
         >
-          {selectedQuest?.todayCompleted ? "Completed" : "Complete Quest"}
+          {canComplete ? "Complete Quest" : "Daily Limit Reached"}
         </button>
         <span className="text-xs text-system-blue2 text-center sm:text-left whitespace-nowrap flex-shrink-0">
-          {dailyQuests[difficulty]}/{difficulty === "easy" ? 5 : difficulty === "medium" ? 3 : 2} today
+          {completedToday}/{dailyLimit} today
         </span>
       </div>
 
@@ -136,8 +141,8 @@ export default function QuestCompletionPanel({
         {selectedQuest && (
           <li className="truncate pr-2">Quest: <b className="truncate">{selectedQuest.title?.slice(0, 20)}{selectedQuest.title?.length > 20 ? '...' : ''}</b></li>
         )}
-        <li className="truncate">Streak: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
-        <li className="truncate">Daily cap: 5 easy, 3 med, 2 hard</li>
+        <li className="truncate">Difficulty: <b style={{ color: difficultyColor }}>{difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</b></li>
+        <li className="truncate">Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
       </ul>
     </div>
   );
