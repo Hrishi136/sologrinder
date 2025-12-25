@@ -74,20 +74,21 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="system-panel system-panel-glow bg-[#0a0a0a90] border-system-blue2 border-2 p-6 rounded-2xl shadow-blue-glow animate-fade-in font-orbitron">
+      <DialogContent className="system-panel system-panel-glow bg-[#0a0a0a] border-system-blue2 border-2 p-4 sm:p-6 rounded-2xl shadow-blue-glow animate-fade-in font-orbitron max-h-[90vh] overflow-y-auto w-[95vw] max-w-lg mx-auto">
         <form
-          className="w-full flex flex-col gap-6"
+          className="w-full flex flex-col gap-4 sm:gap-6"
           onSubmit={handleSubmit}
         >
           <DialogHeader>
-            <DialogTitle className="text-system-blue2 tracking-widest mb-2 text-xl flex items-center gap-2">
+            <DialogTitle className="text-system-blue2 tracking-widest mb-2 text-lg sm:text-xl flex items-center gap-2">
               Accept New Quest
-              <span className="text-system-blue text-sm ml-2 font-thin">[System]</span>
+              <span className="text-system-blue text-xs sm:text-sm ml-2 font-thin">[System]</span>
             </DialogTitle>
           </DialogHeader>
+          
           {/* Quest Name */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-system-blue2 mb-1" htmlFor="questName">
+            <label className="text-xs sm:text-sm font-semibold text-system-blue2 mb-1" htmlFor="questName">
               Quest Objective
             </label>
             <Input
@@ -95,7 +96,7 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
               value={questName}
               onChange={e => setQuestName(e.target.value)}
               placeholder="Enter quest objective..."
-              className="bg-black/60 border-system-blue2 text-white font-orbitron placeholder:text-gray-400"
+              className="bg-black/60 border-system-blue2 text-white font-orbitron placeholder:text-gray-400 text-sm"
               autoFocus
               required
             />
@@ -103,14 +104,14 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
 
           {/* Category Selection */}
           <div>
-            <div className="text-sm font-semibold text-system-blue2 mb-1">Category</div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="text-xs sm:text-sm font-semibold text-system-blue2 mb-1">Category</div>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {categoryOptions.map(opt => (
                 <button
                   type="button"
                   key={opt.value}
                   onClick={() => setCategory(opt.value)}
-                  className={`flex items-center gap-2 p-2 rounded-lg border-2 font-orbitron text-sm transition-all hover-scale
+                  className={`flex items-center gap-1.5 sm:gap-2 p-2 rounded-lg border-2 font-orbitron text-xs sm:text-sm transition-all hover-scale
                     ${category === opt.value
                     ? "border-system-blue2 bg-system-blue2/20 shadow-blue-glow"
                     : "border-system-blue2 bg-black/30"
@@ -120,8 +121,8 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
                     boxShadow: category === opt.value ? "0 0 18px 4px #00d4ff88" : undefined,
                   }}
                 >
-                  <opt.Icon className={`w-5 h-5 ${opt.color}`} />
-                  {opt.label}
+                  <opt.Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${opt.color} flex-shrink-0`} />
+                  <span className="truncate">{opt.label}</span>
                 </button>
               ))}
             </div>
@@ -129,24 +130,26 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
 
           {/* Difficulty Selection */}
           <div>
-            <div className="text-sm font-semibold text-system-blue2 mb-1">Difficulty</div>
-            <div className="flex gap-4">
+            <div className="text-xs sm:text-sm font-semibold text-system-blue2 mb-1">Difficulty</div>
+            <div className="flex flex-wrap gap-2 sm:gap-4">
               {difficultyOptions.map(opt => (
                 <button
                   type="button"
                   key={opt.value}
                   onClick={() => setDifficulty(opt.value)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all text-sm ring-2 ring-offset-0
+                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg font-bold transition-all text-xs sm:text-sm ring-2 ring-offset-0 flex-1 min-w-0 justify-center
                     ${opt.color}
                     ${difficulty === opt.value ? "ring-system-blue scale-105 shadow-md" : "ring-transparent opacity-80"}
                   `}
                 >
-                  <span>
+                  <span className="flex-shrink-0">
                     {opt.value === "easy" && "🟢"}
                     {opt.value === "medium" && "🟡"}
                     {opt.value === "hard" && "🔴"}
-                  </span>{" "}
-                  {opt.label} <span className="opacity-60 font-normal">({opt.points} pts)</span>
+                  </span>
+                  <span className="hidden sm:inline">{opt.label}</span>
+                  <span className="sm:hidden">{opt.value.charAt(0).toUpperCase()}</span>
+                  <span className="opacity-60 font-normal text-[10px] sm:text-sm">({opt.points})</span>
                 </button>
               ))}
             </div>
@@ -154,7 +157,7 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
 
           {/* Quest Description */}
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-system-blue2 mb-1" htmlFor="questDescription">
+            <label className="text-xs sm:text-sm font-semibold text-system-blue2 mb-1" htmlFor="questDescription">
               Description <span className="font-normal text-gray-400">(optional)</span>
             </label>
             <Textarea
@@ -162,19 +165,19 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe your daily objective..."
-              className="bg-black/60 border-system-blue2 text-white font-orbitron placeholder:text-gray-400"
-              rows={3}
+              className="bg-black/60 border-system-blue2 text-white font-orbitron placeholder:text-gray-400 text-sm"
+              rows={2}
               maxLength={240}
             />
           </div>
 
           {/* Buttons */}
-          <DialogFooter className="flex flex-row gap-3 items-center justify-end mt-2">
+          <DialogFooter className="flex flex-row gap-2 sm:gap-3 items-center justify-end mt-2">
             <DialogClose asChild>
               <Button
                 type="button"
                 variant="outline"
-                className="font-orbitron border-system-blue2"
+                className="font-orbitron border-system-blue2 text-xs sm:text-sm px-3 sm:px-4"
                 onClick={handleClose}
               >
                 Cancel
@@ -182,7 +185,7 @@ export default function NewQuestModal({ open, onOpenChange }: { open: boolean; o
             </DialogClose>
             <Button
               type="submit"
-              className="glow-button bg-system-blue2/90 hover:bg-system-blue2 text-white px-6 py-2 rounded-lg font-orbitron text-base transition active:scale-95"
+              className="glow-button bg-system-blue2/90 hover:bg-system-blue2 text-white px-4 sm:px-6 py-2 rounded-lg font-orbitron text-xs sm:text-base transition active:scale-95"
               disabled={!questName || !category || !difficulty || isSubmitting}
             >
               {isSubmitting ? "Creating..." : "Accept Quest"}
