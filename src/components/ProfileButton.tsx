@@ -62,7 +62,7 @@ export default function ProfileButton() {
           </DropdownMenuItem>
           <DropdownMenuItem 
             className="text-white hover:bg-system-blue/20 focus:bg-system-blue/20 cursor-pointer"
-            onClick={() => navigate("/profile-settings")}
+            onClick={() => navigate("/profile")}
           >
             <Settings className="h-4 w-4 mr-2" />
             Profile Settings
