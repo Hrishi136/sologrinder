@@ -25,7 +25,6 @@ import SystemBootScreen from "@/components/SystemBootScreen";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { supabase } from "@/integrations/supabase/client";
 import UsernameSelectionModal from "@/components/UsernameSelectionModal";
-import WelcomeBackModal from "@/components/WelcomeBackModal";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import React from "react";
 
@@ -37,8 +36,6 @@ const App = () => {
   const [profile, setProfile] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [showUsernameModal, setShowUsernameModal] = React.useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = React.useState(false);
-  const [hasShownWelcome, setHasShownWelcome] = React.useState(false);
 
   React.useEffect(() => {
     // Listen for auth changes FIRST to avoid race conditions
@@ -71,10 +68,6 @@ const App = () => {
         // Show username modal if no profile exists
         if (!profile) {
           setShowUsernameModal(true);
-        } else if (!hasShownWelcome) {
-          // Show welcome modal for existing users on login
-          setShowWelcomeModal(true);
-          setHasShownWelcome(true);
         }
       } else {
         setProfile(null);
@@ -102,9 +95,6 @@ const App = () => {
   const handleUsernameComplete = (username: string) => {
     setProfile({ username });
     setShowUsernameModal(false);
-    // Show welcome modal for new users after username setup
-    setShowWelcomeModal(true);
-    setHasShownWelcome(true);
   };
 
   const isAuthenticated = !!session;
@@ -166,13 +156,6 @@ return (
         <UsernameSelectionModal 
           open={showUsernameModal}
           onComplete={handleUsernameComplete}
-        />
-
-        {/* Welcome back modal */}
-        <WelcomeBackModal
-          username={profile?.username || 'Unknown Hunter'}
-          isVisible={showWelcomeModal}
-          onClose={() => setShowWelcomeModal(false)}
         />
 
         {/* Mobile Bottom Navigation */}
