@@ -165,33 +165,29 @@ export function useChallengesV2() {
         completed: true
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('challenge_progress')
-        .insert([progressData]);
+        .insert([progressData])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      // Update local state - increment completions today
-      setChallenges(prev => 
-        prev.map(c => 
-          c.id === challengeId 
-            ? { ...c, completionsToday: c.completionsToday + 1 }
-            : c
-        )
-      );
-
-      // Recalculate streak
-      const newStreak = await calculateStreak(challengeId);
-      setChallenges(prev => 
-        prev.map(c => 
-          c.id === challengeId 
-            ? { ...c, streak: newStreak }
-            : c
-        )
-      );
+      // Only update if insert was successful
+      if (data) {
+        // Update local state immediately - increment completions today
+        setChallenges(prev => 
+          prev.map(c => 
+            c.id === challengeId 
+              ? { ...c, completionsToday: c.completionsToday + 1, streak: c.streak || 1 }
+              : c
+          )
+        );
+      }
 
       return true;
     } catch (err) {
+      console.error('Failed to complete challenge:', err);
       setError(err instanceof Error ? err.message : 'Failed to complete challenge');
       return false;
     }
@@ -272,7 +268,7 @@ export function useChallengesV2() {
     }
   };
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions (only for challenges table, not progress to avoid race conditions)
   useEffect(() => {
     const challengesSubscription = supabase
       .channel('challenges-changes')
@@ -282,17 +278,8 @@ export function useChallengesV2() {
       )
       .subscribe();
 
-    const progressSubscription = supabase
-      .channel('progress-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'challenge_progress' }, 
-        () => fetchChallenges()
-      )
-      .subscribe();
-
     return () => {
       supabase.removeChannel(challengesSubscription);
-      supabase.removeChannel(progressSubscription);
     };
   }, []);
 
