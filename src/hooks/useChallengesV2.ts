@@ -8,7 +8,7 @@ type ChallengeInsert = TablesInsert<'challenges'>;
 type ProgressInsert = TablesInsert<'challenge_progress'>;
 
 interface ChallengeWithProgress extends Challenge {
-  todayCompleted: boolean;
+  completionsToday: number;
   streak: number;
 }
 
@@ -36,24 +36,29 @@ export function useChallengesV2() {
 
       if (challengesError) throw challengesError;
 
-      // Get today's progress for all challenges
+      // Get today's progress for all challenges (count all records for today)
       const { data: progressData, error: progressError } = await supabase
         .from('challenge_progress')
         .select('*')
         .eq('user_id', user.id)
-        .eq('date', today);
+        .eq('date', today)
+        .eq('completed', true);
 
       if (progressError) throw progressError;
 
-      // Calculate streaks for each challenge
+      // Calculate completions today for each challenge
       const challengesWithProgress = await Promise.all(
         (challengesData || []).map(async (challenge) => {
-          const todayProgress = progressData?.find(p => p.challenge_id === challenge.id);
+          // Count how many times this challenge was completed today
+          const completionsToday = (progressData || []).filter(
+            p => p.challenge_id === challenge.id
+          ).length;
+          
           const streak = await calculateStreak(challenge.id);
           
           return {
             ...challenge,
-            todayCompleted: todayProgress?.completed || false,
+            completionsToday,
             streak
           };
         })
@@ -67,28 +72,34 @@ export function useChallengesV2() {
     }
   };
 
-  // Calculate streak for a challenge
+  // Calculate streak for a challenge (consecutive days with at least 1 completion)
   const calculateStreak = async (challengeId: string): Promise<number> => {
     try {
       const { data, error } = await supabase
         .from('challenge_progress')
-        .select('date, completed')
+        .select('date')
         .eq('challenge_id', challengeId)
         .eq('completed', true)
         .order('date', { ascending: false });
 
       if (error) throw error;
-
       if (!data || data.length === 0) return 0;
 
+      // Get unique dates
+      const uniqueDates = [...new Set(data.map(p => p.date))].sort().reverse();
+      
       let streak = 0;
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
-      for (const progress of data) {
-        const progressDate = new Date(progress.date);
-        const daysDiff = Math.floor((today.getTime() - progressDate.getTime()) / (1000 * 60 * 60 * 24));
+      for (const dateStr of uniqueDates) {
+        const progressDate = new Date(dateStr);
+        progressDate.setHours(0, 0, 0, 0);
         
-        if (daysDiff === streak) {
+        const expectedDate = new Date(today);
+        expectedDate.setDate(expectedDate.getDate() - streak);
+        
+        if (progressDate.getTime() === expectedDate.getTime()) {
           streak++;
         } else {
           break;
@@ -126,7 +137,7 @@ export function useChallengesV2() {
 
       const newChallenge: ChallengeWithProgress = {
         ...data,
-        todayCompleted: false,
+        completionsToday: 0,
         streak: 0
       };
 
@@ -138,46 +149,33 @@ export function useChallengesV2() {
     }
   };
 
-  // Toggle challenge completion for today
-  const toggleChallengeCompletion = async (challengeId: string): Promise<boolean> => {
+  // Complete challenge (add a new completion record for today)
+  const completeChallenge = async (challengeId: string): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const today = new Date().toISOString().split('T')[0];
-      const challenge = challenges.find(c => c.id === challengeId);
-      if (!challenge) return false;
 
-      if (challenge.todayCompleted) {
-        // Remove today's completion
-        const { error } = await supabase
-          .from('challenge_progress')
-          .delete()
-          .eq('challenge_id', challengeId)
-          .eq('date', today);
+      // Insert a new completion record (allows multiple per day)
+      const progressData: ProgressInsert = {
+        user_id: user.id,
+        challenge_id: challengeId,
+        date: today,
+        completed: true
+      };
 
-        if (error) throw error;
-      } else {
-        // Add today's completion
-        const progressData: ProgressInsert = {
-          user_id: user.id,
-          challenge_id: challengeId,
-          date: today,
-          completed: true
-        };
+      const { error } = await supabase
+        .from('challenge_progress')
+        .insert([progressData]);
 
-        const { error } = await supabase
-          .from('challenge_progress')
-          .upsert([progressData]);
+      if (error) throw error;
 
-        if (error) throw error;
-      }
-
-      // Update local state
+      // Update local state - increment completions today
       setChallenges(prev => 
         prev.map(c => 
           c.id === challengeId 
-            ? { ...c, todayCompleted: !c.todayCompleted }
+            ? { ...c, completionsToday: c.completionsToday + 1 }
             : c
         )
       );
@@ -194,7 +192,7 @@ export function useChallengesV2() {
 
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to toggle challenge');
+      setError(err instanceof Error ? err.message : 'Failed to complete challenge');
       return false;
     }
   };
@@ -217,9 +215,65 @@ export function useChallengesV2() {
     }
   };
 
+  // Get weekly progress data for a challenge
+  const getWeeklyProgress = async (challengeId: string): Promise<{ date: string; count: number }[]> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // Get last 7 days
+      const dates: string[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        dates.push(date.toISOString().split('T')[0]);
+      }
+
+      const { data, error } = await supabase
+        .from('challenge_progress')
+        .select('date')
+        .eq('challenge_id', challengeId)
+        .eq('completed', true)
+        .in('date', dates);
+
+      if (error) throw error;
+
+      // Count completions per day
+      return dates.map(date => ({
+        date,
+        count: (data || []).filter(p => p.date === date).length
+      }));
+    } catch (err) {
+      console.error('Error getting weekly progress:', err);
+      return [];
+    }
+  };
+
+  // Get active days count (days with at least one completion)
+  const getActiveDays = async (): Promise<number> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+
+      const { data, error } = await supabase
+        .from('challenge_progress')
+        .select('date')
+        .eq('user_id', user.id)
+        .eq('completed', true);
+
+      if (error) throw error;
+
+      // Count unique dates
+      const uniqueDates = new Set((data || []).map(p => p.date));
+      return uniqueDates.size;
+    } catch (err) {
+      console.error('Error getting active days:', err);
+      return 0;
+    }
+  };
+
   // Set up real-time subscriptions
   useEffect(() => {
-    
     const challengesSubscription = supabase
       .channel('challenges-changes')
       .on('postgres_changes', 
@@ -251,8 +305,10 @@ export function useChallengesV2() {
     loading,
     error,
     createChallenge,
-    toggleChallengeCompletion,
+    completeChallenge,
     deleteChallenge,
+    getWeeklyProgress,
+    getActiveDays,
     refreshChallenges: fetchChallenges
   };
 }
