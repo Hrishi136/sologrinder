@@ -23,11 +23,11 @@ export default function Quests() {
   const [selectedQuest, setSelectedQuest] = useState<any | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'current' | 'completed'>('all');
-  const { challenges, loading, toggleChallengeCompletion, deleteChallenge: deleteChallengeV2, refreshChallenges } = useChallengesV2();
+  const { challenges, loading, completeChallenge, deleteChallenge: deleteChallengeV2, refreshChallenges } = useChallengesV2();
   const { toast } = useToast();
 
   const handleQuestComplete = async (questId: string) => {
-    const success = await toggleChallengeCompletion(questId);
+    const success = await completeChallenge(questId);
     if (success) {
       toast({
         title: "Quest Completed!",
@@ -75,6 +75,8 @@ export default function Quests() {
   const getQuestData = (challenge: any) => {
     const category = challenge.category || "Combat Training";
     const difficulty = challenge.difficulty || "easy";
+    const dailyLimit = difficulty === "hard" ? 2 : difficulty === "medium" ? 3 : 5;
+    const isCompleted = challenge.completionsToday >= dailyLimit;
     
     // Convert difficulty to rank display
     const difficultyRank = difficulty === "hard" ? "S-Rank" : 
@@ -85,14 +87,18 @@ export default function Quests() {
       name: challenge.title,
       category,
       difficulty: difficultyRank,
-      completed: challenge.todayCompleted || false
+      completed: isCompleted
     };
   };
 
   // Filter challenges based on selected filter
   const filteredChallenges = challenges.filter(challenge => {
-    if (filterType === 'current') return !challenge.todayCompleted;
-    if (filterType === 'completed') return challenge.todayCompleted;
+    const difficulty = challenge.difficulty || "easy";
+    const dailyLimit = difficulty === "hard" ? 2 : difficulty === "medium" ? 3 : 5;
+    const isCompleted = challenge.completionsToday >= dailyLimit;
+    
+    if (filterType === 'current') return !isCompleted;
+    if (filterType === 'completed') return isCompleted;
     return true; // 'all' shows everything
   });
 
@@ -200,7 +206,7 @@ export default function Quests() {
                     return (
                       <div 
                         key={challenge.id}
-                        className={challenge.todayCompleted ? 'opacity-60' : ''}
+                        className={questData.completed ? 'opacity-60' : ''}
                       >
                         <SwipeableQuestCard
                           quest={questData}

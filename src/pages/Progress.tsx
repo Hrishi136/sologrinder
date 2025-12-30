@@ -5,15 +5,16 @@ import { Progress as ProgressBar } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, CheckCircle2, Target } from 'lucide-react';
-import { useChallenges } from '@/hooks/useChallenges';
-import { Tables } from '@/integrations/supabase/types';
+import { useChallengesV2 } from '@/hooks/useChallengesV2';
 import ProfileButton from '@/components/ProfileButton';
 
-interface ChallengeWithProgress extends Tables<'Challenges'> {
+interface WeeklyProgressData {
+  challengeId: string;
+  title: string;
   category: string;
   difficulty: string;
-  points: number;
-  weeklyProgress: number[];
+  streak: number;
+  weeklyProgress: { date: string; count: number }[];
   completionsThisWeek: number;
 }
 
@@ -21,56 +22,56 @@ const CATEGORIES = [
   'Combat Training',
   'Intelligence Gathering',
   'Agility Development', 
-  'Vital Enhancement',
+  'Vitality Enhancement',
   'Special Quests'
 ];
 
 export default function Progress() {
   const navigate = useNavigate();
-  const { challenges, loading } = useChallenges();
-  const [challengesWithProgress, setChallengesWithProgress] = useState<ChallengeWithProgress[]>([]);
+  const { challenges, loading, getWeeklyProgress, getActiveDays } = useChallengesV2();
+  const [weeklyData, setWeeklyData] = useState<WeeklyProgressData[]>([]);
+  const [activeDays, setActiveDays] = useState(0);
+  const [totalCompletionsThisWeek, setTotalCompletionsThisWeek] = useState(0);
 
   useEffect(() => {
-    if (challenges.length > 0) {
-      const processedChallenges = challenges.map(challenge => {
-        let category = 'Combat Training';
-        let difficulty = 'easy';
-        let points = 10;
+    const loadProgressData = async () => {
+      if (challenges.length === 0) return;
+
+      // Load weekly progress for each challenge
+      const progressPromises = challenges.map(async (challenge) => {
+        const weeklyProgress = await getWeeklyProgress(challenge.id);
+        const completionsThisWeek = weeklyProgress.reduce((sum, day) => sum + day.count, 0);
         
-        try {
-          const steps = JSON.parse(challenge.steps || '{}');
-          category = steps.category || 'Combat Training';
-          difficulty = steps.difficulty || 'easy';
-          points = steps.points || 10;
-        } catch (e) {
-          // Use defaults
-        }
-
-        // Generate mock weekly progress (last 7 days)
-        const weeklyProgress = Array(7).fill(0).map(() => Math.random() > 0.6 ? 1 : 0);
-        const completionsThisWeek = weeklyProgress.reduce((sum, day) => sum + day, 0);
-
         return {
-          ...challenge,
-          category,
-          difficulty,
-          points,
+          challengeId: challenge.id,
+          title: challenge.title,
+          category: challenge.category || 'General',
+          difficulty: challenge.difficulty || 'easy',
+          streak: challenge.streak,
           weeklyProgress,
           completionsThisWeek
         };
       });
 
-      setChallengesWithProgress(processedChallenges);
-    }
+      const data = await Promise.all(progressPromises);
+      setWeeklyData(data);
+      setTotalCompletionsThisWeek(data.reduce((sum, d) => sum + d.completionsThisWeek, 0));
+
+      // Load active days
+      const days = await getActiveDays();
+      setActiveDays(days);
+    };
+
+    loadProgressData();
   }, [challenges]);
 
-  const getDayName = (dayIndex: number) => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days[dayIndex];
+  const getDayName = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
   };
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
+    switch (difficulty?.toLowerCase()) {
       case 'easy': return 'text-green-400 bg-green-400/20';
       case 'medium': return 'text-yellow-400 bg-yellow-400/20';
       case 'hard': return 'text-red-400 bg-red-400/20';
@@ -79,7 +80,7 @@ export default function Progress() {
   };
 
   const getDifficultyRank = (difficulty: string) => {
-    switch (difficulty) {
+    switch (difficulty?.toLowerCase()) {
       case 'easy': return 'E-Rank';
       case 'medium': return 'D-Rank';
       case 'hard': return 'C-Rank';
@@ -88,7 +89,7 @@ export default function Progress() {
   };
 
   const getQuestsByCategory = (category: string) => {
-    return challengesWithProgress.filter(challenge => challenge.category === category);
+    return weeklyData.filter(data => data.category === category);
   };
 
   if (loading) {
@@ -167,7 +168,7 @@ export default function Progress() {
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
               <div className="text-xl sm:text-2xl font-bold text-green-400">
-                {challengesWithProgress.reduce((sum, ch) => sum + ch.completionsThisWeek, 0)}
+                {totalCompletionsThisWeek}
               </div>
               <p className="text-[10px] sm:text-xs text-white/60">
                 Total completions
@@ -177,15 +178,15 @@ export default function Progress() {
 
           <Card className="system-panel border-system-blue2 overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-white/80">Consistency</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-white/80">Active Days</CardTitle>
               <Calendar className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
               <div className="text-xl sm:text-2xl font-bold text-yellow-400">
-                {Math.round((challengesWithProgress.reduce((sum, ch) => sum + ch.completionsThisWeek, 0) / Math.max(challenges.length * 7, 1)) * 100)}%
+                {activeDays}
               </div>
               <p className="text-[10px] sm:text-xs text-white/60">
-                Weekly rate
+                Days with completions
               </p>
             </CardContent>
           </Card>
@@ -207,24 +208,24 @@ export default function Progress() {
                 </h2>
 
                 <div className="grid gap-3 sm:gap-4">
-                  {categoryQuests.map(challenge => (
-                    <Card key={challenge.id} className="system-panel border-system-blue2/30 overflow-hidden">
+                  {categoryQuests.map(quest => (
+                    <Card key={quest.challengeId} className="system-panel border-system-blue2/30 overflow-hidden">
                       <CardContent className="p-3 sm:p-6">
                         <div className="flex flex-col gap-3 sm:gap-4">
                           {/* Quest Info */}
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 flex-wrap">
                               <h3 className="font-bold text-system-blue text-sm sm:text-lg truncate max-w-[200px] sm:max-w-none">
-                                {challenge.title}
+                                {quest.title}
                               </h3>
-                              <Badge className={`${getDifficultyColor(challenge.difficulty)} text-[10px] sm:text-xs flex-shrink-0`}>
-                                {getDifficultyRank(challenge.difficulty)}
+                              <Badge className={`${getDifficultyColor(quest.difficulty)} text-[10px] sm:text-xs flex-shrink-0`}>
+                                {getDifficultyRank(quest.difficulty)}
                               </Badge>
                             </div>
                             
                             <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-white/70 flex-wrap">
-                              <span>Streak: {challenge.streak || 0}d</span>
-                              <span>Week: {challenge.completionsThisWeek}/7</span>
+                              <span>Streak: {quest.streak}d</span>
+                              <span>Week: {quest.completionsThisWeek}</span>
                             </div>
                           </div>
 
@@ -234,23 +235,25 @@ export default function Progress() {
                               Weekly Progress
                             </div>
                             <div className="flex gap-0.5 sm:gap-1 overflow-x-auto w-full sm:w-auto pb-1">
-                              {challenge.weeklyProgress.map((completed, dayIndex) => (
+                              {quest.weeklyProgress.map((day, dayIndex) => (
                                 <div
                                   key={dayIndex}
                                   className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0"
                                 >
                                   <div className="text-[8px] sm:text-xs text-white/50">
-                                    {getDayName(dayIndex)}
+                                    {getDayName(day.date)}
                                   </div>
                                   <div 
                                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${
-                                      completed 
+                                      day.count > 0 
                                         ? 'bg-green-500/30 border-green-400' 
                                         : 'bg-system-bg/50 border-white/20'
                                     }`}
                                   >
-                                    {completed && (
-                                      <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+                                    {day.count > 0 && (
+                                      day.count > 1 
+                                        ? <span className="text-[10px] sm:text-xs text-green-400 font-bold">{day.count}</span>
+                                        : <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
                                     )}
                                   </div>
                                 </div>
@@ -261,14 +264,14 @@ export default function Progress() {
                           {/* Progress Bar */}
                           <div className="flex flex-col gap-1 sm:gap-2 w-full overflow-hidden">
                             <div className="flex justify-between text-xs sm:text-sm">
-                              <span className="text-white/60">Progress</span>
+                              <span className="text-white/60">This Week</span>
                               <span className="text-system-blue2">
-                                {challenge.completionsThisWeek}/7
+                                {quest.completionsThisWeek} completions
                               </span>
                             </div>
                             <div className="w-full overflow-hidden rounded-full">
                               <ProgressBar 
-                                value={(challenge.completionsThisWeek / 7) * 100} 
+                                value={Math.min((quest.completionsThisWeek / 7) * 100, 100)} 
                                 className="h-2"
                               />
                             </div>

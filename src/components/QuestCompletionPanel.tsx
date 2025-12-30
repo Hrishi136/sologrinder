@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useChallengesV2 } from "@/hooks/useChallengesV2";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   streak: number;
@@ -14,19 +15,26 @@ type Props = {
   }[];
 };
 
-const DIFFICULTIES = [{
-  key: "easy",
-  label: "Easy",
-  color: "#48e18b"
-}, {
-  key: "medium",
-  label: "Medium",
-  color: "#f4e95a"
-}, {
-  key: "hard",
-  label: "Hard",
-  color: "#ed3434"
-}];
+const getDifficultyLimit = (difficulty: string): number => {
+  switch (difficulty?.toLowerCase()) {
+    case "hard": return 2;
+    case "medium": return 3;
+    default: return 5;
+  }
+};
+
+const getDifficultyColor = (difficulty: string): string => {
+  switch (difficulty?.toLowerCase()) {
+    case "hard": return "#ed3434";
+    case "medium": return "#f4e95a";
+    default: return "#48e18b";
+  }
+};
+
+const getDifficultyLabel = (difficulty: string): string => {
+  const d = difficulty?.toLowerCase() || "easy";
+  return d.charAt(0).toUpperCase() + d.slice(1);
+};
 
 export default function QuestCompletionPanel({
   streak,
@@ -36,35 +44,24 @@ export default function QuestCompletionPanel({
   setSystemNotice,
   QUEST_CATEGORIES
 }: Props) {
-  const { challenges, loading, toggleChallengeCompletion } = useChallengesV2();
+  const { challenges, loading, completeChallenge } = useChallengesV2();
   const { trackTodayActivity } = useStreakTracker();
   const [selectedQuestId, setSelectedQuestId] = useState<string>("");
   
   // Get the selected quest details
   const selectedQuest = challenges.find(q => q.id === selectedQuestId) || challenges[0];
   
-  // Map categories to difficulty levels
-  const getDifficultyFromQuest = (difficulty: string | null): "easy" | "medium" | "hard" => {
-    if (!difficulty) return "easy";
-    const lowerDifficulty = difficulty.toLowerCase();
-    if (lowerDifficulty === "hard") return "hard";
-    if (lowerDifficulty === "medium") return "medium";
-    return "easy";
-  };
-
   const handleQuestComplete = async () => {
     if (!selectedQuest) return;
     
-    const difficulty = getDifficultyFromQuest(selectedQuest.difficulty);
+    const difficulty = selectedQuest.difficulty?.toLowerCase() as "easy" | "medium" | "hard" || "easy";
+    const dailyLimit = getDifficultyLimit(difficulty);
     
-    // Check if user can still complete quests of this difficulty today
-    if (canCompleteQuest(difficulty)) {
-      // Always mark as complete (don't toggle off)
-      const success = await toggleChallengeCompletion(selectedQuest.id);
+    // Check if under daily limit
+    if (selectedQuest.completionsToday < dailyLimit) {
+      const success = await completeChallenge(selectedQuest.id);
       if (success) {
-        // Track daily activity for streak calculation
         await trackTodayActivity();
-        // Also call the legacy completeQuest function for stat tracking
         completeQuest(selectedQuest.category || "Combat Training", difficulty);
         setSystemNotice("Quest completed! Check your performance tab for updated stats.");
       }
@@ -86,17 +83,16 @@ export default function QuestCompletionPanel({
           <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
           <li>Daily quest cap: 5 easy, 3 medium, 2 hard</li>
           <li>Stat gain: Based on quest type & difficulty</li>
-          <li>Balanced Growth bonus applies when all stats above thresholds</li>
         </ul>
       </div>
     );
   }
 
-  const difficulty = getDifficultyFromQuest(selectedQuest?.difficulty);
-  const difficultyColor = difficulty === "hard" ? "#ed3434" : difficulty === "medium" ? "#f4e95a" : "#48e18b";
-  const dailyLimit = difficulty === "easy" ? 5 : difficulty === "medium" ? 3 : 2;
-  const completedToday = dailyQuests[difficulty] || 0;
-  const canComplete = canCompleteQuest(difficulty);
+  const difficulty = selectedQuest?.difficulty?.toLowerCase() || "easy";
+  const difficultyColor = getDifficultyColor(difficulty);
+  const dailyLimit = getDifficultyLimit(difficulty);
+  const completedToday = selectedQuest?.completionsToday || 0;
+  const canComplete = completedToday < dailyLimit;
 
   return (
     <div className="w-full min-w-0 overflow-hidden">
@@ -104,25 +100,51 @@ export default function QuestCompletionPanel({
         Complete Today's Quests
       </h3>
       
-      {/* Quest Selection */}
-      <div className="mb-2 sm:mb-3 w-full overflow-hidden">
-        <select 
-          className="rounded bg-[#181e28] text-system-blue2 px-2 sm:px-3 py-2 w-full text-xs sm:text-base min-h-[44px] truncate" 
-          value={selectedQuestId} 
-          onChange={e => setSelectedQuestId(e.target.value)}
-        >
-          {challenges.map(quest => (
-            <option key={quest.id} value={quest.id} className="truncate">
-              {quest.title?.slice(0, 30)}{quest.title?.length > 30 ? '...' : ''} ({quest.category || "General"})
-            </option>
-          ))}
-        </select>
+      {/* Current Quest Label */}
+      <div className="mb-2">
+        <span className="text-xs text-white/60 uppercase tracking-wider">Current Quest</span>
+      </div>
+      
+      {/* Quest Selection with Difficulty Badge */}
+      <div className="mb-3 sm:mb-4 w-full overflow-hidden">
+        <div className="flex flex-col gap-2">
+          <select 
+            className="rounded bg-[#181e28] text-system-blue2 px-2 sm:px-3 py-2 w-full text-xs sm:text-base min-h-[44px]" 
+            value={selectedQuestId || selectedQuest?.id || ""} 
+            onChange={e => setSelectedQuestId(e.target.value)}
+          >
+            {challenges.map(quest => (
+              <option key={quest.id} value={quest.id}>
+                {quest.title} — {quest.category || "General"} ({getDifficultyLabel(quest.difficulty || "easy")})
+              </option>
+            ))}
+          </select>
+          
+          {/* Difficulty Badge */}
+          {selectedQuest && (
+            <div className="flex items-center gap-2">
+              <Badge 
+                className="text-xs px-2 py-1"
+                style={{ 
+                  backgroundColor: `${difficultyColor}20`, 
+                  color: difficultyColor,
+                  borderColor: difficultyColor 
+                }}
+              >
+                {getDifficultyLabel(difficulty)} Difficulty
+              </Badge>
+              <span className="text-xs text-white/60">
+                {completedToday}/{dailyLimit} today
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Complete Button */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2 sm:mb-3 w-full">
+      <div className="flex flex-col gap-2 mb-3 w-full">
         <button 
-          className={`glow-button text-xs sm:text-base py-2 px-2 sm:px-3 flex-1 min-h-[44px] truncate ${
+          className={`glow-button text-xs sm:text-base py-3 px-4 w-full min-h-[48px] font-bold ${
             canComplete ? '' : 'opacity-30 pointer-events-none'
           }`} 
           style={{ background: difficultyColor }}
@@ -131,18 +153,12 @@ export default function QuestCompletionPanel({
         >
           {canComplete ? "Complete Quest" : "Daily Limit Reached"}
         </button>
-        <span className="text-xs text-system-blue2 text-center sm:text-left whitespace-nowrap flex-shrink-0">
-          {completedToday}/{dailyLimit} today
-        </span>
       </div>
 
       {/* Quest Info */}
-      <ul className="list-disc pl-3 sm:pl-5 text-[10px] sm:text-sm text-white/80 space-y-0.5 sm:space-y-1 overflow-hidden">
-        {selectedQuest && (
-          <li className="truncate pr-2">Quest: <b className="truncate">{selectedQuest.title?.slice(0, 20)}{selectedQuest.title?.length > 20 ? '...' : ''}</b></li>
-        )}
-        <li className="truncate">Difficulty: <b style={{ color: difficultyColor }}>{difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</b></li>
-        <li className="truncate">Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
+      <ul className="list-disc pl-3 sm:pl-5 text-[10px] sm:text-sm text-white/80 space-y-0.5 sm:space-y-1">
+        <li>Streak: <b>{selectedQuest?.streak || 0} days</b></li>
+        <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
       </ul>
     </div>
   );
