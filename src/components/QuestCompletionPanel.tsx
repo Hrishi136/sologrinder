@@ -47,23 +47,29 @@ export default function QuestCompletionPanel({
   const { challenges, loading, completeChallenge } = useChallengesV2();
   const { trackTodayActivity } = useStreakTracker();
   const [selectedQuestId, setSelectedQuestId] = useState<string>("");
+  const [isCompleting, setIsCompleting] = useState(false);
   
   // Get the selected quest details
   const selectedQuest = challenges.find(q => q.id === selectedQuestId) || challenges[0];
   
   const handleQuestComplete = async () => {
-    if (!selectedQuest) return;
+    if (!selectedQuest || isCompleting) return;
     
     const difficulty = selectedQuest.difficulty?.toLowerCase() as "easy" | "medium" | "hard" || "easy";
     const dailyLimit = getDifficultyLimit(difficulty);
     
     // Check if under daily limit
     if (selectedQuest.completionsToday < dailyLimit) {
-      const success = await completeChallenge(selectedQuest.id);
-      if (success) {
-        await trackTodayActivity();
-        completeQuest(selectedQuest.category || "Combat Training", difficulty);
-        setSystemNotice("Quest completed! Check your performance tab for updated stats.");
+      setIsCompleting(true);
+      try {
+        const success = await completeChallenge(selectedQuest.id);
+        if (success) {
+          await trackTodayActivity();
+          completeQuest(selectedQuest.category || "Combat Training", difficulty);
+          setSystemNotice("Quest completed! Check your performance tab for updated stats.");
+        }
+      } finally {
+        setIsCompleting(false);
       }
     }
   };
@@ -92,7 +98,7 @@ export default function QuestCompletionPanel({
   const difficultyColor = getDifficultyColor(difficulty);
   const dailyLimit = getDifficultyLimit(difficulty);
   const completedToday = selectedQuest?.completionsToday || 0;
-  const canComplete = completedToday < dailyLimit;
+  const canComplete = completedToday < dailyLimit && !isCompleting;
 
   return (
     <div className="w-full min-w-0 overflow-hidden">
@@ -149,9 +155,9 @@ export default function QuestCompletionPanel({
           }`} 
           style={{ background: difficultyColor }}
           onClick={handleQuestComplete}
-          disabled={!canComplete}
+          disabled={!canComplete || isCompleting}
         >
-          {canComplete ? "Complete Quest" : "Daily Limit Reached"}
+          {isCompleting ? "Completing..." : canComplete ? "Complete Quest" : "Daily Limit Reached"}
         </button>
       </div>
 
