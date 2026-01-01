@@ -160,6 +160,36 @@ export type Database = {
         }
         Relationships: []
       }
+      hunter_stats: {
+        Row: {
+          created_at: string
+          id: string
+          power: number
+          resolve: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          power?: number
+          resolve?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          power?: number
+          resolve?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -240,6 +270,14 @@ export type Database = {
       increment_challenge_completion: {
         Args: { p_challenge_id: string; p_day?: string }
         Returns: number
+      }
+      increment_hunter_stats: {
+        Args: { p_power?: number; p_resolve?: number; p_xp?: number }
+        Returns: {
+          power: number
+          resolve: number
+          xp: number
+        }[]
       }
       track_daily_activity: { Args: never; Returns: undefined }
       track_daily_login: { Args: never; Returns: undefined }

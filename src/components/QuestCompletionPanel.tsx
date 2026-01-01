@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useChallengesV2 } from "@/hooks/useChallengesV2";
 import { useStreakTracker } from "@/hooks/useStreakTracker";
+import { useHunterStats, STAT_GAINS } from "@/hooks/useHunterStats";
 import { Badge } from "@/components/ui/badge";
 
 type Props = {
@@ -46,6 +47,7 @@ export default function QuestCompletionPanel({
 }: Props) {
   const { challenges, loading, completeChallenge } = useChallengesV2();
   const { trackTodayActivity } = useStreakTracker();
+  const { incrementStats } = useHunterStats();
   const [selectedQuestId, setSelectedQuestId] = useState<string>("");
   const [isCompleting, setIsCompleting] = useState(false);
   
@@ -55,7 +57,7 @@ export default function QuestCompletionPanel({
   const handleQuestComplete = async () => {
     if (!selectedQuest || isCompleting) return;
     
-    const difficulty = selectedQuest.difficulty?.toLowerCase() as "easy" | "medium" | "hard" || "easy";
+    const difficulty = (selectedQuest.difficulty?.toLowerCase() as "easy" | "medium" | "hard") || "easy";
     const dailyLimit = getDifficultyLimit(difficulty);
     
     // Check if under daily limit
@@ -64,9 +66,15 @@ export default function QuestCompletionPanel({
       try {
         const success = await completeChallenge(selectedQuest.id);
         if (success) {
+          // Increment hunter stats (Power, XP, Resolve) based on difficulty
+          const newStats = await incrementStats(difficulty);
+          
           await trackTodayActivity();
           completeQuest(selectedQuest.category || "Combat Training", difficulty);
-          setSystemNotice("Quest completed! Check your performance tab for updated stats.");
+          
+          // Show stat gains in notice
+          const gains = STAT_GAINS[difficulty];
+          setSystemNotice(`Quest completed! +${gains.power} Power, +${gains.xp} XP, +${gains.resolve} Resolve`);
         }
       } finally {
         setIsCompleting(false);
@@ -88,7 +96,7 @@ export default function QuestCompletionPanel({
         <ul className="list-disc pl-5 text-xs text-white/80">
           <li>Streak bonus: <b>{streak >= 14 ? "+40%" : streak >= 7 ? "+25%" : streak >= 3 ? "+10%" : "None"}</b></li>
           <li>Daily quest cap: 5 easy, 3 medium, 2 hard</li>
-          <li>Stat gain: Based on quest type & difficulty</li>
+          <li>Stat gain: Power, XP, Resolve per completion</li>
         </ul>
       </div>
     );
@@ -99,6 +107,9 @@ export default function QuestCompletionPanel({
   const dailyLimit = getDifficultyLimit(difficulty);
   const completedToday = selectedQuest?.completionsToday || 0;
   const canComplete = completedToday < dailyLimit && !isCompleting;
+  
+  // Get stat gains for display
+  const gains = STAT_GAINS[(difficulty as "easy" | "medium" | "hard") || "easy"];
 
   return (
     <div className="w-full min-w-0 overflow-hidden">
@@ -126,9 +137,9 @@ export default function QuestCompletionPanel({
             ))}
           </select>
           
-          {/* Difficulty Badge */}
+          {/* Difficulty Badge and Stat Gains Preview */}
           {selectedQuest && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge 
                 className="text-xs px-2 py-1"
                 style={{ 
@@ -141,6 +152,9 @@ export default function QuestCompletionPanel({
               </Badge>
               <span className="text-xs text-white/60">
                 {completedToday}/{dailyLimit} today
+              </span>
+              <span className="text-xs text-system-blue2">
+                +{gains.power} PWR | +{gains.xp} XP | +{gains.resolve} RSV
               </span>
             </div>
           )}
