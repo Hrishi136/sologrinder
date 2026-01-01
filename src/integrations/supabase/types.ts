@@ -42,6 +42,7 @@ export type Database = {
         Row: {
           challenge_id: string
           completed: boolean
+          completion_count: number
           created_at: string
           date: string
           id: string
@@ -50,6 +51,7 @@ export type Database = {
         Insert: {
           challenge_id: string
           completed?: boolean
+          completion_count?: number
           created_at?: string
           date?: string
           id?: string
@@ -58,6 +60,7 @@ export type Database = {
         Update: {
           challenge_id?: string
           completed?: boolean
+          completion_count?: number
           created_at?: string
           date?: string
           id?: string
@@ -234,6 +237,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_challenge_completion: {
+        Args: { p_challenge_id: string; p_day?: string }
+        Returns: number
+      }
       track_daily_activity: { Args: never; Returns: undefined }
       track_daily_login: { Args: never; Returns: undefined }
     }
