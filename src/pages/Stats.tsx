@@ -1,23 +1,25 @@
 
 import React from "react";
 import SystemPanel from "../components/SystemPanel";
-;
-import { useHunterProgression } from "../hooks/useHunterProgression";
+import { useHunterStats, RANK_TIERS } from "../hooks/useHunterStats";
 
 export default function Stats() {
-  const {
-    stats,
-    currentRank,
-    nextRank,
-    rankPoints,
-  } = useHunterProgression();
+  const { stats, rank, loading } = useHunterStats();
 
   // Progress bar %
-  const nextPoints = nextRank?.points ?? 1;
-  const progressPercent = Math.min(
-    (rankPoints / nextPoints) * 100,
-    100
-  ).toFixed(1);
+  const progressPercent = rank.progress.toFixed(1);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full bg-system-bg relative pt-20">
+        <div className="container mx-auto flex flex-col items-center gap-10">
+          <SystemPanel className="w-full max-w-2xl p-7">
+            <div className="text-system-blue2">Loading stats...</div>
+          </SystemPanel>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative pt-20">
@@ -26,30 +28,77 @@ export default function Stats() {
           <h2 className="font-orbitron text-2xl text-system-blue font-extrabold mb-5">
             Hunter Stats & Rank Progress
           </h2>
-          <div className="grid grid-cols-2 gap-8 mb-8">
-            {stats.map(stat => (
+          
+          {/* Current Rank Badge */}
+          <div className="flex items-center gap-3 mb-6">
+            <span 
+              className="text-lg font-bold px-4 py-2 rounded-lg"
+              style={{ backgroundColor: `${rank.color}30`, color: rank.color }}
+            >
+              {rank.name}
+            </span>
+            <span className="text-white/60 text-sm">Current Rank</span>
+          </div>
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-8 mb-8">
+            {[
+              { label: "Power", val: stats.power, color: "#48e18b" },
+              { label: "XP", val: stats.xp, color: "#00d4ff" },
+              { label: "Resolve", val: stats.resolve, color: "#f4e95a" }
+            ].map(stat => (
               <div key={stat.label} className="flex flex-col items-center">
-                <span className="text-system-blue2 font-orbitron">{stat.label}</span>
+                <span className="text-system-blue2 font-orbitron text-sm mb-2">{stat.label}</span>
                 <div className="relative w-8 h-24 flex items-end mb-2">
                   <div className="absolute bottom-0 left-3 w-2 h-full bg-[#191e26] rounded-full border border-system-blue2" />
-                  <div className="absolute bottom-0 left-3 w-2 rounded-full bg-gradient-to-t from-system-blue2 to-system-blue" style={{height:`${(stat.val/30)*100}%`, transition:"height 0.5s"}} />
+                  <div 
+                    className="absolute bottom-0 left-3 w-2 rounded-full"
+                    style={{
+                      height: `${Math.min((stat.val / (stat.label === 'XP' ? 60000 : stat.label === 'Power' ? 5000 : 500)) * 100, 100)}%`,
+                      transition: "height 0.5s",
+                      background: `linear-gradient(to top, ${stat.color}, ${stat.color}80)`
+                    }} 
+                  />
                 </div>
-                <span className="font-orbitron text-white">{stat.val}</span>
+                <span className="font-orbitron text-white text-lg">
+                  {stat.val >= 1000 ? `${(stat.val / 1000).toFixed(1)}K` : stat.val}
+                </span>
               </div>
             ))}
           </div>
+          
+          {/* Rank Progress */}
           <div className="flex flex-col gap-3">
             <span className="font-orbitron text-lg text-system-blue2">Rank Progress</span>
             <div className="w-full bg-[#191e26] rounded-full h-5 relative border border-system-blue mt-2">
-              <div className="absolute left-0 top-0 h-5 rounded-full bg-gradient-to-r from-system-blue2 to-system-blue animate-fade-in"
-                style={{ width: `${progressPercent}%` }} />
+              <div 
+                className="absolute left-0 top-0 h-5 rounded-full bg-gradient-to-r from-system-blue2 to-system-blue animate-fade-in"
+                style={{ width: `${progressPercent}%` }} 
+              />
               <span className="font-orbitron text-system-blue absolute left-2 top-0 h-5 flex items-center" style={{fontSize:'1.1rem'}}>
-                Next Rank: {nextRank ? nextRank.name : "MAX"}
+                Next: {rank.nextRank ? rank.nextRank.name : "MAX RANK"}
               </span>
             </div>
             <span className="font-orbitron text-xs text-system-blue mt-1">
-              Points: {rankPoints}/{nextRank?.points ?? "MAX"}
+              XP: {stats.xp.toLocaleString()}/{rank.nextRank?.xpRequired.toLocaleString() ?? "MAX"}
             </span>
+          </div>
+          
+          {/* Rank Tiers Reference */}
+          <div className="mt-8 pt-6 border-t border-system-blue2/30">
+            <h3 className="font-orbitron text-sm text-system-blue2 mb-4">Rank Tiers</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {RANK_TIERS.map(tier => (
+                <div 
+                  key={tier.name}
+                  className={`text-xs p-2 rounded ${stats.xp >= tier.xpRequired ? 'opacity-100' : 'opacity-40'}`}
+                  style={{ backgroundColor: `${tier.color}20`, color: tier.color }}
+                >
+                  <div className="font-bold">{tier.name}</div>
+                  <div className="text-white/60">{tier.xpRequired.toLocaleString()} XP</div>
+                </div>
+              ))}
+            </div>
           </div>
         </SystemPanel>
       </div>
