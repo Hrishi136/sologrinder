@@ -36,24 +36,25 @@ export function useChallengesV2() {
 
       if (challengesError) throw challengesError;
 
-      // Get today's progress for all challenges (count all records for today)
+      // Get today's progress for all challenges (with completion_count)
       const { data: progressData, error: progressError } = await supabase
         .from('challenge_progress')
-        .select('*')
+        .select('challenge_id, completion_count')
         .eq('user_id', user.id)
-        .eq('date', today)
-        .eq('completed', true);
+        .eq('date', today);
 
       if (progressError) throw progressError;
+
+      // Build a map of challenge_id -> completion_count for today
+      const progressMap = new Map<string, number>();
+      (progressData || []).forEach(p => {
+        progressMap.set(p.challenge_id, p.completion_count || 0);
+      });
 
       // Calculate completions today for each challenge
       const challengesWithProgress = await Promise.all(
         (challengesData || []).map(async (challenge) => {
-          // Count how many times this challenge was completed today
-          const completionsToday = (progressData || []).filter(
-            p => p.challenge_id === challenge.id
-          ).length;
-          
+          const completionsToday = progressMap.get(challenge.id) || 0;
           const streak = await calculateStreak(challenge.id);
           
           return {
@@ -149,7 +150,7 @@ export function useChallengesV2() {
     }
   };
 
-  // Complete challenge (add a new completion record for today)
+  // Complete challenge (atomically increment completion_count for today via RPC)
   const completeChallenge = async (challengeId: string): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -157,33 +158,22 @@ export function useChallengesV2() {
 
       const today = new Date().toISOString().split('T')[0];
 
-      // Insert a new completion record (allows multiple per day)
-      const progressData: ProgressInsert = {
-        user_id: user.id,
-        challenge_id: challengeId,
-        date: today,
-        completed: true
-      };
-
-      const { data, error } = await supabase
-        .from('challenge_progress')
-        .insert([progressData])
-        .select()
-        .single();
+      // Call the atomic increment function
+      const { data: newCount, error } = await supabase.rpc('increment_challenge_completion', {
+        p_challenge_id: challengeId,
+        p_day: today
+      });
 
       if (error) throw error;
 
-      // Only update if insert was successful
-      if (data) {
-        // Update local state immediately - increment completions today
-        setChallenges(prev => 
-          prev.map(c => 
-            c.id === challengeId 
-              ? { ...c, completionsToday: c.completionsToday + 1, streak: c.streak || 1 }
-              : c
-          )
-        );
-      }
+      // Update local state immediately with the new count
+      setChallenges(prev => 
+        prev.map(c => 
+          c.id === challengeId 
+            ? { ...c, completionsToday: newCount ?? c.completionsToday + 1, streak: c.streak || 1 }
+            : c
+        )
+      );
 
       return true;
     } catch (err) {
@@ -227,17 +217,21 @@ export function useChallengesV2() {
 
       const { data, error } = await supabase
         .from('challenge_progress')
-        .select('date')
+        .select('date, completion_count')
         .eq('challenge_id', challengeId)
-        .eq('completed', true)
         .in('date', dates);
 
       if (error) throw error;
 
-      // Count completions per day
+      // Build a map of date -> completion_count
+      const countMap = new Map<string, number>();
+      (data || []).forEach(p => {
+        countMap.set(p.date, p.completion_count || 0);
+      });
+
       return dates.map(date => ({
         date,
-        count: (data || []).filter(p => p.date === date).length
+        count: countMap.get(date) || 0
       }));
     } catch (err) {
       console.error('Error getting weekly progress:', err);
@@ -255,7 +249,7 @@ export function useChallengesV2() {
         .from('challenge_progress')
         .select('date')
         .eq('user_id', user.id)
-        .eq('completed', true);
+        .gt('completion_count', 0);
 
       if (error) throw error;
 
