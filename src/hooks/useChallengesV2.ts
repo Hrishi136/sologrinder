@@ -201,25 +201,40 @@ export function useChallengesV2() {
     }
   };
 
-  // Get weekly progress data for a challenge
-  const getWeeklyProgress = async (challengeId: string): Promise<{ date: string; count: number }[]> => {
+  // Get weekly progress data for a challenge (fixed Mon-Sun order)
+  const getWeeklyProgress = async (challengeId: string): Promise<{ date: string; dayName: string; count: number }[]> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Get last 7 days
-      const dates: string[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        dates.push(date.toISOString().split('T')[0]);
+      // Get the current week's Monday through Sunday
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // How many days since Monday
+      
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - daysFromMonday);
+      
+      // Build array of dates for Mon-Sun
+      const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const dates: { date: string; dayName: string }[] = [];
+      
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        dates.push({
+          date: d.toISOString().split('T')[0],
+          dayName: weekDays[i]
+        });
       }
+
+      const dateStrings = dates.map(d => d.date);
 
       const { data, error } = await supabase
         .from('challenge_progress')
         .select('date, completion_count')
         .eq('challenge_id', challengeId)
-        .in('date', dates);
+        .in('date', dateStrings);
 
       if (error) throw error;
 
@@ -229,9 +244,10 @@ export function useChallengesV2() {
         countMap.set(p.date, p.completion_count || 0);
       });
 
-      return dates.map(date => ({
-        date,
-        count: countMap.get(date) || 0
+      return dates.map(d => ({
+        date: d.date,
+        dayName: d.dayName,
+        count: countMap.get(d.date) || 0
       }));
     } catch (err) {
       console.error('Error getting weekly progress:', err);

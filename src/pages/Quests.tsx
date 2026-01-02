@@ -78,15 +78,14 @@ export default function Quests() {
     const dailyLimit = difficulty === "hard" ? 2 : difficulty === "medium" ? 3 : 5;
     const isCompleted = challenge.completionsToday >= dailyLimit;
     
-    // Convert difficulty to rank display
-    const difficultyRank = difficulty === "hard" ? "S-Rank" : 
-                          difficulty === "medium" ? "A-Rank" : "E-Rank";
+    // Display difficulty with proper capitalization (Easy, Medium, Hard)
+    const displayDifficulty = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
 
     return {
       id: challenge.id,
       name: challenge.title,
       category,
-      difficulty: difficultyRank,
+      difficulty: displayDifficulty,
       completed: isCompleted
     };
   };

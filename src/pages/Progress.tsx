@@ -14,7 +14,7 @@ interface WeeklyProgressData {
   category: string;
   difficulty: string;
   streak: number;
-  weeklyProgress: { date: string; count: number }[];
+  weeklyProgress: { date: string; dayName: string; count: number }[];
   completionsThisWeek: number;
 }
 
@@ -65,9 +65,9 @@ export default function Progress() {
     loadProgressData();
   }, [challenges]);
 
-  const getDayName = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+  const isToday = (dateStr: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    return dateStr === today;
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -79,12 +79,12 @@ export default function Progress() {
     }
   };
 
-  const getDifficultyRank = (difficulty: string) => {
+  const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
-      case 'easy': return 'E-Rank';
-      case 'medium': return 'D-Rank';
-      case 'hard': return 'C-Rank';
-      default: return 'E-Rank';
+      case 'easy': return 'Easy';
+      case 'medium': return 'Medium';
+      case 'hard': return 'Hard';
+      default: return 'Easy';
     }
   };
 
@@ -219,7 +219,7 @@ export default function Progress() {
                                 {quest.title}
                               </h3>
                               <Badge className={`${getDifficultyColor(quest.difficulty)} text-[10px] sm:text-xs flex-shrink-0`}>
-                                {getDifficultyRank(quest.difficulty)}
+                                {getDifficultyLabel(quest.difficulty)}
                               </Badge>
                             </div>
                             
@@ -240,14 +240,18 @@ export default function Progress() {
                                   key={dayIndex}
                                   className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0"
                                 >
-                                  <div className="text-[8px] sm:text-xs text-white/50">
-                                    {getDayName(day.date)}
+                                  <div className={`text-[8px] sm:text-xs ${isToday(day.date) ? 'text-system-blue font-bold' : 'text-white/50'}`}>
+                                    {day.dayName}
                                   </div>
                                   <div 
                                     className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${
-                                      day.count > 0 
-                                        ? 'bg-green-500/30 border-green-400' 
-                                        : 'bg-system-bg/50 border-white/20'
+                                      isToday(day.date)
+                                        ? day.count > 0 
+                                          ? 'bg-green-500/30 border-system-blue ring-2 ring-system-blue/50' 
+                                          : 'bg-system-bg/50 border-system-blue ring-2 ring-system-blue/50'
+                                        : day.count > 0 
+                                          ? 'bg-green-500/30 border-green-400' 
+                                          : 'bg-system-bg/50 border-white/20'
                                     }`}
                                   >
                                     {day.count > 0 && (
