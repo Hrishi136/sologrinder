@@ -2,13 +2,25 @@ import { useState, useEffect } from "react";
 import { SHADOW_UNITS, ShadowUnit } from "@/constants/shadowArmy";
 
 const STORAGE_KEY = "shadow_army_images";
+const UNLOCKED_KEY = "shadow_army_unlocked";
 
 /**
  * Shadow Army Hook - manages which shadows are unlocked and their permanent images.
  * Once an image is uploaded for a shadow, it becomes permanent and cannot be changed.
+ * All shadows are unlocked by default for image upload.
  */
 export function useShadowArmy() {
-  const [unlocked, setUnlocked] = useState<string[]>([]);
+  // All shadows are unlocked by default - load from storage or use all names
+  const [unlocked, setUnlocked] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(UNLOCKED_KEY);
+      if (stored) return JSON.parse(stored);
+      // Default: all shadows unlocked
+      return SHADOW_UNITS.map(u => u.name);
+    } catch {
+      return SHADOW_UNITS.map(u => u.name);
+    }
+  });
   
   // Permanent shadow images stored in localStorage
   const [shadowImages, setShadowImages] = useState<Record<string, string>>(() => {
@@ -19,6 +31,11 @@ export function useShadowArmy() {
       return {};
     }
   });
+
+  // Persist unlocked state
+  useEffect(() => {
+    localStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlocked));
+  }, [unlocked]);
 
   // Persist images to localStorage whenever they change
   useEffect(() => {
