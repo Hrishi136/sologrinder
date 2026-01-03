@@ -7,9 +7,10 @@ type Props = {
   unlocked: string[];
   allShadows: Shadow[];
   onViewAll?: () => void;
+  shadowImages?: Record<string, string>;
 };
 
-export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll }: Props) {
+export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll, shadowImages = {} }: Props) {
   const navigate = useNavigate();
   
   // Show 4 most recently unlocked, or show up to 4 lock silhouettes
@@ -32,7 +33,7 @@ export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll }: P
             className="flex flex-col items-center"
             title={name}
           >
-            <ShadowUnitAvatar name={name} isUnlocked={true} size="md" />
+            <ShadowUnitAvatar name={name} isUnlocked={true} size="md" permanentImage={shadowImages[name] || null} />
             <span className="text-xs text-white font-orbitron mt-1">{name}</span>
           </div>
         ))}

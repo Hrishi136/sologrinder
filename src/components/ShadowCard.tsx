@@ -12,15 +12,16 @@ interface ShadowCardProps {
     abilities?: string;
     unlockDate?: string;
   };
+  permanentImage?: string | null;
 }
 
-export default function ShadowCard({ shadow }: ShadowCardProps) {
+export default function ShadowCard({ shadow, permanentImage }: ShadowCardProps) {
   const isUnlocked = shadow.unlocked;
 
   if (isUnlocked) {
     return (
       <div className="relative group bg-gradient-to-br from-black via-system-blue/60 to-system-blue2/90 rounded-2xl shadow-blue-glow flex flex-col px-3 sm:px-2 pt-4 pb-3 items-center border-2 border-system-blue2 hover:scale-105 transition cursor-pointer w-full min-w-0">
-        <ShadowUnitAvatar name={shadow.name} isUnlocked={true} size="md" />
+        <ShadowUnitAvatar name={shadow.name} isUnlocked={true} size="md" permanentImage={permanentImage} />
         <span className="text-system-blue2 font-bold text-sm sm:text-base text-center break-words w-full px-1 mt-2">
           {shadow.name}
         </span>
