@@ -220,6 +220,27 @@ export type Database = {
         }
         Relationships: []
       }
+      shadow_army_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          shadow_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          shadow_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          shadow_key?: string
+        }
+        Relationships: []
+      }
       user_daily_activity: {
         Row: {
           day: string
