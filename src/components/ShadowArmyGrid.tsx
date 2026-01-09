@@ -1,5 +1,6 @@
 import React from "react";
 import ShadowCard from "./ShadowCard";
+import { useShadowArmy } from "@/hooks/useShadowArmy";
 
 const categoryConfig = [
   { key: "basic", name: "Basic Shadows", emoji: "📱", range: [0, 3] as const },
@@ -22,6 +23,7 @@ interface ShadowArmyGridProps {
 
 export default function ShadowArmyGrid({ allShadows }: ShadowArmyGridProps) {
   const [category, setCategory] = React.useState("basic");
+  const { shadowImages } = useShadowArmy();
   const cat = categoryConfig.find(c => c.key === category);
 
   // Select shadows corresponding to the current tab category
@@ -47,7 +49,11 @@ export default function ShadowArmyGrid({ allShadows }: ShadowArmyGridProps) {
       {/* Army Formation Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
         {shownShadows.map((shadow) => (
-          <ShadowCard key={shadow.name} shadow={shadow} />
+          <ShadowCard 
+            key={shadow.name} 
+            shadow={shadow} 
+            permanentImage={shadowImages[shadow.name] || null}
+          />
         ))}
       </div>
     </div>

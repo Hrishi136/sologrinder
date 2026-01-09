@@ -1,87 +1,143 @@
 import { useState, useEffect } from "react";
 import { SHADOW_UNITS, ShadowUnit } from "@/constants/shadowArmy";
+import { supabase } from "@/integrations/supabase/client";
 
-const STORAGE_KEY = "shadow_army_images";
-const UNLOCKED_KEY = "shadow_army_unlocked";
+const LOCAL_STORAGE_KEY = "shadow_army_images";
+const MIGRATION_KEY = "shadow_army_migrated_to_supabase";
 
 /**
- * Shadow Army Hook - manages which shadows are unlocked and their permanent images.
- * Once an image is uploaded for a shadow, it becomes permanent and cannot be changed.
- * All shadows are unlocked by default for image upload.
+ * Shadow Army Hook - manages shadow units and their permanent images from Supabase.
+ * Images are stored in Supabase storage and URLs are cached in the database.
  */
 export function useShadowArmy() {
-  // All shadows are unlocked by default - load from storage or use all names
-  const [unlocked, setUnlocked] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem(UNLOCKED_KEY);
-      if (stored) return JSON.parse(stored);
-      // Default: all shadows unlocked
-      return SHADOW_UNITS.map(u => u.name);
-    } catch {
-      return SHADOW_UNITS.map(u => u.name);
-    }
-  });
-  
-  // Permanent shadow images stored in localStorage
-  const [shadowImages, setShadowImages] = useState<Record<string, string>>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [unlocked] = useState<string[]>(() => SHADOW_UNITS.map(u => u.name));
+  const [shadowImages, setShadowImages] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
 
-  // Persist unlocked state
+  // Fetch shadow images from Supabase on mount
   useEffect(() => {
-    localStorage.setItem(UNLOCKED_KEY, JSON.stringify(unlocked));
-  }, [unlocked]);
+    fetchShadowImages();
+    migrateLocalStorageToSupabase();
+  }, []);
 
-  // Persist images to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(shadowImages));
-  }, [shadowImages]);
+  async function fetchShadowImages() {
+    try {
+      const { data, error } = await supabase
+        .from("shadow_army_images")
+        .select("shadow_key, image_url");
 
-  // Upload image for a shadow - only works if no image exists (permanent)
-  function uploadShadowImage(name: string, imageDataUrl: string) {
-    // Once set, images are permanent - cannot be changed
-    if (shadowImages[name]) {
-      console.warn(`Image for ${name} is already set and locked.`);
-      return false;
+      if (error) {
+        console.error("Error fetching shadow images:", error);
+        return;
+      }
+
+      const images: Record<string, string> = {};
+      data?.forEach(row => {
+        images[row.shadow_key] = row.image_url;
+      });
+      setShadowImages(images);
+    } catch (err) {
+      console.error("Failed to fetch shadow images:", err);
+    } finally {
+      setLoading(false);
     }
-    setShadowImages(prev => ({ ...prev, [name]: imageDataUrl }));
-    return true;
   }
 
-  // Check if a shadow has a permanent image
-  function hasPermanentImage(name: string): boolean {
-    return !!shadowImages[name];
-  }
+  // One-time migration from localStorage to Supabase storage
+  async function migrateLocalStorageToSupabase() {
+    const alreadyMigrated = localStorage.getItem(MIGRATION_KEY);
+    if (alreadyMigrated) return;
 
-  // Get the permanent image for a shadow
-  function getShadowImageUrl(name: string): string | null {
-    return shadowImages[name] || null;
-  }
+    const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!localData) {
+      localStorage.setItem(MIGRATION_KEY, "true");
+      return;
+    }
 
-  function unlockShadow(name: string) {
-    if (!unlocked.includes(name)) setUnlocked(u => [...u, name]);
+    try {
+      const localImages: Record<string, string> = JSON.parse(localData);
+      const entries = Object.entries(localImages);
+      
+      if (entries.length === 0) {
+        localStorage.setItem(MIGRATION_KEY, "true");
+        return;
+      }
+
+      console.log(`Migrating ${entries.length} shadow images to Supabase...`);
+
+      for (const [name, dataUrl] of entries) {
+        const imageKey = name.toLowerCase().replace(/\s+/g, "_");
+        
+        // Convert base64 to blob
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        
+        // Upload to Supabase storage
+        const fileName = `${imageKey}.png`;
+        const { error: uploadError } = await supabase.storage
+          .from("shadow-army")
+          .upload(fileName, blob, { 
+            upsert: true,
+            contentType: "image/png"
+          });
+
+        if (uploadError) {
+          console.error(`Failed to upload ${name}:`, uploadError);
+          continue;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("shadow-army")
+          .getPublicUrl(fileName);
+
+        // Store URL in database
+        const { error: dbError } = await supabase
+          .from("shadow_army_images")
+          .upsert({ 
+            shadow_key: name, 
+            image_url: urlData.publicUrl 
+          }, { 
+            onConflict: "shadow_key" 
+          });
+
+        if (dbError) {
+          console.error(`Failed to save URL for ${name}:`, dbError);
+        }
+      }
+
+      localStorage.setItem(MIGRATION_KEY, "true");
+      console.log("Migration complete!");
+      
+      // Refresh images from database
+      fetchShadowImages();
+    } catch (err) {
+      console.error("Migration failed:", err);
+    }
   }
 
   function isUnlocked(name: string) {
     return unlocked.includes(name);
   }
 
+  function hasPermanentImage(name: string): boolean {
+    return !!shadowImages[name];
+  }
+
+  function getShadowImageUrl(name: string): string | null {
+    return shadowImages[name] || null;
+  }
+
   const SHADOWS = SHADOW_UNITS;
 
   return { 
     unlocked, 
-    unlockShadow, 
     isUnlocked, 
     SHADOWS,
     shadowImages,
-    uploadShadowImage,
     hasPermanentImage,
-    getShadowImageUrl
+    getShadowImageUrl,
+    loading
   };
 }
 

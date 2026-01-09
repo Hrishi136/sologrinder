@@ -1,17 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import ShadowUnitAvatar from "./ShadowUnitAvatar";
+import { useShadowArmy } from "@/hooks/useShadowArmy";
 
 type Shadow = { name: string; tier: number };
 type Props = {
   unlocked: string[];
   allShadows: Shadow[];
   onViewAll?: () => void;
-  shadowImages?: Record<string, string>;
 };
 
-export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll, shadowImages = {} }: Props) {
+export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll }: Props) {
   const navigate = useNavigate();
+  const { shadowImages } = useShadowArmy();
   
   // Show 4 most recently unlocked, or show up to 4 lock silhouettes
   const previews = unlocked.slice(-4);
@@ -33,7 +34,12 @@ export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll, sha
             className="flex flex-col items-center"
             title={name}
           >
-            <ShadowUnitAvatar name={name} isUnlocked={true} size="md" permanentImage={shadowImages[name] || null} />
+            <ShadowUnitAvatar 
+              name={name} 
+              isUnlocked={true} 
+              size="md" 
+              permanentImage={shadowImages[name] || null} 
+            />
             <span className="text-xs text-white font-orbitron mt-1">{name}</span>
           </div>
         ))}
