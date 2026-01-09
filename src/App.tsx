@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { ShadowUnlockProvider } from "@/contexts/ShadowUnlockContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Quests from "./pages/Quests";
@@ -127,40 +128,42 @@ const App = () => {
 return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<RootRedirect />} />
-          <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
-          <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-          <Route path="/quests" element={<RequireAuth><Quests /></RequireAuth>} />
-          <Route path="/quest/:id" element={<RequireAuth><QuestDetail /></RequireAuth>} />
-          <Route path="/army" element={<RequireAuth><Army /></RequireAuth>} />
-          <Route path="/stats" element={<RequireAuth><Stats /></RequireAuth>} />
-          <Route path="/performance" element={<RequireAuth><Performance /></RequireAuth>} />
-          <Route path="/system-analysis" element={<RequireAuth><SystemAnalysis /></RequireAuth>} />
-          <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
-          <Route path="/support" element={<RequireAuth><Support /></RequireAuth>} />
-          <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
-          <Route path="/profile" element={<RequireAuth><ProfileSettings /></RequireAuth>} />
-          <Route path="/profile/customize" element={<RequireAuth><ProfileCustomization /></RequireAuth>} />
-          <Route path="/progress" element={<RequireAuth><Progress /></RequireAuth>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      <ShadowUnlockProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<RootRedirect />} />
+            <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
+            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/quests" element={<RequireAuth><Quests /></RequireAuth>} />
+            <Route path="/quest/:id" element={<RequireAuth><QuestDetail /></RequireAuth>} />
+            <Route path="/army" element={<RequireAuth><Army /></RequireAuth>} />
+            <Route path="/stats" element={<RequireAuth><Stats /></RequireAuth>} />
+            <Route path="/performance" element={<RequireAuth><Performance /></RequireAuth>} />
+            <Route path="/system-analysis" element={<RequireAuth><SystemAnalysis /></RequireAuth>} />
+            <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
+            <Route path="/support" element={<RequireAuth><Support /></RequireAuth>} />
+            <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
+            <Route path="/profile" element={<RequireAuth><ProfileSettings /></RequireAuth>} />
+            <Route path="/profile/customize" element={<RequireAuth><ProfileCustomization /></RequireAuth>} />
+            <Route path="/progress" element={<RequireAuth><Progress /></RequireAuth>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
 
-        {/* PWA install prompt */}
-        <PWAInstallPrompt />
+          {/* PWA install prompt */}
+          <PWAInstallPrompt />
 
-        {/* Username selection modal */}
-        <UsernameSelectionModal 
-          open={showUsernameModal}
-          onComplete={handleUsernameComplete}
-        />
+          {/* Username selection modal */}
+          <UsernameSelectionModal 
+            open={showUsernameModal}
+            onComplete={handleUsernameComplete}
+          />
 
-        {/* Mobile Bottom Navigation */}
-        <MobileBottomNav />
-      </BrowserRouter>
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomNav />
+        </BrowserRouter>
+      </ShadowUnlockProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
