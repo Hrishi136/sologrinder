@@ -75,7 +75,7 @@ export default function Dashboard() {
           .from('profiles')
           .select('username')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (profile?.username) {
           setUsername(profile.username);
