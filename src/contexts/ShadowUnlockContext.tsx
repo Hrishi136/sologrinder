@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import ShadowUnlockCeremony from "@/components/ShadowUnlockCeremony";
 import { getShadowByName } from "@/constants/shadowArmy";
 
+// Key for localStorage
+const UNLOCKED_SHADOWS_KEY = "shadow_army_unlocked";
+
 interface UnlockQueueItem {
   name: string;
   tier: number;
@@ -21,6 +24,23 @@ export function useShadowUnlock() {
     throw new Error("useShadowUnlock must be used within ShadowUnlockProvider");
   }
   return context;
+}
+
+// Helper to persist unlock to localStorage
+function persistUnlock(shadowName: string) {
+  const stored = localStorage.getItem(UNLOCKED_SHADOWS_KEY);
+  let unlocked: string[] = [];
+  if (stored) {
+    try {
+      unlocked = JSON.parse(stored);
+    } catch {
+      unlocked = [];
+    }
+  }
+  if (!unlocked.includes(shadowName)) {
+    unlocked.push(shadowName);
+    localStorage.setItem(UNLOCKED_SHADOWS_KEY, JSON.stringify(unlocked));
+  }
 }
 
 interface ShadowUnlockProviderProps {
@@ -50,7 +70,10 @@ export function ShadowUnlockProvider({ children }: ShadowUnlockProviderProps) {
     });
   }, [current]);
 
-  const handleComplete = useCallback(() => {
+  const handleComplete = useCallback((shadowName: string) => {
+    // Persist the unlock to localStorage
+    persistUnlock(shadowName);
+
     setCurrent(null);
     setQueue((prev) => {
       if (prev.length > 0) {
@@ -75,7 +98,7 @@ export function ShadowUnlockProvider({ children }: ShadowUnlockProviderProps) {
           shadowName={current.name}
           tier={current.tier}
           permanentImage={current.permanentImage}
-          onComplete={handleComplete}
+          onComplete={() => handleComplete(current.name)}
         />
       )}
     </ShadowUnlockContext.Provider>

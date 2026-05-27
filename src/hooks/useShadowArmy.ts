@@ -2,15 +2,28 @@ import { useState, useEffect } from "react";
 import { SHADOW_UNITS, ShadowUnit } from "@/constants/shadowArmy";
 import { supabase } from "@/integrations/supabase/client";
 
-const LOCAL_STORAGE_KEY = "shadow_army_images";
+const LOCAL_STORAGE_KEY = "shadow_army_unlocked";
+const SHADOW_IMAGES_KEY = "shadow_army_images";
 const MIGRATION_KEY = "shadow_army_migrated_to_supabase";
 
 /**
  * Shadow Army Hook - manages shadow units and their permanent images from Supabase.
  * Images are stored in Supabase storage and URLs are cached in the database.
+ * Shadows start LOCKED and must be unlocked by meeting requirements.
  */
 export function useShadowArmy() {
-  const [unlocked] = useState<string[]>(() => SHADOW_UNITS.map(u => u.name));
+  // Load unlocked shadows from localStorage, default to EMPTY (all locked)
+  const [unlocked, setUnlocked] = useState<string[]>(() => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        return [];
+      }
+    }
+    return []; // No shadows unlocked by default for new users
+  });
   const [shadowImages, setShadowImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +61,7 @@ export function useShadowArmy() {
     const alreadyMigrated = localStorage.getItem(MIGRATION_KEY);
     if (alreadyMigrated) return;
 
-    const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const localData = localStorage.getItem(SHADOW_IMAGES_KEY);
     if (!localData) {
       localStorage.setItem(MIGRATION_KEY, "true");
       return;
@@ -130,9 +143,24 @@ export function useShadowArmy() {
 
   const SHADOWS = SHADOW_UNITS;
 
-  return { 
-    unlocked, 
-    isUnlocked, 
+  // Unlock a shadow and persist to localStorage
+  function unlockShadow(name: string) {
+    if (unlocked.includes(name)) return false;
+    const newUnlocked = [...unlocked, name];
+    setUnlocked(newUnlocked);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newUnlocked));
+    return true;
+  }
+
+  // Persist unlocked shadows whenever they change
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(unlocked));
+  }, [unlocked]);
+
+  return {
+    unlocked,
+    isUnlocked,
+    unlockShadow,
     SHADOWS,
     shadowImages,
     hasPermanentImage,

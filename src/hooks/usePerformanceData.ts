@@ -33,7 +33,7 @@ export function usePerformanceData() {
   const { challenges, loading: challengesLoading } = useChallengesV2();
   const { currentStreak, loading: streakLoading } = useStreakTracker();
   const [performanceData, setPerformanceData] = useState<PerformanceStats>({
-    powerLevel: 30, // Start from level 1 (30 points)
+    powerLevel: 0, // Start at 0 for new accounts
     totalQuests: 0,
     successRate: 100,
     streak: 0,
@@ -99,13 +99,13 @@ export function usePerformanceData() {
       });
 
       // Calculate power level based on completions and difficulty with round level thresholds
-      const basePoints = questCount.easy * 15 + 
-        questCount.medium * 30 + 
-        questCount.hard * 50 + 
+      const basePoints = questCount.easy * 15 +
+        questCount.medium * 30 +
+        questCount.hard * 50 +
         totalCompletions * 10;
-      
-      // Ensure starting from level 1 with round number thresholds
-      const powerLevel = Math.max(30, basePoints);
+
+      // Power level starts at 0 for new accounts, increases with quest completions
+      const powerLevel = basePoints;
 
       // Generate weekly completion data (mock for now)
       const weeklyCompletions = [

@@ -11,6 +11,7 @@ interface ShadowCardProps {
     power?: number;
     abilities?: string;
     unlockDate?: string;
+    requirements?: string[];
   };
   permanentImage?: string | null;
 }
@@ -55,14 +56,13 @@ export default function ShadowCard({ shadow, permanentImage }: ShadowCardProps) 
     );
   }
 
-  // Locked state
-  const reqs = shadow.name === "Mage" 
-    ? ["25 Intelligence quests", "100 Intelligence stat"]
-    : shadow.name === "Knight"
-    ? ["C-Rank", "150 Strength", "15 Hard Combat quests"]
-    : ["Complete 1 more quest"];
-  
-  const progress = shadow.name === "Mage" ? 0.45 : shadow.name === "Knight" ? 0.3 : 0.1;
+  // Locked state - use requirements from props or fallback to generic message
+  const reqs = shadow.requirements && shadow.requirements.length > 0
+    ? shadow.requirements
+    : ["Complete requirements to unlock"];
+
+  // Progress is 0 for locked shadows (no progress yet)
+  const progress = 0;
 
   return (
     <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl shadow-inner flex flex-col px-3 sm:px-2 pt-4 pb-3 items-center border-2 border-gray-800 opacity-70 hover:opacity-95 group transition w-full min-w-0">
@@ -88,7 +88,7 @@ export default function ShadowCard({ shadow, permanentImage }: ShadowCardProps) 
         />
       </div>
       <button className="glow-button bg-gray-900 border border-gray-600 text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-gray-700 whitespace-nowrap">
-        Requirements
+        Locked
       </button>
       <div className="absolute left-1 top-1 flex gap-0.5">
         {Array.from({ length: shadow.tier }).map((_, i) => (

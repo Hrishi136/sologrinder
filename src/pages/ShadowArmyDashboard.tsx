@@ -4,29 +4,60 @@ import ShadowArmyGrid from "../components/ShadowArmyGrid";
 import ArmyStatsPanel from "../components/ArmyStatsPanel";
 import { useNavigate } from "react-router-dom";
 import ProfileButton from "@/components/ProfileButton";
+import { useShadowArmy } from "@/hooks/useShadowArmy";
+import { SHADOW_SOLDIERS } from "@/hooks/useHunterProgression";
+
+// Shadow power values by tier
+const SHADOW_POWER: Record<string, number> = {
+  "Iron Soldier": 30,
+  "Scout": 18,
+  "Mage": 26,
+  "Knight": 54,
+  "Assassin": 40,
+  "Healer": 38,
+  "Tank": 67,
+  "Archer": 33,
+  "Berserker": 61,
+  "Igris": 110,
+  "Beru": 115,
+  "Bellion": 125
+};
+
+// Shadow abilities
+const SHADOW_ABILITIES: Record<string, string> = {
+  "Iron Soldier": "Reliable vanguard. Slight quest XP bonus.",
+  "Scout": "Uncovers daily quest bonuses.",
+  "Mage": "Adds +3 INT to all Intelligence quests.",
+  "Knight": "Bonus vs elite quests. +5 STR.",
+  "Assassin": "Stealth quest rewards increased.",
+  "Healer": "Heals one fail per week.",
+  "Tank": "Shields all shadows from first failure.",
+  "Archer": "Quest streaks last +2 days.",
+  "Berserker": "Quest XP bonus after defeat.",
+  "Igris": "Double rewards on S+ quests.",
+  "Beru": "Antimatter powers, absorbs enemy weaknesses.",
+  "Bellion": "Unlocks special army formation bonus."
+};
 
 export default function ShadowArmyDashboard() {
-  // Mock data: for now, static, in future use real progression
-  const allShadows = [
-    { name: "Iron Soldier", tier: 1, power: 30, abilities: "Reliable vanguard. Slight quest XP bonus.", unlockDate: "2025-06-12", unlocked: true, description: "Basic tank; always loyal to your cause." },
-    { name: "Scout", tier: 1, power: 18, abilities: "Uncovers daily quest bonuses.", unlockDate: "2025-06-13", unlocked: true, description: "Fast and nimble. Finds hidden rewards." },
-    { name: "Mage", tier: 1, power: 26, abilities: "Adds +3 INT to all Intelligence quests.", unlockDate: "2025-06-15", unlocked: false, description: "Arcane specialist with high magic potential." },
-    { name: "Worker", tier: 1, power: 20, abilities: "Reduces all cooldowns by 1h.", unlockDate: null, unlocked: false, description: "Efficient and steady, never tires." },
-    { name: "Knight", tier: 2, power: 54, abilities: "Bonus vs elite quests. +5 STR.", unlockDate: null, unlocked: false, description: "Noble defender with tactical leadership." },
-    { name: "Assassin", tier: 2, power: 40, abilities: "Stealth quest rewards increased.", unlockDate: null, unlocked: false, description: "Deadly and silent, master of shadows." },
-    { name: "Healer", tier: 2, power: 38, abilities: "Heals one fail per week.", unlockDate: null, unlocked: false, description: "Restores stamina of the army." },
-    { name: "Archer", tier: 2, power: 33, abilities: "Quest streaks last +2 days.", unlockDate: null, unlocked: false, description: "Long-range support increasing accuracy." },
-    { name: "Tank", tier: 3, power: 67, abilities: "Shields all shadows from first failure.", unlockDate: null, unlocked: false, description: "Massive presence on the battlefield." },
-    { name: "Berserker", tier: 3, power: 61, abilities: "Quest XP bonus after defeat.", unlockDate: null, unlocked: false, description: "Unleashes fury after setbacks." },
-    { name: "Igris", tier: 4, power: 110, abilities: "Double rewards on S+ quests.", unlockDate: null, unlocked: false, description: "Marshal of the red legion, renowned general." },
-    { name: "Bellion", tier: 4, power: 125, abilities: "Unlocks special army formation bonus.", unlockDate: null, unlocked: false, description: "Legend among shadows; commands all others." }
-  ];
+  const { unlocked, SHADOWS, shadowImages } = useShadowArmy();
+  const navigate = useNavigate();
+
+  // Build shadows array from hook data - all start locked
+  const allShadows = SHADOWS.map(shadow => ({
+    name: shadow.name,
+    tier: shadow.tier,
+    power: SHADOW_POWER[shadow.name] || 30,
+    abilities: SHADOW_ABILITIES[shadow.name] || "Unknown abilities.",
+    unlockDate: null,
+    unlocked: unlocked.includes(shadow.name),
+    description: `${shadow.tier === 4 ? 'Legendary' : shadow.tier === 3 ? 'Marshal' : shadow.tier === 2 ? 'Elite' : 'Basic'} shadow.`,
+    requirements: SHADOW_SOLDIERS.find(s => s.name === shadow.name)?.reqs || []
+  }));
 
   const armyUnlocked = allShadows.filter(s => s.unlocked).length;
   const armyPower = allShadows.filter(s => s.unlocked).reduce((a, s) => a + s.power, 0);
   const nextUnlock = allShadows.find(s => !s.unlocked);
-
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen w-full bg-system-bg flex flex-col items-center font-orbitron animate-fade-in pt-24 pb-24">
@@ -35,7 +66,7 @@ export default function ShadowArmyDashboard() {
         <div>
           <h1 className="text-2xl text-system-blue2 font-bold flex items-center gap-2">
             Shadow Army Management
-            <span className="text-xs font-semibold px-3 py-1 rounded bg-system-blue/10 ml-3 border border-system-blue2">{armyUnlocked}/12 Shadows</span>
+            <span className="text-xs font-semibold px-3 py-1 rounded bg-system-blue/10 ml-3 border border-system-blue2">{armyUnlocked}/{SHADOWS.length} Shadows</span>
           </h1>
         </div>
         <button
@@ -52,7 +83,7 @@ export default function ShadowArmyDashboard() {
         <div className="w-full md:w-80">
           <ArmyStatsPanel
             armyPower={armyPower}
-            completion={`${armyUnlocked}/12`}
+            completion={`${armyUnlocked}/${SHADOWS.length}`}
             nextUnlock={nextUnlock}
           />
         </div>
