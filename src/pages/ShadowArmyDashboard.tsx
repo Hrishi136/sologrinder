@@ -17,7 +17,7 @@ const SHADOW_POWER: Record<string, number> = {
   "Healer": 38,
   "Tank": 67,
   "Archer": 33,
-  "Berserker": 61,
+  "Iron": 61,
   "Igris": 110,
   "Beru": 115,
   "Bellion": 125
@@ -33,7 +33,7 @@ const SHADOW_ABILITIES: Record<string, string> = {
   "Healer": "Heals one fail per week.",
   "Tank": "Shields all shadows from first failure.",
   "Archer": "Quest streaks last +2 days.",
-  "Berserker": "Quest XP bonus after defeat.",
+  "Iron": "Quest XP bonus after defeat.",
   "Igris": "Double rewards on S+ quests.",
   "Beru": "Antimatter powers, absorbs enemy weaknesses.",
   "Bellion": "Unlocks special army formation bonus."
