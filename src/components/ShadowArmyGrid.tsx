@@ -30,12 +30,13 @@ export default function ShadowArmyGrid({ allShadows }: ShadowArmyGridProps) {
   const shownShadows = cat ? allShadows.slice(cat.range[0], cat.range[1]) : [];
 
   return (
-    <div className="bg-black/80 rounded-xl border-2 border-system-blue2 shadow-lg p-6 min-h-[414px]">
-      <div className="flex gap-2 mb-6 flex-wrap">
+    <div className="bg-black/80 rounded-xl border-2 border-system-blue2 shadow-lg p-3 sm:p-6 min-h-[414px] w-full">
+      {/* Category tabs - horizontal scroll on mobile */}
+      <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 flex-wrap overflow-x-auto pb-2">
         {categoryConfig.map(tab => (
           <button
             key={tab.key}
-            className={`px-3 py-1 rounded-lg font-orbitron text-sm 
+            className={`px-2 sm:px-3 py-1 rounded-lg font-orbitron text-xs sm:text-sm whitespace-nowrap flex-shrink-0
               ${category === tab.key
                 ? "bg-system-blue2/70 text-white font-bold"
                 : "bg-system-blue/10 text-system-blue2 hover:bg-system-blue2/10"
@@ -46,12 +47,12 @@ export default function ShadowArmyGrid({ allShadows }: ShadowArmyGridProps) {
           </button>
         ))}
       </div>
-      {/* Army Formation Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+      {/* Army Formation Grid - Responsive for all screen sizes */}
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-5">
         {shownShadows.map((shadow) => (
-          <ShadowCard 
-            key={shadow.name} 
-            shadow={shadow} 
+          <ShadowCard
+            key={shadow.name}
+            shadow={shadow}
             permanentImage={shadowImages[shadow.name] || null}
           />
         ))}

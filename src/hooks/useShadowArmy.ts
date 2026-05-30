@@ -46,7 +46,9 @@ export function useShadowArmy() {
 
       const images: Record<string, string> = {};
       data?.forEach(row => {
+        // Index by both the exact shadow_key AND lowercase version for flexibility
         images[row.shadow_key] = row.image_url;
+        images[row.shadow_key.toLowerCase()] = row.image_url;
       });
       setShadowImages(images);
     } catch (err) {

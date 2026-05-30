@@ -21,35 +21,35 @@ export default function ShadowCard({ shadow, permanentImage }: ShadowCardProps) 
 
   if (isUnlocked) {
     return (
-      <div className="relative group bg-gradient-to-br from-black via-system-blue/60 to-system-blue2/90 rounded-2xl shadow-blue-glow flex flex-col px-3 sm:px-2 pt-4 pb-3 items-center border-2 border-system-blue2 hover:scale-105 transition cursor-pointer w-full min-w-0">
+      <div className="relative group bg-gradient-to-br from-black via-system-blue/60 to-system-blue2/90 rounded-xl sm:rounded-2xl shadow-blue-glow flex flex-col px-2 sm:px-3 pt-2 sm:pt-4 pb-2 sm:pb-3 items-center border-2 border-system-blue2 hover:scale-105 transition cursor-pointer w-full min-w-0 active:scale-95 sm:active:scale-100">
         <ShadowUnitAvatar name={shadow.name} isUnlocked={true} size="md" permanentImage={permanentImage} />
-        <span className="text-system-blue2 font-bold text-sm sm:text-base text-center break-words w-full px-1 mt-2">
+        <span className="text-system-blue2 font-bold text-xs sm:text-base text-center break-words w-full px-1 mt-1 sm:mt-2 line-clamp-2">
           {shadow.name}
         </span>
         {shadow.tier >= 4 && (
           <span className="absolute right-1 top-1 text-yellow-400">
-            <Star size={18} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
+            <Star size={14} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
           </span>
         )}
         {shadow.description && (
-          <div className="text-xs text-white mt-0.5 mb-1 text-center break-words w-full px-1">
+          <div className="text-[10px] sm:text-xs text-white mt-0.5 mb-1 text-center break-words w-full px-1 line-clamp-2">
             {shadow.description}
           </div>
         )}
         {shadow.power !== undefined && (
-          <div className="text-xs text-white/70 mb-1">
+          <div className="text-[10px] sm:text-xs text-white/70 mb-1">
             Power: <span className="font-bold text-system-blue2">+{shadow.power}</span>
           </div>
         )}
         {shadow.abilities && (
-          <div className="text-xs text-blue-300 text-center break-words w-full px-1">
+          <div className="text-[10px] sm:text-xs text-blue-300 text-center break-words w-full px-1 line-clamp-1">
             Abilities: <span>{shadow.abilities}</span>
           </div>
         )}
         {shadow.unlockDate && (
-          <div className="text-xs text-gray-400 mt-1">Unlocked: {shadow.unlockDate}</div>
+          <div className="text-[10px] sm:text-xs text-gray-400 mt-1 line-clamp-1">Unlocked: {shadow.unlockDate}</div>
         )}
-        <button className="glow-button mt-2 bg-system-blue2/80 hover:bg-system-blue2 text-white px-3 py-1.5 rounded text-xs whitespace-nowrap">
+        <button className="glow-button mt-1 sm:mt-2 bg-system-blue2/80 hover:bg-system-blue2 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[10px] sm:text-xs whitespace-nowrap">
           View Details
         </button>
       </div>
@@ -65,34 +65,34 @@ export default function ShadowCard({ shadow, permanentImage }: ShadowCardProps) 
   const progress = 0;
 
   return (
-    <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-2xl shadow-inner flex flex-col px-3 sm:px-2 pt-4 pb-3 items-center border-2 border-gray-800 opacity-70 hover:opacity-95 group transition w-full min-w-0">
+    <div className="relative bg-gradient-to-br from-black to-gray-900 rounded-xl sm:rounded-2xl shadow-inner flex flex-col px-2 sm:px-3 pt-2 sm:pt-4 pb-2 sm:pb-3 items-center border-2 border-gray-800 opacity-70 hover:opacity-95 group transition w-full min-w-0 active:scale-95 sm:active:scale-100">
       <div className="relative mb-1">
         <ShadowUnitAvatar name={shadow.name} isUnlocked={false} size="md" />
-        <Lock size={20} className="sm:w-5 sm:h-5 text-gray-600 absolute -top-2 -right-2" />
+        <Lock size={16} className="sm:w-5 sm:h-5 text-gray-600 absolute -top-2 -right-2" />
       </div>
-      <span className="text-gray-400 font-bold text-sm sm:text-base mb-1 text-center break-words w-full px-1">
+      <span className="text-gray-400 font-bold text-xs sm:text-base mb-1 text-center break-words w-full px-1 line-clamp-2">
         {shadow.name}
       </span>
-      <div className="text-xs text-gray-500 mb-1 w-full px-1">
+      <div className="text-[10px] sm:text-xs text-gray-500 mb-1 w-full px-1 line-clamp-3">
         <span>Requirements:</span>
-        <ul className="list-disc text-[11px] px-2 break-words">
-          {reqs.map(r => (
-            <li key={r} className="break-words">{r}</li>
+        <ul className="list-disc text-[9px] sm:text-[11px] px-2 break-words">
+          {reqs.slice(0, 2).map(r => (
+            <li key={r} className="break-words line-clamp-1">{r}</li>
           ))}
         </ul>
       </div>
-      <div className="w-full mt-1 mb-2 bg-gray-800 rounded-full h-2 overflow-hidden px-1">
+      <div className="w-full mt-1 mb-2 bg-gray-800 rounded-full h-1.5 sm:h-2 overflow-hidden px-1">
         <div
-          className="bg-gradient-to-r from-red-500 via-yellow-400 to-green-400 h-2 transition-all"
+          className="bg-gradient-to-r from-red-500 via-yellow-400 to-green-400 h-1.5 sm:h-2 transition-all"
           style={{ width: `${Math.round(progress * 100)}%` }}
         />
       </div>
-      <button className="glow-button bg-gray-900 border border-gray-600 text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-gray-700 whitespace-nowrap">
+      <button className="glow-button bg-gray-900 border border-gray-600 text-gray-400 px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[10px] sm:text-xs hover:bg-gray-700 whitespace-nowrap">
         Locked
       </button>
       <div className="absolute left-1 top-1 flex gap-0.5">
         {Array.from({ length: shadow.tier }).map((_, i) => (
-          <Star key={i} size={10} className="sm:w-3 sm:h-3 text-yellow-400" />
+          <Star key={i} size={8} className="sm:w-3 sm:h-3 text-yellow-400" />
         ))}
       </div>
     </div>

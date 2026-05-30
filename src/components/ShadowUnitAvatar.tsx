@@ -19,9 +19,9 @@ const sizeClasses = {
  * ShadowUnitAvatar - Renders shadow unit with permanent image from backend
  * Images are permanent game assets and cannot be changed by users
  */
-export default function ShadowUnitAvatar({ 
-  name, 
-  isUnlocked = false, 
+export default function ShadowUnitAvatar({
+  name,
+  isUnlocked = false,
   size = "md",
   showFallback = true,
   permanentImage
@@ -29,10 +29,11 @@ export default function ShadowUnitAvatar({
   const shadow = getShadowByName(name);
   const imageKey = shadow?.imageKey || name.toLowerCase().replace(/\s+/g, "_");
   const defaultImagePath = getShadowImage(imageKey);
-  
+
   const [imageError, setImageError] = React.useState(false);
 
   // Use permanent image if available, otherwise fall back to default static
+  // Try multiple variations of the shadow name for lookups
   const imagePath = permanentImage || defaultImagePath;
 
   const initial = name.charAt(0).toUpperCase();
