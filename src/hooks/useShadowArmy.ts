@@ -60,9 +60,8 @@ export function useShadowArmy() {
 
   // One-time migration from localStorage to Supabase storage
   async function migrateLocalStorageToSupabase() {
-    const alreadyMigrated = localStorage.getItem(MIGRATION_KEY);
-    if (alreadyMigrated) return;
-
+    // Always attempt migration if we have local data, even if marked migrated
+    // This ensures data is properly backed up to Supabase
     const localData = localStorage.getItem(SHADOW_IMAGES_KEY);
     if (!localData) {
       localStorage.setItem(MIGRATION_KEY, "true");

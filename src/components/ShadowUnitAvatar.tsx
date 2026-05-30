@@ -54,8 +54,11 @@ export default function ShadowUnitAvatar({
           src={imagePath}
           alt={name}
           className={`${sizeClasses[size]} object-cover rounded-full`}
-          onError={() => setImageError(true)}
-          loading="lazy"
+          onError={() => {
+            console.log(`Image failed to load for ${name}: ${imagePath}`);
+            setImageError(true);
+          }}
+          loading="eager"
         />
       ) : showFallback ? (
         <span className={`font-orbitron font-bold ${isUnlocked ? "text-system-blue2" : "text-gray-500"} ${size === "lg" ? "text-2xl" : size === "md" ? "text-xl" : "text-lg"}`}>
