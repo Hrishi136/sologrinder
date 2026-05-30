@@ -31,9 +31,6 @@ export function useShadowArmy() {
   useEffect(() => {
     fetchShadowImages();
     migrateLocalStorageToSupabase();
-    // Also refetch periodically to catch database updates
-    const interval = setInterval(fetchShadowImages, 10000); // Refetch every 10 seconds
-    return () => clearInterval(interval);
   }, []);
 
   async function fetchShadowImages() {
@@ -47,12 +44,10 @@ export function useShadowArmy() {
         return;
       }
 
-      console.log("Fetched shadow images from database:", data);
       const images: Record<string, string> = {};
       data?.forEach(row => {
         images[row.shadow_key] = row.image_url;
       });
-      console.log("Processed shadow images:", images);
       setShadowImages(images);
     } catch (err) {
       console.error("Failed to fetch shadow images:", err);

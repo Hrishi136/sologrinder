@@ -151,7 +151,7 @@ export const SHADOW_SOLDIERS = [
     ]
   },
   {
-    name: "Iron",
+    name: "Berserker",
     tier: 3,
     reqs: [
       "Complete 75 hard quests",
