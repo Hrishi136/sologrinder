@@ -3,12 +3,10 @@ import { SHADOW_UNITS, ShadowUnit } from "@/constants/shadowArmy";
 import { supabase } from "@/integrations/supabase/client";
 
 const LOCAL_STORAGE_KEY = "shadow_army_unlocked";
-const SHADOW_IMAGES_KEY = "shadow_army_images";
-const MIGRATION_KEY = "shadow_army_migrated_to_supabase";
 
 /**
- * Shadow Army Hook - manages shadow units and their permanent images from Supabase.
- * Images are stored in Supabase storage and URLs are cached in the database.
+ * Shadow Army Hook - manages shadow units and their permanent images from GitHub.
+ * Images are permanently hosted on GitHub and fetched via database URL references.
  * Shadows start LOCKED and must be unlocked by meeting requirements.
  */
 export function useShadowArmy() {
@@ -27,10 +25,9 @@ export function useShadowArmy() {
   const [shadowImages, setShadowImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
-  // Fetch shadow images from Supabase on mount
+  // Fetch shadow images from Supabase database (which stores GitHub URLs)
   useEffect(() => {
     fetchShadowImages();
-    migrateLocalStorageToSupabase();
   }, []);
 
   async function fetchShadowImages() {
@@ -55,78 +52,6 @@ export function useShadowArmy() {
       console.error("Failed to fetch shadow images:", err);
     } finally {
       setLoading(false);
-    }
-  }
-
-  // One-time migration from localStorage to Supabase storage
-  async function migrateLocalStorageToSupabase() {
-    // Always attempt migration if we have local data, even if marked migrated
-    // This ensures data is properly backed up to Supabase
-    const localData = localStorage.getItem(SHADOW_IMAGES_KEY);
-    if (!localData) {
-      localStorage.setItem(MIGRATION_KEY, "true");
-      return;
-    }
-
-    try {
-      const localImages: Record<string, string> = JSON.parse(localData);
-      const entries = Object.entries(localImages);
-      
-      if (entries.length === 0) {
-        localStorage.setItem(MIGRATION_KEY, "true");
-        return;
-      }
-
-      console.log(`Migrating ${entries.length} shadow images to Supabase...`);
-
-      for (const [name, dataUrl] of entries) {
-        const imageKey = name.toLowerCase().replace(/\s+/g, "_");
-        
-        // Convert base64 to blob
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-        
-        // Upload to Supabase storage
-        const fileName = `${imageKey}.png`;
-        const { error: uploadError } = await supabase.storage
-          .from("shadow-army")
-          .upload(fileName, blob, { 
-            upsert: true,
-            contentType: "image/png"
-          });
-
-        if (uploadError) {
-          console.error(`Failed to upload ${name}:`, uploadError);
-          continue;
-        }
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from("shadow-army")
-          .getPublicUrl(fileName);
-
-        // Store URL in database
-        const { error: dbError } = await supabase
-          .from("shadow_army_images")
-          .upsert({ 
-            shadow_key: name, 
-            image_url: urlData.publicUrl 
-          }, { 
-            onConflict: "shadow_key" 
-          });
-
-        if (dbError) {
-          console.error(`Failed to save URL for ${name}:`, dbError);
-        }
-      }
-
-      localStorage.setItem(MIGRATION_KEY, "true");
-      console.log("Migration complete!");
-      
-      // Refresh images from database
-      fetchShadowImages();
-    } catch (err) {
-      console.error("Migration failed:", err);
     }
   }
 
