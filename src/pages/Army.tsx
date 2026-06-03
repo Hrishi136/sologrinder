@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SystemPanel from "../components/SystemPanel";
 import { useShadowArmy } from "../hooks/useShadowArmy";
+import { useHunterProgression } from "../hooks/useHunterProgression";
 import { SHADOW_SOLDIERS } from "../hooks/useHunterProgression";
 import { SHADOW_UNITS } from "@/constants/shadowArmy";
 import ShadowUnitAvatar from "@/components/ShadowUnitAvatar";
 import { useShadowUnlock } from "@/contexts/ShadowUnlockContext";
-import { Sparkles } from "lucide-react";
 
 export default function Army() {
-  const { unlocked, shadowImages, loading } = useShadowArmy();
+  const { unlocked, shadowImages, loading, unlockShadow } = useShadowArmy();
   const { triggerUnlock } = useShadowUnlock();
+  const { stats, streak, questCount, totalQuests, currentRankIndex, RANKS } = useHunterProgression();
   const unlockedNames = unlocked || [];
-  const [demoIndex, setDemoIndex] = useState(0);
 
   function getShadowRequirement(name: string): string {
     const shadow = SHADOW_SOLDIERS.find(s => s.name === name);
@@ -19,29 +19,127 @@ export default function Army() {
     return shadow.reqs?.join(" & ") ?? "";
   }
 
-  // Demo: cycle through shadows to show unlock animation
-  function handleDemoUnlock() {
-    const shadow = SHADOW_UNITS[demoIndex];
-    triggerUnlock(shadow.name, shadowImages[shadow.name] || null);
-    setDemoIndex((prev) => (prev + 1) % SHADOW_UNITS.length);
+  // Check if shadow requirements are met
+  function checkRequirementsMet(shadowName: string): boolean {
+    const shadow = SHADOW_SOLDIERS.find(s => s.name === shadowName);
+    if (!shadow) return false;
+
+    const getStatValue = (statName: string) => {
+      const stat = stats?.find(s => s.label.toLowerCase() === statName.toLowerCase());
+      return stat?.value || 0;
+    };
+
+    // Check each requirement
+    return shadow.reqs.every(req => {
+      if (req.includes("Complete 20 Combat Training")) {
+        return questCount?.total >= 20;
+      }
+      if (req.includes("Achieve first 7-day streak")) {
+        return streak >= 7;
+      }
+      if (req.includes("Complete 25 Intelligence")) {
+        return questCount?.total >= 25;
+      }
+      if (req.includes("Reach 100 Intelligence")) {
+        return getStatValue("Intelligence") >= 100;
+      }
+      if (req.includes("Reach C-Rank")) {
+        return currentRankIndex >= 4; // C-Rank
+      }
+      if (req.includes("150 Strength")) {
+        return getStatValue("Strength") >= 150;
+      }
+      if (req.includes("15 hard Combat")) {
+        return questCount?.hardTotal >= 15;
+      }
+      if (req.includes("Reach B-Rank")) {
+        return currentRankIndex >= 3; // B-Rank
+      }
+      if (req.includes("200 Agility")) {
+        return getStatValue("Agility") >= 200;
+      }
+      if (req.includes("30-day streak")) {
+        return streak >= 30;
+      }
+      if (req.includes("Complete 50 Vitality")) {
+        return questCount?.total >= 50;
+      }
+      if (req.includes("Maintain 21-day")) {
+        return streak >= 21;
+      }
+      if (req.includes("Reach A-Rank")) {
+        return currentRankIndex >= 2; // A-Rank
+      }
+      if (req.includes("300 Strength")) {
+        return getStatValue("Strength") >= 300;
+      }
+      if (req.includes("500 total Vitality")) {
+        return getStatValue("Vitality") >= 500;
+      }
+      if (req.includes("250 Agility")) {
+        return getStatValue("Agility") >= 250;
+      }
+      if (req.includes("200 Intelligence")) {
+        return getStatValue("Intelligence") >= 200;
+      }
+      if (req.includes("Complete 100 total")) {
+        return totalQuests >= 100;
+      }
+      if (req.includes("Complete 75 hard")) {
+        return questCount?.hardTotal >= 75;
+      }
+      if (req.includes("Achieve 45-day")) {
+        return streak >= 45;
+      }
+      if (req.includes("S-Rank")) {
+        return currentRankIndex >= 1; // S-Rank
+      }
+      if (req.includes("400 Strength")) {
+        return getStatValue("Strength") >= 400;
+      }
+      if (req.includes("150 hard Combat")) {
+        return questCount?.hardTotal >= 150;
+      }
+      if (req.includes("National Level")) {
+        return currentRankIndex >= 0; // National Level
+      }
+      if (req.includes("350 Intelligence")) {
+        return getStatValue("Intelligence") >= 350;
+      }
+      if (req.includes("200 total quests")) {
+        return totalQuests >= 200;
+      }
+      if (req.includes("Shadow Monarch")) {
+        return currentRankIndex <= -1; // Shadow Monarch (special rank)
+      }
+      if (req.includes("All other shadows")) {
+        const otherShadows = SHADOW_UNITS.filter(s => s.name !== shadowName);
+        return otherShadows.every(s => unlockedNames.includes(s.name));
+      }
+      if (req.includes("80-day")) {
+        return streak >= 80;
+      }
+      return false;
+    });
   }
+
+  // Auto-unlock shadows when requirements are met
+  useEffect(() => {
+    SHADOW_UNITS.forEach(shadow => {
+      if (!unlockedNames.includes(shadow.name) && checkRequirementsMet(shadow.name)) {
+        unlockShadow(shadow.name);
+        triggerUnlock(shadow.name, shadowImages[shadow.name] || null);
+      }
+    });
+  }, [stats, streak, questCount, totalQuests, currentRankIndex, unlockedNames, shadowImages]);
 
   return (
     <div className="min-h-screen w-full bg-system-bg relative pt-20">
       <div className="container mx-auto flex flex-col items-center gap-10">
         <SystemPanel className="w-full max-w-4xl p-7">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-orbitron text-2xl text-system-blue font-extrabold">
-              Shadow Army Collection
-            </h2>
-            <button
-              onClick={handleDemoUnlock}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-white text-sm font-orbitron transition-all shadow-lg hover:shadow-purple-500/30"
-            >
-              <Sparkles size={16} />
-              Demo Unlock
-            </button>
-          </div>
+          <h2 className="font-orbitron text-2xl text-system-blue font-extrabold mb-6">
+            Shadow Army Collection
+          </h2>
           {loading ? (
             <div className="text-center text-system-blue2 py-10">
               Loading Shadow Army...
@@ -51,16 +149,16 @@ export default function Army() {
               {SHADOW_UNITS.map((s) => {
                 const isUnlocked = unlockedNames.includes(s.name);
                 const permanentImage = shadowImages[s.name] || null;
-                
+
                 return (
                   <div
                     key={s.name}
                     className={`flex flex-col items-center p-2 ${isUnlocked ? "system-panel-glow" : "opacity-60"}`}
                   >
                     <div className="mb-3">
-                      <ShadowUnitAvatar 
-                        name={s.name} 
-                        isUnlocked={isUnlocked} 
+                      <ShadowUnitAvatar
+                        name={s.name}
+                        isUnlocked={isUnlocked}
                         size="md"
                         permanentImage={permanentImage}
                       />
@@ -68,7 +166,7 @@ export default function Army() {
                     <span className={`font-orbitron text-md ${isUnlocked ? 'text-system-blue' : 'text-system-blue2'}`}>
                       {s.name}
                     </span>
-                    <span className="text-xs text-system-blue2 text-center mt-1">
+                    <span className="text-xs text-system-blue2 text-center mt-1 line-clamp-2">
                       {getShadowRequirement(s.name)}
                     </span>
                     {isUnlocked ? (
