@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import ShadowUnitAvatar from "./ShadowUnitAvatar";
 import { useShadowArmy } from "@/hooks/useShadowArmy";
+import { SHADOW_UNITS } from "@/constants/shadowArmy";
 
 type Shadow = { name: string; tier: number };
 type Props = {
@@ -13,49 +14,43 @@ type Props = {
 export default function ShadowArmyPreview({ unlocked, allShadows, onViewAll }: Props) {
   const navigate = useNavigate();
   const { shadowImages } = useShadowArmy();
-  
-  // Show 4 most recently unlocked, or show up to 4 lock silhouettes
-  const previews = unlocked.slice(-4);
-  const locked = allShadows
-    .filter(s => !unlocked.includes(s.name))
-    .slice(0, 4 - previews.length);
+
+  // Display first 3 shadows: Iron Soldier, Scout, Mage
+  const firstThreeShadows = SHADOW_UNITS.slice(0, 3);
 
   function handleViewArmy() {
     navigate("/army");
   }
 
   return (
-    <div className="system-panel bg-black/75 border-system-blue2 border-2 rounded-lg shadow-lg p-4 animate-fade-in">
-      <div className="font-orbitron text-system-blue2 mb-2 text-lg">Shadow Army</div>
-      <div className="flex gap-4 items-center justify-center flex-wrap">
-        {previews.map((name) => (
-          <div
-            key={name}
-            className="flex flex-col items-center"
-            title={name}
-          >
-            <ShadowUnitAvatar 
-              name={name} 
-              isUnlocked={true} 
-              size="md" 
-              permanentImage={shadowImages[name] || null} 
-            />
-            <span className="text-xs text-white font-orbitron mt-1">{name}</span>
-          </div>
-        ))}
-        {locked.map((s) => (
-          <div
-            key={s.name}
-            className="flex flex-col items-center"
-            title="Locked"
-          >
-            <ShadowUnitAvatar name={s.name} isUnlocked={false} size="md" />
-            <span className="text-xs text-gray-700 font-mono mt-1">Locked</span>
-          </div>
-        ))}
+    <div className="system-panel bg-black/75 border-system-blue2 border-2 rounded-lg shadow-lg p-3 sm:p-4 animate-fade-in">
+      <div className="font-orbitron text-system-blue2 mb-3 sm:mb-4 text-xs sm:text-lg">Shadow Army</div>
+      <div className="flex gap-2 sm:gap-4 items-center justify-center flex-wrap">
+        {firstThreeShadows.map((shadow) => {
+          const isUnlocked = unlocked.includes(shadow.name);
+          const permanentImage = shadowImages[shadow.name] || null;
+
+          return (
+            <div
+              key={shadow.name}
+              className="flex flex-col items-center"
+              title={shadow.name}
+            >
+              <ShadowUnitAvatar
+                name={shadow.name}
+                isUnlocked={isUnlocked}
+                size="md"
+                permanentImage={permanentImage}
+              />
+              <span className={`text-[10px] sm:text-xs font-orbitron mt-1 truncate max-w-[60px] sm:max-w-none ${isUnlocked ? 'text-white' : 'text-gray-500'}`}>
+                {shadow.name}
+              </span>
+            </div>
+          );
+        })}
       </div>
       <button
-        className="mt-3 glow-button bg-system-blue2/80 hover:bg-system-blue2 text-white px-3 py-1 rounded-lg font-orbitron text-sm transition active:scale-95"
+        className="mt-3 sm:mt-4 glow-button bg-system-blue2/80 hover:bg-system-blue2 text-white px-3 sm:px-4 py-2 sm:py-2 rounded-lg font-orbitron text-xs sm:text-sm transition active:scale-95 w-full"
         onClick={onViewAll ? onViewAll : handleViewArmy}
       >
         View Full Army

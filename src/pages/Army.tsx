@@ -134,10 +134,10 @@ export default function Army() {
   }, [stats, streak, questCount, totalQuests, currentRankIndex, unlockedNames, shadowImages]);
 
   return (
-    <div className="min-h-screen w-full bg-system-bg relative pt-20">
-      <div className="container mx-auto flex flex-col items-center gap-10">
-        <SystemPanel className="w-full max-w-4xl p-7">
-          <h2 className="font-orbitron text-2xl text-system-blue font-extrabold mb-6">
+    <div className="min-h-screen w-full bg-system-bg relative pt-16 sm:pt-20 px-3 sm:px-4">
+      <div className="container mx-auto flex flex-col items-center gap-6 sm:gap-10">
+        <SystemPanel className="w-full max-w-4xl p-4 sm:p-7">
+          <h2 className="font-orbitron text-lg sm:text-2xl text-system-blue font-extrabold mb-6">
             Shadow Army Collection
           </h2>
           {loading ? (
@@ -145,7 +145,7 @@ export default function Army() {
               Loading Shadow Army...
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               {SHADOW_UNITS.map((s) => {
                 const isUnlocked = unlockedNames.includes(s.name);
                 const permanentImage = shadowImages[s.name] || null;
@@ -155,7 +155,7 @@ export default function Army() {
                     key={s.name}
                     className={`flex flex-col items-center p-2 ${isUnlocked ? "system-panel-glow" : "opacity-60"}`}
                   >
-                    <div className="mb-3">
+                    <div className="mb-2 sm:mb-3">
                       <ShadowUnitAvatar
                         name={s.name}
                         isUnlocked={isUnlocked}
@@ -163,16 +163,16 @@ export default function Army() {
                         permanentImage={permanentImage}
                       />
                     </div>
-                    <span className={`font-orbitron text-md ${isUnlocked ? 'text-system-blue' : 'text-system-blue2'}`}>
+                    <span className={`font-orbitron text-xs sm:text-md ${isUnlocked ? 'text-system-blue' : 'text-system-blue2'}`}>
                       {s.name}
                     </span>
-                    <span className="text-xs text-system-blue2 text-center mt-1 line-clamp-2">
+                    <span className="text-[10px] sm:text-xs text-system-blue2 text-center mt-1 line-clamp-2">
                       {getShadowRequirement(s.name)}
                     </span>
                     {isUnlocked ? (
-                      <span className="text-xs text-green-400 mt-1">Unlocked</span>
+                      <span className="text-[10px] sm:text-xs text-green-400 mt-1">Unlocked</span>
                     ) : (
-                      <span className="text-xs text-system-blue2">Locked</span>
+                      <span className="text-[10px] sm:text-xs text-system-blue2">Locked</span>
                     )}
                   </div>
                 );

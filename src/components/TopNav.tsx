@@ -44,22 +44,22 @@ export default function TopNav() {
   }
 
   return (
-    <nav className="w-full flex flex-col sm:flex-row items-center justify-between px-2 sm:px-6 py-2 sm:py-3 mb-2 sm:mb-6 z-10 gap-2 sm:gap-0">
-      <div className="flex items-center gap-2 sm:gap-3">
-        <img 
-          src={logo} 
-          alt="SoloGrinder Logo" 
+    <nav className="w-full flex flex-col sm:flex-row items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 mb-2 sm:mb-6 z-10 gap-2 sm:gap-0">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <img
+          src={logo}
+          alt="SoloGrinder Logo"
           className="h-6 sm:h-8 w-auto drop-shadow-[0_2px_4px_#00d4ff]"
         />
       </div>
       <div className="w-full max-w-full overflow-x-auto no-scrollbar scroll-smooth">
-        <div className="flex flex-nowrap items-center gap-3 sm:gap-6 px-1">
+        <div className="flex flex-nowrap items-center gap-2 sm:gap-4 md:gap-6 px-1">
           {navItems.map(n => (
             <NavLink
               key={n.title}
               to={n.path}
               className={({ isActive }) =>
-                `shrink-0 font-orbitron px-2 py-1 text-base sm:text-lg tracking-wide border-b-2 ${isActive ? "border-system-blue text-system-blue" : "border-transparent text-white hover:text-system-blue hover:border-system-blue transition-colors duration-200"}`
+                `shrink-0 font-orbitron px-2 py-1 text-xs sm:text-sm md:text-base tracking-wide border-b-2 transition-colors duration-200 ${isActive ? "border-system-blue text-system-blue" : "border-transparent text-white hover:text-system-blue hover:border-system-blue"}`
               }
             >
               {n.title}
@@ -67,7 +67,7 @@ export default function TopNav() {
           ))}
         </div>
       </div>
-      <div>
+      <div className="shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="p-1 rounded-full border-2 border-system-blue bg-system-blue/10 hover:bg-system-blue/20 transition-colors duration-200">
