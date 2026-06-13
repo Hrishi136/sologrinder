@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import SystemPanel from "../components/SystemPanel"
 import { supabase } from "@/integrations/supabase/client"
 import { Eye, EyeOff } from "lucide-react"
+import { toast } from "sonner"
 
 type AuthMode = "email" | "magic"
 type FormType = "login" | "signup"
@@ -71,7 +72,7 @@ export default function Login() {
             setError(error.message)
           } else {
             setError("")
-            alert("Registration successful! Check your email to verify your account.")
+            toast.success("Registration successful! Check your email to verify your account.")
           }
         } else {
           const { error } = await supabase.auth.signInWithPassword({
@@ -95,7 +96,7 @@ export default function Login() {
           setError(error.message)
         } else {
           setError("")
-          alert("Check your email for the magic link!")
+          toast.success("Check your email for the magic link!")
         }
       }
     } catch (err: any) {
@@ -144,7 +145,7 @@ export default function Login() {
           />
         ))}
       </div>
-      <SystemPanel className="max-w-lg w-full px-7 py-10 relative z-10" glow>
+      <SystemPanel className="w-[92vw] max-w-lg px-5 sm:px-7 py-8 sm:py-10 relative z-10" glow>
         <h1 className="text-3xl font-orbitron text-system-blue text-center mb-2 drop-shadow-[0_2px_16px_#00d4ffcc] tracking-widest">
           {mode === "email" ? (formType === "signup" ? "SYSTEM REGISTRATION" : "SYSTEM ACCESS") : "MAGIC LINK ACCESS"}
         </h1>
@@ -154,9 +155,10 @@ export default function Login() {
         )}
         <form className="flex flex-col gap-4 mt-2 text-lg font-inter" onSubmit={handleEmailAuth}>
           <input
-            className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 placeholder:text-system-blue2/60 outline-none"
+            className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-3 placeholder:text-system-blue2/60 outline-none min-h-[48px]"
             placeholder="Hunter Email"
             type="email"
+            autoComplete="email"
             value={email}
             onChange={e=>setEmail(e.target.value)}
             required
@@ -164,9 +166,10 @@ export default function Login() {
           {mode === "email" && (
             <div className="relative">
               <input
-                className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-2 pr-12 placeholder:text-system-blue2/60 outline-none w-full"
+                className="bg-[#191e26] border border-system-blue/70 text-system-blue focus:ring-2 focus:ring-system-blue2 rounded px-4 py-3 pr-12 placeholder:text-system-blue2/60 outline-none w-full min-h-[48px]"
                 placeholder="System Password"
                 type={showPassword ? "text" : "password"}
+                autoComplete={formType === "signup" ? "new-password" : "current-password"}
                 value={password}
                 onChange={e=>setPassword(e.target.value)}
                 required

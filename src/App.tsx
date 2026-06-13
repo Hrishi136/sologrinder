@@ -32,6 +32,15 @@ import React from "react";
 const SYSTEM_BOOT_COMPLETE_KEY = "shadowSystem_booted";
 const queryClient = new QueryClient();
 
+const PUBLIC_PATHS = ["/login", "/"];
+
+function AuthenticatedNav({ session, loading }: { session: any; loading: boolean }) {
+  const location = useLocation();
+  const isPublic = PUBLIC_PATHS.includes(location.pathname);
+  if (loading || !session || isPublic) return null;
+  return <MobileBottomNav />;
+}
+
 const App = () => {
   const [session, setSession] = React.useState(null);
   const [profile, setProfile] = React.useState(null);
@@ -160,8 +169,8 @@ return (
             onComplete={handleUsernameComplete}
           />
 
-          {/* Mobile Bottom Navigation */}
-          <MobileBottomNav />
+          {/* Mobile Navigation — hidden on public pages */}
+          <AuthenticatedNav session={session} loading={loading} />
         </BrowserRouter>
       </ShadowUnlockProvider>
     </TooltipProvider>
