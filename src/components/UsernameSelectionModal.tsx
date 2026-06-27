@@ -40,17 +40,20 @@ export default function UsernameSelectionModal({ open, onComplete }: UsernameSel
         return;
       }
 
-      const { error: insertError } = await supabase
+      // Use upsert to handle cases where a partial profile might exist
+      const { error: upsertError } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           user_id: user.id,
-          username: username.trim()
-        });
+          username: username.trim(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
 
-      if (insertError) {
-        if (insertError.code === '23505') { // Unique constraint violation
+      if (upsertError) {
+        if (upsertError.code === '23505') { // Unique constraint violation on username
           setError("This Hunter name is already taken. Choose another one.");
         } else {
+          console.error('Profile upsert error:', upsertError);
           setError("Failed to save Hunter name. Please try again.");
         }
         return;

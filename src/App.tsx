@@ -48,14 +48,21 @@ const App = () => {
   const [showUsernameModal, setShowUsernameModal] = React.useState(false);
 
   React.useEffect(() => {
-    // Listen for auth changes FIRST to avoid race conditions
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes - this handles OAuth callbacks, sign ins, sign outs
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[Auth] State changed:', event, !!session);
       setSession(session);
       setLoading(false);
+
+      // Handle OAuth callback - clean up URL hash after token exchange
+      if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
     });
 
-    // Then check for existing session
+    // Check for existing session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('[Auth] Initial session:', !!session);
       setSession(session);
       setLoading(false);
     });
@@ -66,22 +73,34 @@ const App = () => {
   // Check for user profile when authenticated
   React.useEffect(() => {
     const checkProfile = async () => {
-      if (session?.user) {
-        const { data: profile } = await supabase
+      if (!session?.user) {
+        setProfile(null);
+        setShowUsernameModal(false);
+        return;
+      }
+
+      try {
+        const { data: existingProfile, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', session.user.id)
           .maybeSingle();
-        
-        setProfile(profile);
-        
-        // Show username modal if no profile exists
-        if (!profile) {
-          setShowUsernameModal(true);
+
+        if (error) {
+          console.error('[Profile] Error fetching profile:', error);
         }
-      } else {
-        setProfile(null);
-        setShowUsernameModal(false);
+
+        setProfile(existingProfile);
+
+        // Show username modal if no profile exists (new OAuth user)
+        if (!existingProfile) {
+          console.log('[Profile] No profile found, showing username modal');
+          setShowUsernameModal(true);
+        } else {
+          setShowUsernameModal(false);
+        }
+      } catch (err) {
+        console.error('[Profile] Exception:', err);
       }
     };
 

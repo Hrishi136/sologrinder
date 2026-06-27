@@ -111,19 +111,28 @@ export default function Login() {
     setError("")
 
     try {
+      // Get the Supabase URL from the same origin as the client
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const redirectTarget = `${window.location.origin}/dashboard`
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          // Supabase handles the OAuth exchange at this callback URL
+          // Then redirects to our redirectTo path
+          redirectTo: redirectTarget,
+          skipBrowserRedirect: false
         }
       })
-      
+
       if (error) {
         setError(error.message)
+        setLoading(false)
       }
+      // If no error, browser will redirect to Google, then back here
+      // No need to setLoading(false) as we're leaving the page
     } catch (err: any) {
       setError(err.message || "An error occurred")
-    } finally {
       setLoading(false)
     }
   }
